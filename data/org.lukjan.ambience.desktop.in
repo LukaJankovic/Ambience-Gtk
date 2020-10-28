@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=ambience
+Exec=ambience
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

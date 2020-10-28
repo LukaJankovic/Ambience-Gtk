@@ -1,0 +1,7 @@
+data/org.lukjan.ambience.desktop.in
+data/org.lukjan.ambience.appdata.xml.in
+data/org.lukjan.ambience.gschema.xml
+src/window.ui
+src/main.py
+src/window.py
+
