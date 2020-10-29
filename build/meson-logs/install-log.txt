@@ -1,0 +1,12 @@
+# List of files installed by Meson
+# Does not contain files installed by custom scripts.
+/usr/share/applications/org.lukjan.ambience.desktop
+/usr/share/appdata/org.lukjan.ambience.appdata.xml
+/usr/share/ambience/ambience.gresource
+/usr/share/glib-2.0/schemas/org.lukjan.ambience.gschema.xml
+/usr/bin/ambience
+/usr/share/ambience/ambience/__init__.py
+/usr/share/ambience/ambience/main.py
+/usr/share/ambience/ambience/window.py
+/usr/share/ambience/ambience
+/usr/share/ambience

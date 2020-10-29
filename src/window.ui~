@@ -370,7 +370,6 @@
                             <property name="can-focus">True</property>
                             <property name="halign">end</property>
                             <property name="valign">center</property>
-                            <signal name="notify::active" handler="set_light_power" swapped="no"/>
                           </object>
                         </child>
                       </object>

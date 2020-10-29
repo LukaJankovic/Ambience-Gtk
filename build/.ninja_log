@@ -1,0 +1,6 @@
+# ninja log v5
+1	7	1603932197562407462	src/ambience.gresource	cf671baa716af4c5
+0	114	1603932197652407138	data/org.lukjan.ambience.appdata.xml	b8b3e71df778ff7f
+0	114	1603932197652407138	data/org.lukjan.ambience.desktop	9cf93745b0f9ed1d
+0	338	0	meson-install	9bd7faa9472bf40f
+0	106	0	meson-uninstall	cc991f1d37a0db31

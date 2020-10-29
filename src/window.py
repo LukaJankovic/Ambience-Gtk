@@ -15,14 +15,166 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
+import threading
 
+from gi.repository import Gtk, GLib, GObject, Handy
+from lifxlan import *
+from .sidebar import *
 
 @Gtk.Template(resource_path='/org/lukjan/ambience/window.ui')
-class AmbienceWindow(Gtk.ApplicationWindow):
+class AmbienceWindow(Handy.ApplicationWindow):
     __gtype_name__ = 'AmbienceWindow'
 
-    label = Gtk.Template.Child()
+    main_popover    = Gtk.Template.Child()
+
+    content_box     = Gtk.Template.Child()
+
+    menu            = Gtk.Template.Child()
+    header_bar      = Gtk.Template.Child()
+    refresh_stack   = Gtk.Template.Child()
+    refresh         = Gtk.Template.Child()
+    sidebar         = Gtk.Template.Child()
+
+    content         = Gtk.Template.Child()
+    sub_header_bar  = Gtk.Template.Child()
+    edit_stack      = Gtk.Template.Child()
+    back            = Gtk.Template.Child()
+    edit            = Gtk.Template.Child()
+    edit_label      = Gtk.Template.Child()
+    name_label      = Gtk.Template.Child()
+    ip_label        = Gtk.Template.Child()
+
+    power_row       = Gtk.Template.Child()
+    power_switch    = Gtk.Template.Child()
+    hue_scale       = Gtk.Template.Child()
+    saturation_scale= Gtk.Template.Child()
+    brightness_scale= Gtk.Template.Child()
+    kelvin_scale    = Gtk.Template.Child()
+
+    lan    = LifxLAN()
+    lights = []
+
+    active_light = None
+
+    # Misc. Window / UI Management
+
+    @Gtk.Template.Callback("notify_fold_cb")
+    def notify_fold_cb(self, sender, user_data):
+
+        folded = self.content_box.get_folded()
+
+        if folded:
+            self.back.show_all()
+            self.power_row.show_all()
+            self.sidebar.unselect_all()
+        else:
+            self.back.hide()
+            self.power_row.hide()
+
+        self.header_bar.set_show_close_button(folded)
+
+    def go_back(self, sender):
+        self.sidebar.unselect_all()
+        self.content_box.set_visible_child(self.menu)
+
+    # Reloading
+
+    def update_sidebar(self):
+
+        for light in self.lights:
+            sidebar_item = SidebarListItem()
+            sidebar_item.light = light
+            sidebar_item.light_label.set_text(light.get_label())
+            sidebar_item.light_switch.set_active(light.get_power() / 65535)
+
+            self.sidebar.insert(sidebar_item, -1)
+
+        self.refresh_stack.set_visible_child_name("refresh")
+
+    def reload(self, sender):
+        self.init_discovery()
+
+    # Main light management
+
+    @Gtk.Template.Callback("set_light_power")
+    def set_light_power(self, sender, user_data):
+        self.active_light.light.set_power(self.power_switch.get_active())
+
+    def set_active_light(self, sender, user_data):
+
+        if not isinstance(self.sidebar.get_selected_row(), SidebarListItem):
+            return
+
+        self.active_light = self.sidebar.get_selected_row()
+
+        self.name_label.set_text(self.active_light.light.get_label())
+        self.ip_label.set_text(self.active_light.light.get_ip_addr())
+
+        (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
+
+        self.power_switch.set_active(self.active_light.light_switch.get_active())
+        self.hue_scale.set_value((hue / 65535) * 360)
+        self.saturation_scale.set_value((saturation / 65535) * 100)
+        self.brightness_scale.set_value((brightness / 65535) * 100)
+        self.kelvin_scale.set_value(kelvin)
+
+        self.content_box.set_visible_child(self.content)
+
+    def push_color(self, sender):
+
+        hue         = (self.hue_scale.get_value() / 360) * 65535
+        saturation  = (self.saturation_scale.get_value() / 100) * 65535
+        brightness  = (self.brightness_scale.get_value() / 100) * 65535
+        kelvin      = self.kelvin_scale.get_value()
+
+        self.active_light.light.set_color((hue, saturation, brightness, kelvin), rapid=True)
+
+    # Editing
+    def do_edit(self, sender):
+        if not isinstance(self.active_light, SidebarListItem):
+            return
+
+        if self.edit.get_active():
+            self.edit_label.set_text(self.active_light.light_label.get_text())
+            self.edit_stack.set_visible_child_name("editing")
+        else:
+            self.edit_stack.set_visible_child_name("normal")
+
+            new_label = self.edit_label.get_text()
+
+            self.active_light.light.set_label(new_label)
+            self.active_light.light_label.set_label(new_label)
+            self.name_label.set_text(new_label)
+
+    # Discovery
+
+    def init_discovery(self):
+
+        for sidebar_item in self.sidebar.get_children():
+            self.sidebar.remove(sidebar_item)
+
+        self.refresh_stack.set_visible_child_name("loading")
+
+        discovery_thread = threading.Thread(target=self.discovery)
+        discovery_thread.daemon = True
+        discovery_thread.start()
+
+    def discovery(self):
+        self.lights = self.lan.get_lights()
+        GLib.idle_add(self.update_sidebar)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        self.back.connect("clicked", self.go_back)
+        self.refresh.connect("clicked", self.reload)
+        self.sidebar.connect("row-selected", self.set_active_light)
+
+        self.hue_scale.connect("value-changed", self.push_color)
+        self.saturation_scale.connect("value-changed", self.push_color)
+        self.brightness_scale.connect("value-changed", self.push_color)
+        self.kelvin_scale.connect("value-changed", self.push_color)
+
+        self.edit.connect("clicked", self.do_edit)
+
+        self.init_discovery()

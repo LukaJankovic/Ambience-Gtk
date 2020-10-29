@@ -19,24 +19,54 @@ import sys
 import gi
 
 gi.require_version('Gtk', '3.0')
+gi.require_version('Handy', '1')
 
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gdk, Gio, Handy
 
 from .window import AmbienceWindow
 
-
 class Application(Gtk.Application):
+
+    win = None
+
     def __init__(self):
         super().__init__(application_id='org.lukjan.ambience',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
+        about_action = Gio.SimpleAction.new("about", None)
+        about_action.connect("activate", self.about)
+        self.add_action(about_action)
+
+    def about(self, state, user_data):
+        about = Gtk.AboutDialog(transient_for=self.win, modal=True)
+        authors = ["Luka Jankovic"]
+
+        about.set_program_name("Ambience")
+        about.set_version("0.3")
+        about.set_copyright("Copyright © Luka Jankovic 2019 - 2020")
+        about.add_credit_section("Created by", authors)
+        about.set_logo_icon_name("org.lukjan.ambience")
+
+        about.show_all()
+
     def do_activate(self):
-        win = self.props.active_window
-        if not win:
-            win = AmbienceWindow(application=self)
-        win.present()
+        self.win = self.props.active_window
+        if not self.win:
+            self.win = AmbienceWindow(application=self)
+
+        screen = Gdk.Screen.get_default()
+        provider = Gtk.CssProvider()
+        provider.load_from_resource("/org/lukjan/ambience/stylesheet.css")
+        Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        self.win.present()
 
 
 def main(version):
+
+    Handy.init()
+
+
+
     app = Application()
     return app.run(sys.argv)
