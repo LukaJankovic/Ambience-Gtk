@@ -1,4 +1,3 @@
-
 # sidebar.py
 #
 # Copyright 2020 Luka Jankovic
@@ -19,7 +18,7 @@
 from gi.repository import Gtk, GLib, GObject
 from lifxlan import *
 
-@Gtk.Template(resource_path='/org/lukjan/ambience/sidebar.ui')
+@Gtk.Template(resource_path='/org/lukjan/ambience/ui/sidebar.ui')
 class SidebarListItem(Gtk.ListBoxRow):
     __gtype_name__ = 'SidebarListItem'
 

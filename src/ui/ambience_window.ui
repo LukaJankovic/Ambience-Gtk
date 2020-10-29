@@ -8,6 +8,7 @@
   <!-- interface-description LIFX light manager -->
   <!-- interface-copyright Luka Jankovic 2019 - 2020 -->
   <!-- interface-authors Luka Jankovic -->
+  <object class="GtkSizeGroup"/>
   <object class="GtkAdjustment" id="brightness_adj">
     <property name="upper">100</property>
     <property name="step-increment">1</property>
@@ -68,19 +69,21 @@
       <object class="HdyLeaflet" id="content_box">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="transition-type">slide</property>
+        <property name="interpolate-size">True</property>
         <property name="can-swipe-back">True</property>
         <signal name="notify::fold" handler="notify_fold_cb" swapped="no"/>
         <child>
           <object class="GtkBox" id="menu">
+            <property name="width-request">270</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="hexpand">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="HdyHeaderBar" id="header_bar">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="hexpand">True</property>
+                <property name="hexpand">False</property>
                 <property name="vexpand">False</property>
                 <property name="title" translatable="yes">Ambience</property>
                 <property name="has-subtitle">False</property>
@@ -127,7 +130,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinner">
+                      <object class="GtkSpinner" id="refresh_spinner">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="margin-start">9</property>
@@ -155,51 +158,24 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="GtkScrolledWindow">
                 <property name="width-request">270</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can-focus">True</property>
                 <property name="hexpand">False</property>
-                <property name="orientation">vertical</property>
+                <property name="vexpand">True</property>
                 <child>
-                  <object class="GtkSearchBar">
+                  <object class="GtkViewport">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <child>
-                      <object class="GtkViewport">
+                      <object class="GtkListBox" id="sidebar">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkListBox" id="sidebar">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="hexpand">True</property>
-                          </object>
-                        </child>
+                        <property name="hexpand">True</property>
                       </object>
                     </child>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
               </object>
               <packing>
@@ -225,7 +201,6 @@
         </child>
         <child>
           <object class="GtkBox" id="content">
-            <property name="width-request">400</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
@@ -346,128 +321,162 @@
               </packing>
             </child>
             <child>
-              <object class="HdyClamp">
+              <object class="GtkStack" id="content_stack">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-start">12</property>
-                <property name="margin-end">12</property>
-                <property name="margin-top">32</property>
-                <property name="margin-bottom">32</property>
-                <property name="maximum-size">1000</property>
                 <child>
-                  <object class="GtkListBox">
+                  <object class="HdyClamp">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="selection-mode">none</property>
+                    <property name="margin-start">12</property>
+                    <property name="margin-end">12</property>
+                    <property name="margin-top">32</property>
+                    <property name="margin-bottom">32</property>
+                    <property name="maximum-size">1000</property>
                     <child>
-                      <object class="HdyActionRow" id="power_row">
+                      <object class="GtkListBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="title" translatable="yes">Power</property>
+                        <property name="selection-mode">none</property>
                         <child>
-                          <object class="GtkSwitch" id="power_switch">
+                          <object class="HdyActionRow" id="power_row">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="halign">end</property>
-                            <property name="valign">center</property>
+                            <property name="can-focus">False</property>
+                            <property name="title" translatable="yes">Power</property>
+                            <child>
+                              <object class="GtkSwitch" id="power_switch">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="halign">end</property>
+                                <property name="valign">center</property>
+                                <signal name="notify::active" handler="set_light_power" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="HdyActionRow">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="title" translatable="yes">Hue</property>
                         <child>
-                          <object class="GtkScale" id="hue_scale">
-                            <property name="name">hue_scale</property>
+                          <object class="HdyActionRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="hexpand">True</property>
-                            <property name="adjustment">hue_adj</property>
-                            <property name="restrict-to-fill-level">False</property>
-                            <property name="fill-level">100</property>
-                            <property name="round-digits">0</property>
-                            <property name="digits">0</property>
-                            <property name="value-pos">right</property>
-                            <style>
-                              <class name="hue_gradient"/>
-                            </style>
+                            <property name="can-focus">False</property>
+                            <property name="title" translatable="yes">Hue</property>
+                            <child>
+                              <object class="GtkScale" id="hue_scale">
+                                <property name="name">hue_scale</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="hexpand">True</property>
+                                <property name="adjustment">hue_adj</property>
+                                <property name="restrict-to-fill-level">False</property>
+                                <property name="fill-level">100</property>
+                                <property name="round-digits">0</property>
+                                <property name="digits">0</property>
+                                <property name="value-pos">right</property>
+                                <style>
+                                  <class name="hue_gradient"/>
+                                </style>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="HdyActionRow">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="title" translatable="yes">Saturation</property>
                         <child>
-                          <object class="GtkScale" id="saturation_scale">
-                            <property name="name">saturation_scale</property>
+                          <object class="HdyActionRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="hexpand">True</property>
-                            <property name="adjustment">saturation_adj</property>
-                            <property name="show-fill-level">True</property>
-                            <property name="restrict-to-fill-level">False</property>
-                            <property name="fill-level">100</property>
-                            <property name="round-digits">0</property>
-                            <property name="digits">0</property>
-                            <property name="value-pos">right</property>
+                            <property name="can-focus">False</property>
+                            <property name="title" translatable="yes">Saturation</property>
+                            <child>
+                              <object class="GtkScale" id="saturation_scale">
+                                <property name="name">saturation_scale</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="hexpand">True</property>
+                                <property name="adjustment">saturation_adj</property>
+                                <property name="show-fill-level">True</property>
+                                <property name="restrict-to-fill-level">False</property>
+                                <property name="fill-level">100</property>
+                                <property name="round-digits">0</property>
+                                <property name="digits">0</property>
+                                <property name="value-pos">right</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="HdyActionRow">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="title" translatable="yes">Brightness</property>
                         <child>
-                          <object class="GtkScale" id="brightness_scale">
-                            <property name="name">brightness_scale</property>
+                          <object class="HdyActionRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="hexpand">True</property>
-                            <property name="adjustment">brightness_adj</property>
-                            <property name="show-fill-level">True</property>
-                            <property name="restrict-to-fill-level">False</property>
-                            <property name="fill-level">100</property>
-                            <property name="round-digits">0</property>
-                            <property name="digits">0</property>
-                            <property name="value-pos">right</property>
+                            <property name="can-focus">False</property>
+                            <property name="title" translatable="yes">Brightness</property>
+                            <child>
+                              <object class="GtkScale" id="brightness_scale">
+                                <property name="name">brightness_scale</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="hexpand">True</property>
+                                <property name="adjustment">brightness_adj</property>
+                                <property name="show-fill-level">True</property>
+                                <property name="restrict-to-fill-level">False</property>
+                                <property name="fill-level">100</property>
+                                <property name="round-digits">0</property>
+                                <property name="digits">0</property>
+                                <property name="value-pos">right</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="HdyActionRow">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="title" translatable="yes">Kelvin</property>
                         <child>
-                          <object class="GtkScale" id="kelvin_scale">
-                            <property name="name">kelvin_scale</property>
+                          <object class="HdyActionRow">
                             <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="hexpand">True</property>
-                            <property name="adjustment">kelvin_adj</property>
-                            <property name="show-fill-level">True</property>
-                            <property name="restrict-to-fill-level">False</property>
-                            <property name="fill-level">100</property>
-                            <property name="round-digits">0</property>
-                            <property name="digits">0</property>
-                            <property name="value-pos">right</property>
+                            <property name="can-focus">False</property>
+                            <property name="title" translatable="yes">Kelvin</property>
+                            <child>
+                              <object class="GtkScale" id="kelvin_scale">
+                                <property name="name">kelvin_scale</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="hexpand">True</property>
+                                <property name="adjustment">kelvin_adj</property>
+                                <property name="show-fill-level">True</property>
+                                <property name="restrict-to-fill-level">False</property>
+                                <property name="fill-level">100</property>
+                                <property name="round-digits">0</property>
+                                <property name="digits">0</property>
+                                <property name="value-pos">right</property>
+                              </object>
+                            </child>
                           </object>
                         </child>
+                        <style>
+                          <class name="content"/>
+                        </style>
                       </object>
                     </child>
-                    <style>
-                      <class name="content"/>
-                    </style>
                   </object>
+                  <packing>
+                    <property name="name">controls</property>
+                    <property name="title" translatable="yes">controls</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="name">empty</property>
+                    <property name="title" translatable="yes">empty</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
               </object>
               <packing>

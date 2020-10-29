@@ -28,7 +28,7 @@ configure_file(
 ambience_sources = [
   '__init__.py',
   'main.py',
-  'window.py',
+  'ambience_window.py',
   'sidebar.py',
 ]
 

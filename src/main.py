@@ -23,7 +23,7 @@ gi.require_version('Handy', '1')
 
 from gi.repository import Gtk, Gdk, Gio, Handy
 
-from .window import AmbienceWindow
+from .ambience_window import AmbienceWindow
 
 class Application(Gtk.Application):
 
@@ -42,8 +42,8 @@ class Application(Gtk.Application):
         authors = ["Luka Jankovic"]
 
         about.set_program_name("Ambience")
-        about.set_version("0.3")
-        about.set_copyright("Copyright © Luka Jankovic 2019 - 2020")
+        about.set_version("1.0.0")
+        about.set_copyright("Copyright © Luka Jankovic 2020")
         about.add_credit_section("Created by", authors)
         about.set_logo_icon_name("org.lukjan.ambience")
 
@@ -56,7 +56,7 @@ class Application(Gtk.Application):
 
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()
-        provider.load_from_resource("/org/lukjan/ambience/stylesheet.css")
+        provider.load_from_resource("/org/lukjan/ambience/ui/stylesheet.css")
         Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         self.win.present()
@@ -65,8 +65,6 @@ class Application(Gtk.Application):
 def main(version):
 
     Handy.init()
-
-
 
     app = Application()
     return app.run(sys.argv)

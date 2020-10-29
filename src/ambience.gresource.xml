@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/org/lukjan/ambience">
-    <file>window.ui</file>
-    <file>sidebar.ui</file>
-    <file>stylesheet.css</file>
+    <file>ui/ambience_window.ui</file>
+    <file>ui/sidebar.ui</file>
+    <file>ui/stylesheet.css</file>
   </gresource>
 </gresources>

@@ -21,7 +21,7 @@ from gi.repository import Gtk, GLib, GObject, Handy
 from lifxlan import *
 from .sidebar import *
 
-@Gtk.Template(resource_path='/org/lukjan/ambience/window.ui')
+@Gtk.Template(resource_path='/org/lukjan/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
     __gtype_name__ = 'AmbienceWindow'
 
@@ -33,9 +33,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
     header_bar      = Gtk.Template.Child()
     refresh_stack   = Gtk.Template.Child()
     refresh         = Gtk.Template.Child()
+    refresh_spinner = Gtk.Template.Child()
     sidebar         = Gtk.Template.Child()
 
     content         = Gtk.Template.Child()
+    content_stack   = Gtk.Template.Child()
     sub_header_bar  = Gtk.Template.Child()
     edit_stack      = Gtk.Template.Child()
     back            = Gtk.Template.Child()
@@ -66,10 +68,15 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if folded:
             self.back.show_all()
             self.power_row.show_all()
+
+            if isinstance(self.active_light, SidebarListItem):
+                self.power_switch.set_active(self.active_light.light_switch.get_active())
+
             self.sidebar.unselect_all()
         else:
             self.back.hide()
             self.power_row.hide()
+            self.sidebar.select_row(self.active_light)
 
         self.header_bar.set_show_close_button(folded)
 
@@ -98,7 +105,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
-        self.active_light.light.set_power(self.power_switch.get_active())
+
+        power = self.power_switch.get_active()
+
+        self.active_light.light.set_power(power)
+        self.active_light.light_switch.set_active(power)
 
     def set_active_light(self, sender, user_data):
 
@@ -118,6 +129,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.brightness_scale.set_value((brightness / 65535) * 100)
         self.kelvin_scale.set_value(kelvin)
 
+        self.content_stack.set_visible_child_name("controls")
         self.content_box.set_visible_child(self.content)
 
     def push_color(self, sender):
@@ -150,10 +162,15 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def init_discovery(self):
 
+        self.content_stack.set_visible_child_name("empty")
+        self.name_label.set_text("")
+        self.ip_label.set_text("")
+
         for sidebar_item in self.sidebar.get_children():
             self.sidebar.remove(sidebar_item)
 
         self.refresh_stack.set_visible_child_name("loading")
+        self.refresh_spinner.start()
 
         discovery_thread = threading.Thread(target=self.discovery)
         discovery_thread.daemon = True
@@ -176,5 +193,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.kelvin_scale.connect("value-changed", self.push_color)
 
         self.edit.connect("clicked", self.do_edit)
+        self.content_stack.set_visible_child_name("empty")
 
         self.init_discovery()
