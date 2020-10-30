@@ -28,6 +28,7 @@ from .ambience_window import AmbienceWindow
 class Application(Gtk.Application):
 
     win = None
+    version = ""
 
     def __init__(self):
         super().__init__(application_id='org.lukjan.ambience',
@@ -42,7 +43,7 @@ class Application(Gtk.Application):
         authors = ["Luka Jankovic"]
 
         about.set_program_name("Ambience")
-        about.set_version("1.0.0")
+        about.set_version(self.version)
         about.set_copyright("Copyright © Luka Jankovic 2020")
         about.add_credit_section("Created by", authors)
         about.set_logo_icon_name("org.lukjan.ambience")
@@ -67,4 +68,5 @@ def main(version):
     Handy.init()
 
     app = Application()
+    app.version = version
     return app.run(sys.argv)
