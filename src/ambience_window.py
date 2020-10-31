@@ -27,21 +27,20 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     main_popover    = Gtk.Template.Child()
 
+    title_bar       = Gtk.Template.Child()
+    header_box       = Gtk.Template.Child()
     content_box     = Gtk.Template.Child()
 
     menu            = Gtk.Template.Child()
     header_bar      = Gtk.Template.Child()
-    header_title    = Gtk.Template.Child()
     refresh_stack   = Gtk.Template.Child()
     refresh         = Gtk.Template.Child()
     refresh_spinner = Gtk.Template.Child()
     discovery_btn   = Gtk.Template.Child()
     sidebar         = Gtk.Template.Child()
 
-    content         = Gtk.Template.Child()
     content_stack   = Gtk.Template.Child()
     sub_header_bar  = Gtk.Template.Child()
-    sub_header_title= Gtk.Template.Child()
     edit_stack      = Gtk.Template.Child()
     back            = Gtk.Template.Child()
     edit            = Gtk.Template.Child()
@@ -75,6 +74,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             if isinstance(self.active_light, SidebarListItem):
                 self.power_switch.set_active(self.active_light.light_switch.get_active())
+                self.header_box.set_visible_child(self.sub_header_bar)
+            else:
+                self.header_box.set_visible_child(self.header_bar)
 
             self.sidebar.unselect_all()
         else:
@@ -85,8 +87,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.header_bar.set_show_close_button(folded)
 
     def go_back(self, sender):
+
+        self.active_light = None
+
         self.sidebar.unselect_all()
         self.content_box.set_visible_child(self.menu)
+        self.header_box.set_visible_child(self.header_bar)
 
     # Reloading
 
@@ -134,7 +140,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.kelvin_scale.set_value(kelvin)
 
         self.content_stack.set_visible_child_name("controls")
-        self.content_box.set_visible_child(self.content)
+        self.content_box.set_visible_child(self.content_stack)
+
+        self.header_box.set_visible_child(self.sub_header_bar)
 
     def push_color(self, sender):
 
@@ -185,12 +193,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
         GLib.idle_add(self.update_sidebar)
 
     def toggle_discovery(self, sender):
-        discovery_active = self.discovery_btn.get_active()
+        self.discovery_active = self.discovery_btn.get_active()
 
-        self.header_title.set_selection_mode(discovery_active)
-        self.sub_header_title.set_selection_mode(discovery_active)
+        self.title_bar.set_selection_mode(self.discovery_active)
 
-        if discovery_active:
+        if self.discovery_active:
             self.init_discovery()
 
     def __init__(self, **kwargs):
