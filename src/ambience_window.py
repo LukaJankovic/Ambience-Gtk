@@ -31,14 +31,17 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     menu            = Gtk.Template.Child()
     header_bar      = Gtk.Template.Child()
+    header_title    = Gtk.Template.Child()
     refresh_stack   = Gtk.Template.Child()
     refresh         = Gtk.Template.Child()
     refresh_spinner = Gtk.Template.Child()
+    discovery_btn   = Gtk.Template.Child()
     sidebar         = Gtk.Template.Child()
 
     content         = Gtk.Template.Child()
     content_stack   = Gtk.Template.Child()
     sub_header_bar  = Gtk.Template.Child()
+    sub_header_title= Gtk.Template.Child()
     edit_stack      = Gtk.Template.Child()
     back            = Gtk.Template.Child()
     edit            = Gtk.Template.Child()
@@ -57,6 +60,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     lights = []
 
     active_light = None
+    discovery_active = False
 
     # Misc. Window / UI Management
 
@@ -180,11 +184,21 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.lights = self.lan.get_lights()
         GLib.idle_add(self.update_sidebar)
 
+    def toggle_discovery(self, sender):
+        discovery_active = self.discovery_btn.get_active()
+
+        self.header_title.set_selection_mode(discovery_active)
+        self.sub_header_title.set_selection_mode(discovery_active)
+
+        if discovery_active:
+            self.init_discovery()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self.back.connect("clicked", self.go_back)
         self.refresh.connect("clicked", self.reload)
+        self.discovery_btn.connect("clicked", self.toggle_discovery)
         self.sidebar.connect("row-selected", self.set_active_light)
 
         self.hue_scale.connect("value-changed", self.push_color)
@@ -195,4 +209,4 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.edit.connect("clicked", self.do_edit)
         self.content_stack.set_visible_child_name("empty")
 
-        self.init_discovery()
+        #self.init_discovery()
