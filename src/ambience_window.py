@@ -104,7 +104,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
         else:
             self.back.hide()
             self.power_row.hide()
-            self.sidebar.select_row(self.active_light)
+
+            if not isinstance(self.active_light, LightItem):
+                self.content_stack.set_visible_child_name("empty")
+
+            else:
+                self.sidebar.select_row(self.active_light)
 
         self.header_bar.set_show_close_button(folded)
 
