@@ -1,5 +1,0 @@
-# ninja log v5
-1	7	1604192317874097644	src/ambience.gresource	cf671baa716af4c5
-0	114	1604192317963097295	data/org.lukjan.ambience.desktop	9cf93745b0f9ed1d
-0	116	1604192317965097287	data/org.lukjan.ambience.appdata.xml	b8b3e71df778ff7f
-0	327	0	meson-install	9bd7faa9472bf40f

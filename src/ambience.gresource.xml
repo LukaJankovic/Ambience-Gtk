@@ -5,5 +5,6 @@
     <file>ui/light_item.ui</file>
     <file>ui/discovery_item.ui</file>
     <file>ui/stylesheet.css</file>
+    <file>ui/document-edit-symbolic.svg</file>
   </gresource>
 </gresources>

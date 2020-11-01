@@ -290,7 +290,7 @@
                           <object class="GtkImage">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="icon-name">edit-symbolic</property>
+                            <property name="icon-name">document-edit-symbolic</property>
                           </object>
                         </child>
                       </object>
@@ -555,5 +555,11 @@
       <widget name="sub_header_bar"/>
       <widget name="content_stack"/>
     </widgets>
+  </object>
+  <object class="HdySwipeGroup">
+    <swipeables>
+      <swipeable name="header_box"/>
+      <swipeable name="content_box"/>
+    </swipeables>
   </object>
 </interface>

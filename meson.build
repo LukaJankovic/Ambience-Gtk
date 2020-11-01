@@ -1,5 +1,5 @@
 project('ambience',  
-          version: '1.1.0a',
+          version: '1.1.0b',
     meson_version: '>= 0.50.0',
   default_options: [ 'warning_level=2',
                    ],
