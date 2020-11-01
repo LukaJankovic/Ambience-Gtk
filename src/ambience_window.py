@@ -99,9 +99,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             if isinstance(self.active_light, LightItem):
                 self.power_switch.set_active(self.active_light.light_switch.get_active())
-                self.header_box.set_visible_child(self.sub_header_bar)
-            else:
-                self.header_box.set_visible_child(self.header_bar)
+                #self.header_box.set_visible_child(self.sub_header_bar)
+            #else:
+            #    self.header_box.set_visible_child(self.header_bar)
 
             self.sidebar.unselect_all()
         else:
