@@ -2,7 +2,7 @@
 <!-- Generated with glade 3.38.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <template class="SidebarListItem" parent="GtkListBoxRow">
+  <template class="LightItem" parent="GtkListBoxRow">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
     <child>

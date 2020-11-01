@@ -29,7 +29,8 @@ ambience_sources = [
   '__init__.py',
   'main.py',
   'ambience_window.py',
-  'sidebar.py',
+  'light_item.py',
+  'discovery_item.py'
 ]
 
 install_data(ambience_sources, install_dir: moduledir)

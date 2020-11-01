@@ -1,6 +1,6 @@
-Build started at 2020-10-29T01:43:15.701108
+Build started at 2020-11-01T01:17:01.852485
 Main binary: /usr/bin/python3
-Build Options: -Dprefix=/usr
+Build Options: -Dprefix=/usr -Dlibdir=lib64
 Python system: Linux
 The Meson build system
 Version: 0.55.3
@@ -10,13 +10,33 @@ Build type: native build
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 Project name: ambience
-Project version: 0.1.0
+Project version: 1.1.0
 Build machine cpu family: x86_64
 Build machine cpu: x86_64
 Host machine cpu family: x86_64
 Host machine cpu: x86_64
 Target machine cpu family: x86_64
 Target machine cpu: x86_64
+Pkg-config binary for MachineChoice.HOST is not cached.
+None of 'PKG_CONFIG' are defined in the environment, not changing global flags.
+Pkg-config binary missing from cross or native file, or env var undefined.
+Trying a default Pkg-config fallback at pkg-config
+Found pkg-config: /usr/bin/pkg-config (1.7.3)
+Determining dependency 'libhandy-1' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion libhandy-1` -> 0
+1.0.0
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags libhandy-1` -> 0
+-I/usr/include/libhandy-1 -I/usr/include/gtk-3.0 -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/fribidi -I/usr/include/libxml2 -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/gio-unix-2.0 -I/usr/include/atk-1.0 -I/usr/include/at-spi2-atk/2.0 -I/usr/include/dbus-1.0 -I/usr/lib64/dbus-1.0/include -I/usr/include/at-spi-2.0 -pthread
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config libhandy-1 --libs` -> 0
+-L/usr/lib64/ -lhandy-1 -L/usr/lib64 -lgtk-3 -lgdk-3 -lpangocairo-1.0 -lpango-1.0 -lharfbuzz -latk-1.0 -lcairo-gobject -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config libhandy-1 --libs` -> 0
+-L/usr/lib64/ -lhandy-1 -lgtk-3 -lgdk-3 -lpangocairo-1.0 -lpango-1.0 -lharfbuzz -latk-1.0 -lcairo-gobject -lcairo -lgdk_pixbuf-2.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency libhandy-1 found: YES 1.0.0
 Program desktop-file-validate found: YES
 Adding test "Validate desktop file"
 Program appstream-util found: YES

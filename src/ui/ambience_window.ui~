@@ -165,7 +165,7 @@
                           <object class="GtkImage">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="icon-name">edit-find-symbolic</property>
+                            <property name="icon-name">list-add-symbolic</property>
                           </object>
                         </child>
                       </object>
@@ -183,6 +183,7 @@
                     <property name="orientation">vertical</property>
                     <style>
                       <class name="sidebar"/>
+                      <class name="vertical"/>
                     </style>
                   </object>
                   <packing>
@@ -356,6 +357,7 @@
                 <property name="orientation">vertical</property>
                 <style>
                   <class name="sidebar"/>
+                  <class name="vertical"/>
                 </style>
               </object>
               <packing>

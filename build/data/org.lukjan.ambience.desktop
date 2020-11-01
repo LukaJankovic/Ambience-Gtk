@@ -1,7 +1,8 @@
 [Desktop Entry]
-Name=ambience
+Name=Ambience
 Exec=ambience
 Terminal=false
 Type=Application
 Categories=GTK;
 StartupNotify=true
+Icon=org.lukjan.ambience

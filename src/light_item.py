@@ -1,4 +1,4 @@
-# sidebar.py
+# light_item.py
 #
 # Copyright 2020 Luka Jankovic
 #
@@ -18,9 +18,9 @@
 from gi.repository import Gtk, GLib, GObject
 from lifxlan import *
 
-@Gtk.Template(resource_path='/org/lukjan/ambience/ui/sidebar.ui')
-class SidebarListItem(Gtk.ListBoxRow):
-    __gtype_name__ = 'SidebarListItem'
+@Gtk.Template(resource_path='/org/lukjan/ambience/ui/light_item.ui')
+class LightItem(Gtk.ListBoxRow):
+    __gtype_name__ = 'LightItem'
 
     light_label  = Gtk.Template.Child()
     light_switch = Gtk.Template.Child()

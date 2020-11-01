@@ -2,7 +2,8 @@
 <gresources>
   <gresource prefix="/org/lukjan/ambience">
     <file>ui/ambience_window.ui</file>
-    <file>ui/sidebar.ui</file>
+    <file>ui/light_item.ui</file>
+    <file>ui/discovery_item.ui</file>
     <file>ui/stylesheet.css</file>
   </gresource>
 </gresources>

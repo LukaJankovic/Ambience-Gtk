@@ -22,7 +22,7 @@ import sys
 import signal
 import gettext
 
-VERSION = '0.1.0'
+VERSION = '1.1.0'
 pkgdatadir = '/usr/share/ambience'
 localedir = '/usr/share/locale'
 

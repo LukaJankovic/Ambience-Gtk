@@ -4,9 +4,10 @@
 /usr/share/appdata/org.lukjan.ambience.appdata.xml
 /usr/share/ambience/ambience.gresource
 /usr/share/glib-2.0/schemas/org.lukjan.ambience.gschema.xml
+/usr/share/icons/hicolor/scalable/apps/org.lukjan.ambience.svg
 /usr/bin/ambience
 /usr/share/ambience/ambience/__init__.py
 /usr/share/ambience/ambience/main.py
-/usr/share/ambience/ambience/window.py
-/usr/share/ambience/ambience
-/usr/share/ambience
+/usr/share/ambience/ambience/ambience_window.py
+/usr/share/ambience/ambience/light_item.py
+/usr/share/ambience/ambience/discovery_item.py

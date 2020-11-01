@@ -19,7 +19,9 @@ import threading
 
 from gi.repository import Gtk, GLib, GObject, Handy
 from lifxlan import *
-from .sidebar import *
+from .light_item import *
+from .discovery_item import *
+import json
 
 @Gtk.Template(resource_path='/org/lukjan/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
@@ -28,7 +30,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     main_popover    = Gtk.Template.Child()
 
     title_bar       = Gtk.Template.Child()
-    header_box       = Gtk.Template.Child()
+    header_box      = Gtk.Template.Child()
     content_box     = Gtk.Template.Child()
 
     menu            = Gtk.Template.Child()
@@ -57,9 +59,32 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     lan    = LifxLAN()
     lights = []
+    d_lights = []
 
     active_light = None
     discovery_active = False
+
+    # Misc. File Management
+
+    def get_dest_file(self):
+        data_dir = GLib.get_user_config_dir()
+        dest = GLib.build_filenamev([data_dir, "lights.json"])
+        return Gio.File.new_for_path(dest)
+
+    def get_config(self):
+        dest_file = self.get_dest_file()
+
+        try:
+            (success, content, tag) = dest_file.load_contents()
+            return json.loads(content.decode("utf-8"))
+        except GLib.GError as error:
+            # File doesn't exist
+            dest_file.create(Gio.FileCopyFlags.NONE, None)
+        except (TypeError, ValueError) as e:
+            # File is most likely empty
+            print("invalid JSON")
+            print(str(e))
+        return []
 
     # Misc. Window / UI Management
 
@@ -72,7 +97,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.back.show_all()
             self.power_row.show_all()
 
-            if isinstance(self.active_light, SidebarListItem):
+            if isinstance(self.active_light, LightItem):
                 self.power_switch.set_active(self.active_light.light_switch.get_active())
                 self.header_box.set_visible_child(self.sub_header_bar)
             else:
@@ -87,29 +112,87 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.header_bar.set_show_close_button(folded)
 
     def go_back(self, sender):
-
         self.active_light = None
-
         self.sidebar.unselect_all()
         self.content_box.set_visible_child(self.menu)
         self.header_box.set_visible_child(self.header_bar)
+
+    def sidebar_selected(self, sender, user_data):
+        if not self.discovery_active:
+            self.set_active_light()
+
+    def clear_sidebar(self):
+        for sidebar_item in self.sidebar.get_children():
+            self.sidebar.remove(sidebar_item)
 
     # Reloading
 
     def update_sidebar(self):
 
-        for light in self.lights:
-            sidebar_item = SidebarListItem()
-            sidebar_item.light = light
-            sidebar_item.light_label.set_text(light.get_label())
-            sidebar_item.light_switch.set_active(light.get_power() / 65535)
+        self.clear_sidebar()
 
-            self.sidebar.insert(sidebar_item, -1)
+        if self.discovery_active:
+            config_list = self.get_config()
+
+            for light in self.d_lights:
+                sidebar_item = DiscoveryItem()
+                sidebar_item.light = light
+                sidebar_item.light_label.set_text(light.get_label())
+                sidebar_item.dest_file = self.get_dest_file()
+                sidebar_item.config_list = config_list
+
+                for l in config_list:
+                    if l["mac"] == light.get_mac_addr():
+                        sidebar_item.set_added()
+                        break
+
+                self.sidebar.insert(sidebar_item, -1)
+
+        else:
+            self.lights = []
+            config = self.get_config()
+
+            for light in config:
+
+                l = Light(light["mac"], light["ip"])
+
+                sidebar_item = LightItem()
+                sidebar_item.light = l
+
+                try:
+                    sidebar_item.light_label.set_text(l.get_label())
+                    sidebar_item.light_switch.set_active(l.get_power() / 65535)
+                except WorkflowException:
+                    sidebar_item.set_sensitive(False)
+                    sidebar_item.light_label.set_text(light["label"])
+
+                self.sidebar.insert(sidebar_item, -1)
+                self.lights.append(l)
 
         self.refresh_stack.set_visible_child_name("refresh")
 
     def reload(self, sender):
-        self.init_discovery()
+        if self.discovery_active:
+            self.init_discovery()
+        else:
+            self.update_sidebar()
+
+    def toggle_discovery(self, sender):
+        self.clear_sidebar()
+        self.discovery_active = self.discovery_btn.get_active()
+
+        self.title_bar.set_selection_mode(self.discovery_active)
+
+        if self.discovery_active:
+            self.sidebar.set_selection_mode(Gtk.SelectionMode.NONE)
+            self.init_discovery()
+        else:
+            self.sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
+
+            self.refresh_stack.set_visible_child_name("loading")
+            self.refresh_spinner.start()
+
+            self.update_sidebar()
 
     # Main light management
 
@@ -121,9 +204,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.active_light.light.set_power(power)
         self.active_light.light_switch.set_active(power)
 
-    def set_active_light(self, sender, user_data):
+    def set_active_light(self):
 
-        if not isinstance(self.sidebar.get_selected_row(), SidebarListItem):
+        if not isinstance(self.sidebar.get_selected_row(), LightItem):
             return
 
         self.active_light = self.sidebar.get_selected_row()
@@ -154,8 +237,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.active_light.light.set_color((hue, saturation, brightness, kelvin), rapid=True)
 
     # Editing
+
     def do_edit(self, sender):
-        if not isinstance(self.active_light, SidebarListItem):
+        if not isinstance(self.active_light, LightItem):
             return
 
         if self.edit.get_active():
@@ -178,9 +262,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.name_label.set_text("")
         self.ip_label.set_text("")
 
-        for sidebar_item in self.sidebar.get_children():
-            self.sidebar.remove(sidebar_item)
-
         self.refresh_stack.set_visible_child_name("loading")
         self.refresh_spinner.start()
 
@@ -189,16 +270,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         discovery_thread.start()
 
     def discovery(self):
-        self.lights = self.lan.get_lights()
+        self.d_lights = self.lan.get_lights()
         GLib.idle_add(self.update_sidebar)
-
-    def toggle_discovery(self, sender):
-        self.discovery_active = self.discovery_btn.get_active()
-
-        self.title_bar.set_selection_mode(self.discovery_active)
-
-        if self.discovery_active:
-            self.init_discovery()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -206,7 +279,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.back.connect("clicked", self.go_back)
         self.refresh.connect("clicked", self.reload)
         self.discovery_btn.connect("clicked", self.toggle_discovery)
-        self.sidebar.connect("row-selected", self.set_active_light)
+        self.sidebar.connect("row-selected", self.sidebar_selected)
 
         self.hue_scale.connect("value-changed", self.push_color)
         self.saturation_scale.connect("value-changed", self.push_color)
@@ -216,4 +289,4 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.edit.connect("clicked", self.do_edit)
         self.content_stack.set_visible_child_name("empty")
 
-        #self.init_discovery()
+        self.update_sidebar()

@@ -1,5 +1,6 @@
 [options]
 prefix = /usr
+libdir = lib64
 
 [properties]
 
