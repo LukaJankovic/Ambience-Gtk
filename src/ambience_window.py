@@ -99,9 +99,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             if isinstance(self.active_light, LightItem):
                 self.power_switch.set_active(self.active_light.light_switch.get_active())
-                #self.header_box.set_visible_child(self.sub_header_bar)
-            #else:
-            #    self.header_box.set_visible_child(self.header_bar)
 
             self.sidebar.unselect_all()
         else:
@@ -143,7 +140,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
                 for l in config_list:
                     if l["mac"] == light.get_mac_addr():
-                        sidebar_item.set_added()
+                        sidebar_item.added = True
+                        sidebar_item.update_icon()
                         break
 
                 self.sidebar.insert(sidebar_item, -1)
@@ -182,6 +180,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.discovery_active = self.discovery_btn.get_active()
 
         self.title_bar.set_selection_mode(self.discovery_active)
+        self.edit.set_sensitive(not self.discovery_active)
 
         if self.discovery_active:
             self.sidebar.set_selection_mode(Gtk.SelectionMode.NONE)

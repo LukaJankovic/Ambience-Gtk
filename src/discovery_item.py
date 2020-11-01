@@ -32,26 +32,36 @@ class DiscoveryItem(Gtk.ListBoxRow):
     dest_file = None
     config_list = []
 
-    def set_added(self):
-        self.add_img.set_from_icon_name("emblem-ok-symbolic", Gtk.IconSize.BUTTON)
-        self.add_btn.set_sensitive(False)
+    def update_icon(self):
+        if self.added:
+            self.add_img.set_from_icon_name("emblem-ok-symbolic", Gtk.IconSize.BUTTON)
+        else:
+            self.add_img.set_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON)
 
     def add_clicked(self, sender):
 
         permissions = 0o664
 
+        if self.added:
+            for light in self.config_list:
+                if light["mac"] == self.light.get_mac_addr():
+                    self.config_list.remove(light)
+                    self.added = False
+        else:
+            self.config_list.append({"ip":      self.light.get_ip_addr(),
+                                    "mac":      self.light.get_mac_addr(),
+                                    "label":    self.light.get_label()})
+            self.added = True
+
         if GLib.mkdir_with_parents(self.dest_file.get_parent().get_path(), permissions) == 0:
-            self.config_list.append({"ip":       self.light.get_ip_addr(),
-                                "mac":      self.light.get_mac_addr(),
-                                "label":    self.light.get_label()})
             (success, tag) = self.dest_file.replace_contents(str.encode(json.dumps(self.config_list)), None, False, Gio.FileCreateFlags.REPLACE_DESTINATION, None)
 
             if success:
-                self.set_added()
+                self.update_icon()
             else:
-                print("no2")
+                print("Unable to save config file")
         else:
-            print("No")
+            print("Unable to create required directory/ies for config file")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
