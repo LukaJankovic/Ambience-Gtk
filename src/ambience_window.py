@@ -57,6 +57,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
     brightness_scale= Gtk.Template.Child()
     kelvin_scale    = Gtk.Template.Child()
 
+    group_label     = Gtk.Template.Child()
+    location_label  = Gtk.Template.Child()
+
     lan    = LifxLAN()
     lights = []
     d_lights = []
@@ -105,11 +108,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.back.hide()
             self.power_row.hide()
 
-            if not isinstance(self.active_light, LightItem):
-                self.content_stack.set_visible_child_name("empty")
-
-            else:
-                self.sidebar.select_row(self.active_light)
+            self.sidebar.select_row(self.active_light)
 
         self.header_bar.set_show_close_button(folded)
 
@@ -120,8 +119,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.header_box.set_visible_child(self.header_bar)
 
     def sidebar_selected(self, sender, user_data):
-        if not self.discovery_active:
-            self.set_active_light()
+        self.set_active_light()
 
     def clear_sidebar(self):
         for sidebar_item in self.sidebar.get_children():
@@ -188,11 +186,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.edit.set_sensitive(not self.discovery_active)
 
         if self.discovery_active:
-            self.sidebar.set_selection_mode(Gtk.SelectionMode.NONE)
             self.init_discovery()
         else:
-            self.sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
-
             self.refresh_stack.set_visible_child_name("loading")
             self.refresh_spinner.start()
 
@@ -210,9 +205,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def set_active_light(self):
 
-        if not isinstance(self.sidebar.get_selected_row(), LightItem):
-            return
-
         self.active_light = self.sidebar.get_selected_row()
 
         self.name_label.set_text(self.active_light.light.get_label())
@@ -220,7 +212,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
 
-        self.power_switch.set_active(self.active_light.light_switch.get_active())
+        self.power_switch.set_active(self.active_light.light.get_power() / 65535)
         self.hue_scale.set_value((hue / 65535) * 360)
         self.saturation_scale.set_value((saturation / 65535) * 100)
         self.brightness_scale.set_value((brightness / 65535) * 100)
@@ -230,6 +222,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.content_box.set_visible_child(self.content_stack)
 
         self.header_box.set_visible_child(self.sub_header_bar)
+
+        self.group_label.set_text(self.active_light.light.get_group_label())
+        self.location_label.set_text(self.active_light.light.get_location_label())
 
     def push_color(self, sender):
 
