@@ -11,3 +11,5 @@ For now only a flatpak image is available, but I'm planning to make packages for
 - [ ] Show different controls for lights with different features
 - [ ] Edit location, group
 - [ ] Migrate to HdyFlap
+- [ ] Migrate to GTK4
+- [ ] Add translations
