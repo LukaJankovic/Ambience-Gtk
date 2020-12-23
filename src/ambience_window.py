@@ -191,6 +191,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.name_label.set_text("")
         self.ip_label.set_text("")
 
+        self.content_box.set_visible_child(self.menu)
+
         if self.discovery_active:
             self.init_discovery()
             self.edit.set_sensitive(False)
