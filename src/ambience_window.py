@@ -1,4 +1,4 @@
-# window.py
+# ambience_window.py
 #
 # Copyright 2020 Luka Jankovic
 #
@@ -23,44 +23,46 @@ from .light_item import *
 from .discovery_item import *
 import json
 
+
 @Gtk.Template(resource_path='/org/lukjan/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
     __gtype_name__ = 'AmbienceWindow'
 
-    main_popover    = Gtk.Template.Child()
+    main_popover = Gtk.Template.Child()
 
-    title_bar       = Gtk.Template.Child()
-    header_box      = Gtk.Template.Child()
-    content_box     = Gtk.Template.Child()
+    title_bar = Gtk.Template.Child()
+    header_box = Gtk.Template.Child()
+    content_box = Gtk.Template.Child()
 
-    menu            = Gtk.Template.Child()
-    header_bar      = Gtk.Template.Child()
-    refresh_stack   = Gtk.Template.Child()
-    refresh         = Gtk.Template.Child()
+    menu = Gtk.Template.Child()
+    header_bar = Gtk.Template.Child()
+    refresh_stack = Gtk.Template.Child()
+    refresh = Gtk.Template.Child()
     refresh_spinner = Gtk.Template.Child()
-    discovery_btn   = Gtk.Template.Child()
-    sidebar         = Gtk.Template.Child()
+    discovery_btn = Gtk.Template.Child()
+    sidebar = Gtk.Template.Child()
 
-    content_stack   = Gtk.Template.Child()
-    sub_header_bar  = Gtk.Template.Child()
-    edit_stack      = Gtk.Template.Child()
-    back            = Gtk.Template.Child()
-    edit            = Gtk.Template.Child()
-    edit_label      = Gtk.Template.Child()
-    name_label      = Gtk.Template.Child()
-    ip_label        = Gtk.Template.Child()
+    content_stack = Gtk.Template.Child()
+    sub_header_bar = Gtk.Template.Child()
+    edit_stack = Gtk.Template.Child()
+    back = Gtk.Template.Child()
+    edit = Gtk.Template.Child()
+    edit_label = Gtk.Template.Child()
+    name_label = Gtk.Template.Child()
+    ip_label = Gtk.Template.Child()
 
-    power_row       = Gtk.Template.Child()
-    power_switch    = Gtk.Template.Child()
-    hue_scale       = Gtk.Template.Child()
-    saturation_scale= Gtk.Template.Child()
-    brightness_scale= Gtk.Template.Child()
-    kelvin_scale    = Gtk.Template.Child()
+    controls_box = Gtk.Template.Child()
+    power_row = Gtk.Template.Child()
+    power_switch = Gtk.Template.Child()
+    hue_scale = Gtk.Template.Child()
+    saturation_scale = Gtk.Template.Child()
+    brightness_scale = Gtk.Template.Child()
+    kelvin_scale = Gtk.Template.Child()
 
-    group_label     = Gtk.Template.Child()
-    location_label  = Gtk.Template.Child()
+    group_label = Gtk.Template.Child()
+    location_label = Gtk.Template.Child()
 
-    lan    = LifxLAN()
+    lan = LifxLAN()
     lights = []
     d_lights = []
 
@@ -125,10 +127,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         for sidebar_item in self.sidebar.get_children():
             self.sidebar.remove(sidebar_item)
 
-    # Reloading
-
     def update_sidebar(self):
 
+        self.refresh_stack.set_visible_child_name("loading")
         self.clear_sidebar()
 
         if self.discovery_active:
@@ -141,8 +142,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 sidebar_item.dest_file = self.get_dest_file()
                 sidebar_item.config_list = config_list
 
-                for l in config_list:
-                    if l["mac"] == light.get_mac_addr():
+                for saved_light in config_list:
+                    if saved_light["mac"] == light.get_mac_addr():
                         sidebar_item.added = True
                         sidebar_item.update_icon()
                         break
@@ -153,22 +154,22 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.lights = []
             config = self.get_config()
 
-            for light in config:
+            for saved_light in config:
 
-                l = Light(light["mac"], light["ip"])
+                light = Light(saved_light["mac"], saved_light["ip"])
 
-                sidebar_item = LightItem()
-                sidebar_item.light = l
+                menu_item = LightItem()
+                menu_item.light = light
 
                 try:
-                    sidebar_item.light_label.set_text(l.get_label())
-                    sidebar_item.light_switch.set_active(l.get_power() / 65535)
+                    menu_item.light_label.set_text(light.get_label())
+                    menu_item.light_switch.set_active(light.get_power() / 65535)
                 except WorkflowException:
-                    sidebar_item.set_sensitive(False)
-                    sidebar_item.light_label.set_text(light["label"])
+                    menu_item.set_sensitive(False)
+                    menu_item.light_label.set_text(light["label"])
 
-                self.sidebar.insert(sidebar_item, -1)
-                self.lights.append(l)
+                self.sidebar.insert(menu_item, -1)
+                self.lights.append(light)
 
         self.refresh_stack.set_visible_child_name("refresh")
 
@@ -180,13 +181,19 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def toggle_discovery(self, sender):
         self.clear_sidebar()
+        self.active_light = None
         self.discovery_active = self.discovery_btn.get_active()
 
         self.title_bar.set_selection_mode(self.discovery_active)
-        self.edit.set_sensitive(not self.discovery_active)
+        self.controls_box.set_visible(not self.discovery_active)
+
+        self.content_stack.set_visible_child_name("empty")
+        self.name_label.set_text("")
+        self.ip_label.set_text("")
 
         if self.discovery_active:
             self.init_discovery()
+            self.edit.set_sensitive(False)
         else:
             self.refresh_stack.set_visible_child_name("loading")
             self.refresh_spinner.start()
@@ -205,18 +212,24 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def set_active_light(self):
 
+        if not self.sidebar.get_selected_row():
+            return
+
         self.active_light = self.sidebar.get_selected_row()
+
+        if not self.discovery_active:
+            self.edit.set_sensitive(True)
+
+            (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
+
+            self.power_switch.set_active(self.active_light.light.get_power() / 65535)
+            self.hue_scale.set_value((hue / 65535) * 360)
+            self.saturation_scale.set_value((saturation / 65535) * 100)
+            self.brightness_scale.set_value((brightness / 65535) * 100)
+            self.kelvin_scale.set_value(kelvin)
 
         self.name_label.set_text(self.active_light.light.get_label())
         self.ip_label.set_text(self.active_light.light.get_ip_addr())
-
-        (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
-
-        self.power_switch.set_active(self.active_light.light.get_power() / 65535)
-        self.hue_scale.set_value((hue / 65535) * 360)
-        self.saturation_scale.set_value((saturation / 65535) * 100)
-        self.brightness_scale.set_value((brightness / 65535) * 100)
-        self.kelvin_scale.set_value(kelvin)
 
         self.content_stack.set_visible_child_name("controls")
         self.content_box.set_visible_child(self.content_stack)
@@ -228,14 +241,14 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def push_color(self, sender):
 
-        hue         = (self.hue_scale.get_value() / 360) * 65535
-        saturation  = (self.saturation_scale.get_value() / 100) * 65535
-        brightness  = (self.brightness_scale.get_value() / 100) * 65535
-        kelvin      = self.kelvin_scale.get_value()
+        hue = (self.hue_scale.get_value() / 360) * 65535
+        saturation = (self.saturation_scale.get_value() / 100) * 65535
+        brightness = (self.brightness_scale.get_value() / 100) * 65535
+        kelvin = self.kelvin_scale.get_value()
 
         self.active_light.light.set_color((hue, saturation, brightness, kelvin), rapid=True)
 
-    # Editing
+    # Editing label
 
     def do_edit(self, sender):
         if not isinstance(self.active_light, LightItem):
@@ -256,10 +269,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
     # Discovery
 
     def init_discovery(self):
-
-        self.content_stack.set_visible_child_name("empty")
-        self.name_label.set_text("")
-        self.ip_label.set_text("")
 
         self.refresh_stack.set_visible_child_name("loading")
         self.refresh_spinner.start()
@@ -286,6 +295,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.kelvin_scale.connect("value-changed", self.push_color)
 
         self.edit.connect("clicked", self.do_edit)
+        self.edit.set_sensitive(False)
         self.content_stack.set_visible_child_name("empty")
 
         self.update_sidebar()
