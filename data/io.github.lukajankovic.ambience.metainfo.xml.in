@@ -5,40 +5,17 @@
   <releases>
     <release version="1.1.0" date="2020-12-22" type="stable">
       <description>
+        <p>Discovering and managing lights have been separated. Use the discover mode ("+" button in the header bar) to discover lights on the network and add them to your list from there.</p>
         <ul>
-          <li>Discovering and managing lights have been separated. Use the discover mode ("+" button in the header bar) to discover lights on the network and add them to your list from there.</li>
+          <li>Lights not automatically discovered. Use discovery mode.</li>
           <li>Location and group info can now be seen inside the controls window beneath light controls. Available in both discovery and normal mode.</li>
-        </ul>
-      </description>
-    </release>
-    <release version="1.1.0~b" date="2020-11-05" type="development">
-      <description>
-        <ul>
-          <li>Added ability to remove lights from list</li>
-        </ul>
-      </description>
-    </release>
-    <release version="1.1.0~a" date="2020-11-01" type="development">
-      <description>
-        <ul>
-          <li>Discovering and managing lights have been separated. Use the discover mode ("+" button in the header bar) to discover lights on the network and add them to your list from there.</li>
-        </ul>
-      </description>
-    </release>
-    <release version="1.0.1" date="2020-10-30" type="stable">
-      <description>
-        <ul>
-          <li>Changed Kelvin label to Temperature</li>
-          <li>Version number not hard coded</li>
-          <li>Added libhandy as dependency to meson.build</li>
+          <li>Changed app-id</li>
         </ul>
       </description>
     </release>
     <release version="1.0.0" date="2020-10-29" type="stable">
       <description>
-        <ul>
-          <li>Initial release</li>
-        </ul>
+        <p>Initial release</p>
       </description>
     </release>
   </releases>
@@ -64,7 +41,7 @@
   <launchable type="desktop-id">io.github.lukajankovic.ambience.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/LukaJankovic/Ambience/raw/stable/screenshots/window.png</image>
+      <image type="source" width="1600" height="900">https://github.com/LukaJankovic/Ambience/raw/stable/screenshots/window.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1" />
