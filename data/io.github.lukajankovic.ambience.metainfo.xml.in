@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-	<id>org.lukjan.ambience.desktop</id>
+	<id>io.github.lukajankovic.ambience</id>
   <name>Ambience</name>
   <releases>
     <release version="1.1.0" date="2020-12-22" type="stable">
@@ -61,7 +61,7 @@
     <control>keyboard</control>
     <control>touch</control>
   </recommends>
-  <launchable type="desktop-id">org.lukjan.ambience.desktop</launchable>
+  <launchable type="desktop-id">io.github.lukajankovic.ambience.desktop</launchable>
   <screenshots>
     <screenshot type="default">
       <image>https://github.com/LukaJankovic/Ambience/raw/stable/screenshots/window.png</image>

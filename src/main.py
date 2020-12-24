@@ -31,7 +31,7 @@ class Application(Gtk.Application):
     version = ""
 
     def __init__(self):
-        super().__init__(application_id='org.lukjan.ambience',
+        super().__init__(application_id='io.github.lukajankovic.ambience',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
         about_action = Gio.SimpleAction.new("about", None)
@@ -46,7 +46,7 @@ class Application(Gtk.Application):
         about.set_version(self.version)
         about.set_copyright("Copyright © Luka Jankovic 2020")
         about.add_credit_section("Created by", authors)
-        about.set_logo_icon_name("org.lukjan.ambience")
+        about.set_logo_icon_name("io.github.lukajankovic")
 
         about.show_all()
 
@@ -57,10 +57,11 @@ class Application(Gtk.Application):
 
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()
-        provider.load_from_resource("/org/lukjan/ambience/ui/stylesheet.css")
+        provider.load_from_resource("/io/github/lukajankovic/ambience/ui/stylesheet.css")
         Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         self.win.present()
+
 
 
 def main(version):

@@ -1,6 +1,6 @@
 desktop_file = i18n.merge_file(
-  input: 'org.lukjan.ambience.desktop.in',
-  output: 'org.lukjan.ambience.desktop',
+  input: 'io.github.lukajankovic.ambience.desktop.in',
+  output: 'io.github.lukajankovic.ambience.desktop',
   type: 'desktop',
   po_dir: '../po',
   install: true,
@@ -15,8 +15,8 @@ if desktop_utils.found()
 endif
 
 appstream_file = i18n.merge_file(
-  input: 'org.lukjan.ambience.metainfo.xml.in',
-  output: 'org.lukjan.ambience.metainfo.xml',
+  input: 'io.github.lukajankovic.ambience.metainfo.xml.in',
+  output: 'io.github.lukajankovic.ambience.metainfo.xml',
   po_dir: '../po',
   install: true,
   install_dir: join_paths(get_option('datadir'), 'metainfo')
@@ -29,11 +29,11 @@ if appstream_util.found()
   )
 endif
 
-install_data('org.lukjan.ambience.gschema.xml',
+install_data('io.github.lukajankovic.ambience.gschema.xml',
   install_dir: join_paths(get_option('datadir'), 'glib-2.0/schemas')
 )
 
-install_data('org.lukjan.ambience.svg',
+install_data('io.github.lukajankovic.ambience.svg',
   install_dir: join_paths(get_option('datadir'), 'icons/hicolor/scalable/apps')
 )
 

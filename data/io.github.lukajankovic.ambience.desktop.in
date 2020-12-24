@@ -5,4 +5,5 @@ Terminal=false
 Type=Application
 Categories=GTK;
 StartupNotify=true
-Icon=org.lukjan.ambience
+Icon=io.github.lukajankovic.ambience
+

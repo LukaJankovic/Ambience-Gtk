@@ -1,6 +1,6 @@
-data/org.lukjan.ambience.desktop.in
-data/org.lukjan.ambience.appdata.xml.in
-data/org.lukjan.ambience.gschema.xml
+data/io.github.lukajankovic.desktop.in
+data/io.github.lukajankovic.appdata.xml.in
+data/io.github.lukajankovic.gschema.xml
 src/window.ui
 src/main.py
 src/window.py

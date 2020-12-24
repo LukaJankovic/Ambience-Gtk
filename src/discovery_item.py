@@ -19,7 +19,7 @@ from gi.repository import Gtk, GLib, GObject, Gio
 from lifxlan import *
 import json
 
-@Gtk.Template(resource_path='/org/lukjan/ambience/ui/discovery_item.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/discovery_item.ui')
 class DiscoveryItem(Gtk.ListBoxRow):
     __gtype_name__ = 'DiscoveryItem'
 

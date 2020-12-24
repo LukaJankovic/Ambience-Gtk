@@ -18,7 +18,7 @@
 from gi.repository import Gtk, GLib, GObject
 from lifxlan import *
 
-@Gtk.Template(resource_path='/org/lukjan/ambience/ui/light_item.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/light_item.ui')
 class LightItem(Gtk.ListBoxRow):
     __gtype_name__ = 'LightItem'
 

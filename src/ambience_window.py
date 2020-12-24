@@ -24,7 +24,7 @@ from .discovery_item import *
 import json
 
 
-@Gtk.Template(resource_path='/org/lukjan/ambience/ui/ambience_window.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
     __gtype_name__ = 'AmbienceWindow'
 
