@@ -15,7 +15,7 @@ if desktop_utils.found()
 endif
 
 appstream_file = i18n.merge_file(
-  input: 'io.github.lukajankovic.ambience.metainfo.xml.in',
+  input: 'io.github.lukajankovic.ambience.metainfo.xml',
   output: 'io.github.lukajankovic.ambience.metainfo.xml',
   po_dir: '../po',
   install: true,
