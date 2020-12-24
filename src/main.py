@@ -46,7 +46,7 @@ class Application(Gtk.Application):
         about.set_version(self.version)
         about.set_copyright("Copyright © Luka Jankovic 2020")
         about.add_credit_section("Created by", authors)
-        about.set_logo_icon_name("io.github.lukajankovic")
+        about.set_logo_icon_name("io.github.lukajankovic.ambience")
 
         about.show_all()
 
