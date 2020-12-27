@@ -85,6 +85,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     active_light = None
     discovery_active = False
+    update_active = False
 
     # Misc. File Management
 
@@ -242,6 +243,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             return
 
         self.active_light = self.sidebar.get_selected_row()
+        self.update_active = True
 
         if not self.discovery_active:
             self.edit.set_sensitive(True)
@@ -265,7 +267,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.group_label.set_text(self.active_light.light.get_group_label())
         self.location_label.set_text(self.active_light.light.get_location_label())
 
+        self.update_active = False
+
     def push_color(self, sender):
+
+        if self.update_active:
+            return
 
         hue = self.hue_scale.get_value()
         saturation = self.saturation_scale.get_value()
