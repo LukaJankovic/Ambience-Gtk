@@ -16,8 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from gi.repository import Gtk, GLib, GObject, Gio
-from lifxlan import *
 import json
+
+try:
+    from lifxlan import *
+except:
+    pass
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/discovery_item.ui')
 class DiscoveryItem(Gtk.ListBoxRow):

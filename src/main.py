@@ -41,11 +41,13 @@ class Application(Gtk.Application):
     def about(self, state, user_data):
         about = Gtk.AboutDialog(transient_for=self.win, modal=True)
         authors = ["Luka Jankovic"]
+        api_authors = ["ML Clark"]
 
         about.set_program_name("Ambience")
         about.set_version(self.version)
         about.set_copyright("Copyright © Luka Jankovic 2020")
         about.add_credit_section("Created by", authors)
+        about.add_credit_section("LifxLAN by", api_authors)
         about.set_logo_icon_name("io.github.lukajankovic.ambience")
 
         about.show_all()
@@ -61,7 +63,6 @@ class Application(Gtk.Application):
         Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         self.win.present()
-
 
 
 def main(version):

@@ -17,8 +17,13 @@
 
 import threading
 
+try:
+    import lifxlan
+    API_AVAIL = True
+except ImportError:
+    API_AVAIL = False
+
 from gi.repository import Gtk, GLib, GObject, Handy
-from lifxlan import *
 from .light_item import *
 from .discovery_item import *
 import json
@@ -62,7 +67,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     group_label = Gtk.Template.Child()
     location_label = Gtk.Template.Child()
 
-    lan = LifxLAN()
+    lan = None
     lights = []
     d_lights = []
 
@@ -285,6 +290,25 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        if not API_AVAIL:
+            dialog = Gtk.MessageDialog(
+                transient_for=self,
+                flags=0,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text="LifxLAN api not found"
+            )
+
+            dialog.format_secondary_text(
+                "Please install using pip then relaunch Ambience."
+            )
+
+            dialog.run()
+            dialog.destroy()
+            exit(1)
+
+        self.lan = lifxlan.LifxLAN()
 
         self.back.connect("clicked", self.go_back)
         self.refresh.connect("clicked", self.reload)

@@ -16,7 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from gi.repository import Gtk, GLib, GObject
-from lifxlan import *
+
+try:
+    from lifxlan import *
+except ImportError:
+    pass
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/light_item.ui')
 class LightItem(Gtk.ListBoxRow):
