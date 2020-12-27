@@ -28,6 +28,18 @@ from .light_item import *
 from .discovery_item import *
 import json
 
+# Helper functions for converting values to / from api
+def decode(nr):
+    return (nr / 65535) * 100
+
+def decode_circle(nr):
+    return (nr / 65535) * 365
+
+def encode(nr):
+    return (nr / 100) * 65535
+
+def encode_circle(nr):
+    return (nr / 365) * 65535
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
@@ -107,9 +119,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.back.show_all()
             self.power_row.show_all()
 
-            if isinstance(self.active_light, LightItem):
-                self.power_switch.set_active(self.active_light.light_switch.get_active())
-
             self.sidebar.unselect_all()
         else:
             self.back.hide()
@@ -165,13 +174,22 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
                 menu_item = LightItem()
                 menu_item.light = light
+                menu_item.main_window = self
 
                 try:
                     menu_item.light_label.set_text(light.get_label())
                     menu_item.light_switch.set_active(light.get_power() / 65535)
                 except WorkflowException:
                     menu_item.set_sensitive(False)
-                    menu_item.light_label.set_text(light["label"])
+                    menu_item.light_label.set_text(saved_light["label"])
+
+                (hue, saturation, brightness, kelvin) = menu_item.light.get_color()
+
+                hue = decode_circle(hue)
+                saturation = decode(saturation)
+                brightness = decode(brightness)
+
+                menu_item.light.state = (hue, saturation, brightness, kelvin)
 
                 self.sidebar.insert(menu_item, -1)
                 self.lights.append(light)
@@ -211,11 +229,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
+        self.update_power(self.power_switch.get_active())
 
-        power = self.power_switch.get_active()
-
-        self.active_light.light.set_power(power)
+    def update_power(self, power):
+        self.active_light.light.set_power(power, rapid=True)
         self.active_light.light_switch.set_active(power)
+        self.power_switch.set_active(power)
 
     def set_active_light(self):
 
@@ -229,10 +248,16 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
 
+            hue = decode_circle(hue)
+            saturation = decode(saturation)
+            brightness = decode(brightness)
+
+            self.active_light.light.state = (hue, saturation, brightness, kelvin)
+
             self.power_switch.set_active(self.active_light.light.get_power() / 65535)
-            self.hue_scale.set_value((hue / 65535) * 360)
-            self.saturation_scale.set_value((saturation / 65535) * 100)
-            self.brightness_scale.set_value((brightness / 65535) * 100)
+            self.hue_scale.set_value(hue)
+            self.saturation_scale.set_value(saturation)
+            self.brightness_scale.set_value(brightness)
             self.kelvin_scale.set_value(kelvin)
 
         self.name_label.set_text(self.active_light.light.get_label())
@@ -248,12 +273,20 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def push_color(self, sender):
 
-        hue = (self.hue_scale.get_value() / 360) * 65535
-        saturation = (self.saturation_scale.get_value() / 100) * 65535
-        brightness = (self.brightness_scale.get_value() / 100) * 65535
-        kelvin = self.kelvin_scale.get_value()
+        hue = self.hue_scale.get_value()
 
-        self.active_light.light.set_color((hue, saturation, brightness, kelvin), rapid=True)
+        if not hue == self.active_light.light.state[0]:
+            self.active_light.light.set_hue(encode_circle(hue), rapid=True)
+
+        saturation = self.saturation_scale.get_value()
+
+        if not saturation == self.active_light.light.state[1]:
+            self.active_light.light.set_saturation(encode(saturation), rapid=True)
+
+        brightness = self.brightness_scale.get_value()
+
+        if not brightness == self.active_light.light.state[2]:
+            self.active_light.light.set_brightness(encode(brightness), rapid=True)
 
     # Editing label
 

@@ -30,11 +30,19 @@ class LightItem(Gtk.ListBoxRow):
     light_switch = Gtk.Template.Child()
 
     light = None
+    main_window = None
 
     @Gtk.Template.Callback("activate_switch")
     def activate_switch(self, sender, user_data):
         if isinstance(self.light, Device):
-            self.light.set_power(sender.get_active())
+            power = self.light_switch.get_active()
+            if self.main_window.active_light == self:
+                self.main_window.update_power(power)
+            else:
+                self.light.set_power(power)
+
+                if self.light.state[2] == 0:
+                    self.light.set_brightness(100, rapid=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
