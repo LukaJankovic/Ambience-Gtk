@@ -183,14 +183,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
                     menu_item.set_sensitive(False)
                     menu_item.light_label.set_text(saved_light["label"])
 
-                (hue, saturation, brightness, kelvin) = menu_item.light.get_color()
-
-                hue = decode_circle(hue)
-                saturation = decode(saturation)
-                brightness = decode(brightness)
-
-                menu_item.light.state = (hue, saturation, brightness, kelvin)
-
                 self.sidebar.insert(menu_item, -1)
                 self.lights.append(light)
 
@@ -236,6 +228,14 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.active_light.light_switch.set_active(power)
         self.power_switch.set_active(power)
 
+    def update_light_state(self):
+        (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
+
+        self.active_light.light.hue = decode_circle(hue)
+        self.active_light.light.saturation = decode(saturation)
+        self.active_light.light.brightness = decode(brightness)
+        self.active_light.light.kelvin = kelvin
+
     def set_active_light(self):
 
         if not self.sidebar.get_selected_row():
@@ -246,19 +246,13 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if not self.discovery_active:
             self.edit.set_sensitive(True)
 
-            (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
-
-            hue = decode_circle(hue)
-            saturation = decode(saturation)
-            brightness = decode(brightness)
-
-            self.active_light.light.state = (hue, saturation, brightness, kelvin)
+            self.update_light_state()
 
             self.power_switch.set_active(self.active_light.light.get_power() / 65535)
-            self.hue_scale.set_value(hue)
-            self.saturation_scale.set_value(saturation)
-            self.brightness_scale.set_value(brightness)
-            self.kelvin_scale.set_value(kelvin)
+            self.hue_scale.set_value(self.active_light.light.hue)
+            self.saturation_scale.set_value(self.active_light.light.saturation)
+            self.brightness_scale.set_value(self.active_light.light.brightness)
+            self.kelvin_scale.set_value(self.active_light.light.kelvin)
 
         self.name_label.set_text(self.active_light.light.get_label())
         self.ip_label.set_text(self.active_light.light.get_ip_addr())
@@ -274,19 +268,25 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def push_color(self, sender):
 
         hue = self.hue_scale.get_value()
-
-        if not hue == self.active_light.light.state[0]:
-            self.active_light.light.set_hue(encode_circle(hue), rapid=True)
-
         saturation = self.saturation_scale.get_value()
-
-        if not saturation == self.active_light.light.state[1]:
-            self.active_light.light.set_saturation(encode(saturation), rapid=True)
-
         brightness = self.brightness_scale.get_value()
+        kelvin = self.kelvin_scale.get_value()
 
-        if not brightness == self.active_light.light.state[2]:
-            self.active_light.light.set_brightness(encode(brightness), rapid=True)
+        if int(hue) == int(self.active_light.light.hue) and \
+           int(saturation) == int(self.active_light.light.saturation) and \
+           int(brightness) == int(self.active_light.light.brightness) and \
+           int(kelvin) == int(self.active_light.light.kelvin):
+               return
+
+        self.active_light.light.set_color((encode_circle(hue),
+                                           encode(saturation),
+                                           encode(brightness),
+                                           kelvin), rapid=True)
+
+        self.active_light.light.hue = hue
+        self.active_light.light.saturation = saturation
+        self.active_light.light.brightness = brightness
+        self.active_light.light.kelvin = kelvin
 
     # Editing label
 

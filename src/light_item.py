@@ -41,8 +41,5 @@ class LightItem(Gtk.ListBoxRow):
             else:
                 self.light.set_power(power)
 
-                if self.light.state[2] == 0:
-                    self.light.set_brightness(100, rapid=True)
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
