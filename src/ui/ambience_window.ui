@@ -120,6 +120,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
+                            <signal name="clicked" handler="reload" swapped="no"/>
                             <child>
                               <object class="GtkImage">
                                 <property name="visible">True</property>
@@ -162,6 +163,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <signal name="clicked" handler="toggle_discovery" swapped="no"/>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
@@ -275,6 +277,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <signal name="clicked" handler="go_back" swapped="no"/>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
@@ -289,6 +292,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <signal name="clicked" handler="do_edit" swapped="no"/>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
@@ -349,6 +353,7 @@
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
+                        <signal name="row-selected" handler="sidebar_selected" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -431,6 +436,7 @@
                                     <property name="round-digits">0</property>
                                     <property name="digits">0</property>
                                     <property name="value-pos">right</property>
+                                    <signal name="value-changed" handler="push_color" swapped="no"/>
                                     <style>
                                       <class name="hue_gradient"/>
                                     </style>
@@ -458,6 +464,7 @@
                                     <property name="round-digits">0</property>
                                     <property name="digits">0</property>
                                     <property name="value-pos">right</property>
+                                    <signal name="value-changed" handler="push_color" swapped="no"/>
                                   </object>
                                 </child>
                               </object>
@@ -482,6 +489,7 @@
                                     <property name="round-digits">0</property>
                                     <property name="digits">0</property>
                                     <property name="value-pos">right</property>
+                                    <signal name="value-changed" handler="push_color" swapped="no"/>
                                   </object>
                                 </child>
                               </object>
@@ -505,6 +513,7 @@
                                     <property name="round-digits">0</property>
                                     <property name="digits">0</property>
                                     <property name="value-pos">right</property>
+                                    <signal name="value-changed" handler="push_color" swapped="no"/>
                                   </object>
                                 </child>
                               </object>

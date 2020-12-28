@@ -24,6 +24,10 @@ except ImportError:
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/light_item.ui')
 class LightItem(Gtk.ListBoxRow):
+    """
+    Sidebar item containing the name of the bulb as well as a power switch.
+    """
+
     __gtype_name__ = 'LightItem'
 
     light_label  = Gtk.Template.Child()
@@ -34,12 +38,14 @@ class LightItem(Gtk.ListBoxRow):
 
     @Gtk.Template.Callback("activate_switch")
     def activate_switch(self, sender, user_data):
+        """
+        Power switch toggled. Run command in main window if I'm the current
+        bulb to retain sync with switch in the main window.
+        """
+
         if isinstance(self.light, Device):
             power = self.light_switch.get_active()
             if self.main_window.active_light == self:
                 self.main_window.update_power(power)
             else:
                 self.light.set_power(power)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)

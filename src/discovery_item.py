@@ -25,6 +25,11 @@ except:
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/discovery_item.ui')
 class DiscoveryItem(Gtk.ListBoxRow):
+    """
+    Sidebar item when in discovery mode. Contains a toggle box instead of a
+    power switch which is used to add the bulb to the main list.
+    """
+
     __gtype_name__ = 'DiscoveryItem'
 
     light_label  = Gtk.Template.Child()
@@ -37,12 +42,21 @@ class DiscoveryItem(Gtk.ListBoxRow):
     config_list = []
 
     def update_icon(self):
+        """
+        Makes sure the icon shown in the toggle button matches the current
+        state of the bulb.
+        """
+
         if self.added:
             self.add_img.set_from_icon_name("emblem-ok-symbolic", Gtk.IconSize.BUTTON)
         else:
             self.add_img.set_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON)
 
+    @Gtk.Template.Callback("add_clicked")
     def add_clicked(self, sender):
+        """
+        Add or remove the bulb to the main list.
+        """
 
         permissions = 0o664
 
@@ -66,9 +80,3 @@ class DiscoveryItem(Gtk.ListBoxRow):
                 print("Unable to save config file")
         else:
             print("Unable to create required directory/ies for config file")
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.add_btn.connect("clicked", self.add_clicked)
-
