@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="libhandy" version="1.0"/>
@@ -255,6 +255,9 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="hexpand">True</property>
+                            <signal name="activate" handler="name_activate" swapped="no"/>
+                            <signal name="changed" handler="name_changed" swapped="no"/>
+                            <signal name="key-release-event" handler="label_key_event" swapped="no"/>
                           </object>
                           <packing>
                             <property name="name">editing</property>
@@ -387,7 +390,7 @@
                         <property name="orientation">vertical</property>
                         <property name="spacing">25</property>
                         <child>
-                          <object class="GtkListBox">
+                          <object class="GtkListBox" id="controls_box">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="selection-mode">none</property>
@@ -530,8 +533,8 @@
                                 <property name="title" translatable="yes">Group</property>
                                 <child>
                                   <object class="GtkLabel" id="group_label">
-                                    <property name="can-focus">False</property>
                                     <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
                                     <property name="label" translatable="yes">test</property>
                                   </object>
                                 </child>
@@ -548,7 +551,6 @@
                                   <object class="GtkLabel" id="location_label">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes"></property>
                                   </object>
                                 </child>
                               </object>

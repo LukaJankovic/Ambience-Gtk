@@ -23,7 +23,7 @@ try:
 except ImportError:
     API_AVAIL = False
 
-from gi.repository import Gtk, GLib, GObject, Handy
+from gi.repository import Gtk, Gdk, GLib, GObject, Handy
 from .light_item import *
 from .discovery_item import *
 import json
@@ -297,7 +297,23 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     # Editing label
 
+    @Gtk.Template.Callback("name_changed")
+    def name_changed(self, sender):
+        self.edit.set_sensitive(self.edit_label.get_text())
+
+    @Gtk.Template.Callback("name_activate")
+    def name_enter(self, sender):
+        if self.edit.get_active():
+            self.edit.set_active(False)
+
+    @Gtk.Template.Callback("name_event")
+    def name_event(self, sender, event):
+        if event.keyval == Gdk.KEY_Escape:
+            self.edit_label.set_text(self.active_light.light_label.get_text())
+            self.edit.set_active(False)
+
     def do_edit(self, sender):
+
         if not isinstance(self.active_light, LightItem):
             return
 
@@ -305,9 +321,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.edit_label.set_text(self.active_light.light_label.get_text())
             self.edit_stack.set_visible_child_name("editing")
         else:
-            self.edit_stack.set_visible_child_name("normal")
-
             new_label = self.edit_label.get_text()
+
+            self.edit_stack.set_visible_child_name("normal")
 
             self.active_light.light.set_label(new_label)
             self.active_light.light_label.set_label(new_label)
