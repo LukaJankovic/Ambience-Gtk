@@ -12,6 +12,7 @@
           <li>Selecting a light does not cause it to apply the color data. This should prevent flickering lights when selecting lights.</li>
         </ul>
       </description>
+    </release>
     <release version="1.1.0" date="2020-12-22" type="stable">
       <description>
         <p>Discovering and managing lights have been separated. Use the discover mode ("+" button in the header bar) to discover lights on the network and add them to your list from there.</p>
