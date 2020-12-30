@@ -4,9 +4,9 @@ Gtk (Handy) app to control LIFX smart lights using the [lifxlan](https://github.
 ![Screenshot](https://raw.githubusercontent.com/LukaJankovic/Ambience/stable/screenshots/window-full.png)
 
 ## Installation
-Ambience is available on [flathub](https://flathub.org/apps/details/io.github.lukajankovic.ambience)!
+Ambience is available on [flathub](https://flathub.org/apps/details/io.github.lukajankovic.ambience) and on [fedora copr](https://copr.fedorainfracloud.org/coprs/lukajan/Ambience/)!
 
-Otherwise, flatpak files are available under releases.
+Otherwise, the raw package files are available under releases.
 
 If not running through flatpak, remember to install the [lifxlan](https://flathub.org/apps/details/io.github.lukajankovic.ambience) api:
 
