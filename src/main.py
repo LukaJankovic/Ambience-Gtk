@@ -1,6 +1,6 @@
 # main.py
 #
-# Copyright 2020 Luka Jankovic
+# Copyright 2021 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ class Application(Gtk.Application):
 
         about.set_program_name("Ambience")
         about.set_version(self.version)
-        about.set_copyright("Copyright © Luka Jankovic 2020")
+        about.set_copyright("Copyright © Luka Jankovic 2020 - 2021")
         about.add_credit_section("Created by", authors)
         about.add_credit_section("LifxLAN by", api_authors)
         about.set_logo_icon_name("io.github.lukajankovic.ambience")

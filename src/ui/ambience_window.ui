@@ -6,7 +6,7 @@
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Ambience -->
   <!-- interface-description LIFX light manager -->
-  <!-- interface-copyright Luka Jankovic 2019 - 2020 -->
+  <!-- interface-copyright Luka Jankovic 2019 - 2021 -->
   <!-- interface-authors Luka Jankovic -->
   <object class="GtkSizeGroup"/>
   <object class="GtkAdjustment" id="brightness_adj">
@@ -544,7 +544,21 @@
                                   <object class="GtkLabel" id="group_label">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
-                                    <property name="label" translatable="yes">test</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="valign">center</property>
+                                    <child>
+                                      <object class="GtkImage">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="icon-name">document-edit-symbolic</property>
+                                      </object>
+                                    </child>
                                   </object>
                                 </child>
                               </object>
@@ -560,6 +574,21 @@
                                   <object class="GtkLabel" id="location_label">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="valign">center</property>
+                                    <child>
+                                      <object class="GtkImage">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="icon-name">document-edit-symbolic</property>
+                                      </object>
+                                    </child>
                                   </object>
                                 </child>
                               </object>
