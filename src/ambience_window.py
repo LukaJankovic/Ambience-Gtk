@@ -93,7 +93,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
     kelvin_scale = Gtk.Template.Child()
 
     group_label = Gtk.Template.Child()
+    group_entry = Gtk.Template.Child()
+    group_stack = Gtk.Template.Child()
+
     location_label = Gtk.Template.Child()
+    location_entry = Gtk.Template.Child()
+    location_stack = Gtk.Template.Child()
 
     lan = None
     lights = []
@@ -368,6 +373,28 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.active_light.light.saturation = saturation
         self.active_light.light.brightness = brightness
         self.active_light.light.kelvin = kelvin
+
+    # Group / Location label
+
+    @Gtk.Template.Callback("group_clicked")
+    def group_clicked(self, sender):
+        if self.group_stack.get_visible_child_name() == "group_entry_page":
+            self.group_stack.set_visible_child_name("group_label_page")
+            self.group_label.set_text(self.group_entry.get_text())
+
+        else:
+            self.group_stack.set_visible_child_name("group_entry_page")
+            self.group_entry.set_text(self.group_label.get_text())
+
+    @Gtk.Template.Callback("location_clicked")
+    def location_clicked(self, sender):
+        if self.location_stack.get_visible_child_name() == "location_entry_page":
+            self.location_stack.set_visible_child_name("location_label_page")
+            self.location_label.set_text(self.location_entry.get_text())
+
+        else:
+            self.location_stack.set_visible_child_name("location_entry_page")
+            self.location_entry.set_text(self.location_label.get_text())
 
     # Editing label
 

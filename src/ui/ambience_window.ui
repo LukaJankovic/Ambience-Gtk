@@ -541,9 +541,34 @@
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Group</property>
                                 <child>
-                                  <object class="GtkLabel" id="group_label">
+                                  <object class="GtkStack" id="group_stack">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="transition-type">crossfade</property>
+                                    <child>
+                                      <object class="GtkLabel" id="group_label">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">end</property>
+                                        <property name="justify">right</property>
+                                      </object>
+                                      <packing>
+                                        <property name="name">group_label_page</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkEntry" id="group_entry">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="margin-top">8</property>
+                                        <property name="margin-bottom">8</property>
+                                      </object>
+                                      <packing>
+                                        <property name="name">group_entry_page</property>
+                                        <property name="title" translatable="yes">page0</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child>
@@ -552,6 +577,7 @@
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">False</property>
                                     <property name="valign">center</property>
+                                    <signal name="clicked" handler="group_clicked" swapped="no"/>
                                     <child>
                                       <object class="GtkImage">
                                         <property name="visible">True</property>
@@ -571,9 +597,34 @@
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Location</property>
                                 <child>
-                                  <object class="GtkLabel" id="location_label">
+                                  <object class="GtkStack" id="location_stack">
                                     <property name="visible">True</property>
                                     <property name="can-focus">False</property>
+                                    <property name="transition-type">crossfade</property>
+                                    <child>
+                                      <object class="GtkLabel" id="location_label">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="halign">end</property>
+                                        <property name="justify">right</property>
+                                      </object>
+                                      <packing>
+                                        <property name="name">location_label_page</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkEntry" id="location_entry">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="margin-top">8</property>
+                                        <property name="margin-bottom">8</property>
+                                      </object>
+                                      <packing>
+                                        <property name="name">location_entry_page</property>
+                                        <property name="title" translatable="yes">page0</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                 </child>
                                 <child>
@@ -582,6 +633,7 @@
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">False</property>
                                     <property name="valign">center</property>
+                                    <signal name="clicked" handler="location_clicked" swapped="no"/>
                                     <child>
                                       <object class="GtkImage">
                                         <property name="visible">True</property>
