@@ -16,6 +16,20 @@ If not running through flatpak, remember to install the [lifxlan](https://flathu
 
 rpm, deb (and maybe more) packages comming soon.
 
+### Manual Configuration
+The `lifxlan` package will generally take care of light discovery, but if you are unable to perform this due to firewall rules a manual configuration can be generated. 
+The configuration file defaults to: `~/.config/lights.json` and is a JSON list of device mac and ip address. An example of this is as follows:
+
+```
+cat ~/.config/lights.json
+[
+   {
+      "mac":"d0:xx:xx:xx:xx:xx",
+      "ip":"192.168.1.10"
+   }
+]
+```
+
 ## Todo
 - [X] Flathub
 - [ ] Create rpm, deb, etc.
