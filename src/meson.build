@@ -30,7 +30,8 @@ ambience_sources = [
   'main.py',
   'ambience_window.py',
   'light_item.py',
-  'discovery_item.py'
+  'discovery_item.py',
+  'product_list.py'
 ]
 
 install_data(ambience_sources, install_dir: moduledir)

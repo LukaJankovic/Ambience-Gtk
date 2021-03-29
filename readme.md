@@ -34,7 +34,7 @@ cat ~/.config/lights.json
 - [X] Flathub
 - [X] Create rpm
 - [X] Create deb
-- [ ] Show different controls for lights with different features (Comming in 1.1.2)
+- [ ] Show different controls for lights with different features (Comming in next version)
 - [ ] Migrate to GTK4
 - [ ] Add translations (Will need help)
 - [ ] ~~Migrate to HdyFlap~~ Possibly not relevant, needs to be researched further.

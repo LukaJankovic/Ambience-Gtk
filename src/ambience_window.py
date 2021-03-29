@@ -26,6 +26,7 @@ except ImportError:
 from gi.repository import Gtk, Gdk, GLib, GObject, Handy
 from .light_item import *
 from .discovery_item import *
+from .product_list import *
 import json
 
 # Helper functions for converting values to / from api
@@ -506,3 +507,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.content_stack.set_visible_child_name("empty")
 
         self.update_sidebar()
+
+        plist_downloader = product_list()
+        plist_downloader.download_list()
