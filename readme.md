@@ -32,9 +32,10 @@ cat ~/.config/lights.json
 
 ## Todo
 - [X] Flathub
-- [ ] Create rpm, deb, etc.
+- [X] Create rpm
+- [ ] Create deb
 - [ ] Show different controls for lights with different features
-- [ ] Edit location, group
 - [ ] Migrate to HdyFlap
 - [ ] Migrate to GTK4
-- [ ] Add translations
+- [ ] Add translations (Will need help)
+- [ ] ~~Edit location, group~~ Not available in API, requries more work. Postponed.
