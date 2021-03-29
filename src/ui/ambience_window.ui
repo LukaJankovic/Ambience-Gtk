@@ -418,7 +418,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="HdyActionRow">
+                              <object class="HdyActionRow" id="hue_row">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
@@ -445,7 +445,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="HdyActionRow">
+                              <object class="HdyActionRow" id="saturation_row">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
@@ -470,7 +470,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="HdyActionRow">
+                              <object class="HdyActionRow" id="brightness_row">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
@@ -495,7 +495,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="HdyActionRow">
+                              <object class="HdyActionRow" id="temperature_row">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
