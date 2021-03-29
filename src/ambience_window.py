@@ -88,12 +88,14 @@ class AmbienceWindow(Handy.ApplicationWindow):
     power_row = Gtk.Template.Child()
     hue_row = Gtk.Template.Child()
     saturation_row = Gtk.Template.Child()
-    temperature_row = Gtk.Template.Child() 
+    kelvin_row = Gtk.Template.Child() 
+    infrared_row = Gtk.Template.Child()
     power_switch = Gtk.Template.Child()
     hue_scale = Gtk.Template.Child()
     saturation_scale = Gtk.Template.Child()
     brightness_scale = Gtk.Template.Child()
     kelvin_scale = Gtk.Template.Child()
+    infrared_scale = Gtk.Template.Child()
 
     group_label = Gtk.Template.Child()
     location_label = Gtk.Template.Child()
@@ -309,6 +311,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.active_light.light.brightness = decode(brightness)
             self.active_light.light.kelvin = kelvin
 
+        if self.active_light.light.supports_infrared():
+            self.active_light.light.infrared = decode(self.active_light.light.get_infrared())
+
     def set_active_light(self):
         """
         Prepares the window for a change in active light. Updates color data etc.
@@ -329,22 +334,29 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.power_switch.set_active(self.active_light.light.get_power() / 65535)
 
             if self.active_light.light.supports_color():
-                self.hue_scale.set_visible(True)
-                self.saturation_scale.set_visible(True)
+                self.hue_row.set_visible(True)
+                self.saturation_row.set_visible(True)
 
                 self.hue_scale.set_value(self.active_light.light.hue)
                 self.saturation_scale.set_value(self.active_light.light.saturation)
 
             else:
-                self.hue_scale.set_visible(False)
-                self.saturation_scale.set_visible(False)
+                self.hue_row.set_visible(False)
+                self.saturation_row.set_visible(False)
 
             if self.active_light.light.supports_temperature():
-                self.kelvin_scale.set_visible(True)
+                self.kelvin_row.set_visible(True)
                 self.kelvin_scale.set_value(self.active_light.light.kelvin)
             
             else:
-                self.kelvin_scale.set_visible(False)
+                self.kelvin_row.set_visible(False)
+
+            if self.active_light.light.supports_infrared():
+                self.infrared_row.set_visible(True)
+                self.infrared_scale.set_value(self.active_light.light.infrared)
+
+            else:
+                self.infrared_row.set_visible(False)
 
             self.brightness_scale.set_value(self.active_light.light.brightness)
 

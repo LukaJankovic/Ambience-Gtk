@@ -9,6 +9,10 @@
   <!-- interface-copyright Luka Jankovic 2019 - 2020 -->
   <!-- interface-authors Luka Jankovic -->
   <object class="GtkSizeGroup"/>
+  <object class="GtkAdjustment" id="infrared_adj">
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+  </object>
   <object class="GtkAdjustment" id="brightness_adj">
     <property name="upper">100</property>
     <property name="step-increment">1</property>
@@ -495,7 +499,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="HdyActionRow" id="temperature_row">
+                              <object class="HdyActionRow" id="kelvin_row">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
@@ -514,6 +518,30 @@
                                     <property name="digits">0</property>
                                     <property name="value-pos">right</property>
                                     <signal name="value-changed" handler="push_color" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="HdyActionRow" id="infrared_row">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="activatable">False</property>
+                                <property name="selectable">False</property>
+                                <property name="title" translatable="yes">Infrared</property>
+                                <child>
+                                  <object class="GtkScale" id="infrared_scale">
+                                    <property name="name">infrared_scale</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="adjustment">infrared_adj</property>
+                                    <property name="show-fill-level">True</property>
+                                    <property name="restrict-to-fill-level">False</property>
+                                    <property name="round-digits">0</property>
+                                    <property name="digits">0</property>
+                                    <property name="value-pos">right</property>
+                                    <signal name="value-changed" handler="push_infrared" swapped="no"/>
                                   </object>
                                 </child>
                               </object>
@@ -623,6 +651,7 @@
       <widget name="saturation_scale"/>
       <widget name="brightness_scale"/>
       <widget name="kelvin_scale"/>
+      <widget name="infrared_scale"/>
     </widgets>
   </object>
   <object class="GtkSizeGroup">
