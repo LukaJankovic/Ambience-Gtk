@@ -33,7 +33,7 @@ cat ~/.config/lights.json
 ## Todo
 - [X] Flathub
 - [X] Create rpm
-- [ ] Create deb
+- [X] Create deb
 - [ ] Show different controls for lights with different features (Comming in 1.1.2)
 - [ ] Migrate to GTK4
 - [ ] Add translations (Will need help)
