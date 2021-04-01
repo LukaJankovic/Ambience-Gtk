@@ -83,7 +83,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     edit = Gtk.Template.Child()
     edit_label = Gtk.Template.Child()
     name_label = Gtk.Template.Child()
-    ip_label = Gtk.Template.Child()
+    sub_label = Gtk.Template.Child()
 
     controls_box = Gtk.Template.Child()
     power_row = Gtk.Template.Child()
@@ -98,6 +98,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     kelvin_scale = Gtk.Template.Child()
     infrared_scale = Gtk.Template.Child()
 
+    ip_label = Gtk.Template.Child()
     group_label = Gtk.Template.Child()
     location_label = Gtk.Template.Child()
 
@@ -265,7 +266,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.content_stack.set_visible_child_name("empty")
         self.name_label.set_text("")
-        self.ip_label.set_text("")
+        self.sub_label.set_text("")
 
         self.content_box.set_visible_child(self.menu)
 
@@ -334,6 +335,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             self.power_switch.set_active(self.active_light.light.get_power() / 65535)
 
+            self.hue_row.set_visible(False)
+            self.saturation_row.set_visible(False)
+            self.kelvin_row.set_visible(False)
+            self.infrared_row.set_visible(False)
+
             if self.active_light.light.supports_color():
                 self.hue_row.set_visible(True)
                 self.saturation_row.set_visible(True)
@@ -341,25 +347,18 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 self.hue_scale.set_value(self.active_light.light.hue)
                 self.saturation_scale.set_value(self.active_light.light.saturation)
 
-            else:
-                self.hue_row.set_visible(False)
-                self.saturation_row.set_visible(False)
-
             if self.active_light.light.supports_temperature():
                 self.kelvin_row.set_visible(True)
                 self.kelvin_scale.set_value(self.active_light.light.kelvin)
-            
-            else:
-                self.kelvin_row.set_visible(False)
 
             if self.active_light.light.supports_infrared():
                 self.infrared_row.set_visible(True)
                 self.infrared_scale.set_value(self.active_light.light.infrared)
 
-            else:
-                self.infrared_row.set_visible(False)
-
             self.brightness_scale.set_value(self.active_light.light.brightness)
+
+        if product_info := self.plist_downloader.get_product(self.active_light.light.get_product()):
+            self.sub_label.set_text(product_info["name"])
 
         self.name_label.set_text(self.active_light.light.get_label())
         self.ip_label.set_text(self.active_light.light.get_ip_addr())
@@ -373,7 +372,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.location_label.set_text(self.active_light.light.get_location_label())
 
         self.update_active = False
-
+        
     @Gtk.Template.Callback("push_color")
     def push_color(self, sender):
         """
@@ -508,5 +507,5 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.update_sidebar()
 
-        plist_downloader = product_list()
-        plist_downloader.download_list()
+        self.plist_downloader = product_list()
+        self.plist_downloader.download_list()

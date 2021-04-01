@@ -24,7 +24,7 @@ class product_list:
     Class that attempts to download as well as manage the product list from 
     Lifx's official Github.
     """
-    p_list = None
+    p_list = []
 
     def download_list(self) -> bool:
         """
@@ -32,6 +32,12 @@ class product_list:
         """
         resp = requests.get(P_LIST_URL)
         if resp.status_code == 200:
-            self.p_list = json.loads(resp.content)
+            self.p_list = json.loads(resp.content)[0]["products"]
             return True
         return False
+
+    def get_product(self, pid) -> str:
+        """
+        Gets the product name based on id, otherwise returns None
+        """
+        return next((l for l in self.p_list if l["pid"] == pid), None)

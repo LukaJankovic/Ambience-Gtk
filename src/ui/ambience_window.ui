@@ -234,7 +234,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="ip_label">
+                              <object class="GtkLabel" id="sub_label">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="margin-bottom">4</property>
@@ -561,6 +561,22 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="selection-mode">none</property>
+                            <child>
+                              <object class="HdyActionRow">
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="activatable">False</property>
+                                <property name="selectable">False</property>
+                                <property name="title" translatable="yes">IP Address</property>
+                                <child>
+                                  <object class="GtkLabel" id="ip_label">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="label" translatable="yes">test</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                             <child>
                               <object class="HdyActionRow">
                                 <property name="visible">True</property>
