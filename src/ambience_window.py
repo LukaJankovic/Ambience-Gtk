@@ -96,6 +96,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     saturation_scale = Gtk.Template.Child()
     brightness_scale = Gtk.Template.Child()
     kelvin_scale = Gtk.Template.Child()
+    kelvin_adj = Gtk.Template.Child()
     infrared_scale = Gtk.Template.Child()
 
     ip_label = Gtk.Template.Child()
@@ -359,6 +360,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         if product_info := self.plist_downloader.get_product(self.active_light.light.get_product()):
             self.sub_label.set_text(product_info["name"])
+
+            temp_range = product_info["features"]["temperature_range"]
+            self.kelvin_adj.set_lower(temp_range[0])
+            self.kelvin_adj.set_upper(temp_range[1])
 
         self.name_label.set_text(self.active_light.light.get_label())
         self.ip_label.set_text(self.active_light.light.get_ip_addr())
