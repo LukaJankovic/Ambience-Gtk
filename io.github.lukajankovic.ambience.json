@@ -22,7 +22,7 @@
         "*.a"
     ],
     "modules" : [
-        "python3-lifxlan.json",
+        "pypi-dependencies.json",
         {
             "name" : "libhandy",
             "buildsystem" : "meson",
