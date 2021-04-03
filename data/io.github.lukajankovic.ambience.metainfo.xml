@@ -3,6 +3,17 @@
 	<id>io.github.lukajankovic.ambience</id>
   <name>Ambience</name>
   <releases>
+    <release version="1.2.0" date="2021-04-03" type="stable">
+      <description>
+        <p>Feature update, adapts to different kinds of lights with different capabilities.</p>
+        <ul>
+          <li>Hue, saturation, temperature controls only shown to lights that support it</li>
+          <li>Infrared support added</li>
+          <li>New app icon!</li>
+          <li>Light model shown in titlebar instead of IP</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.1" date="2020-12-28" type="stable">
       <description>
         <p>Stability and QOL update.</p>
