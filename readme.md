@@ -3,9 +3,9 @@ Gtk (Handy) app to control LIFX smart lights using the [lifxlan](https://github.
 
 ![Screenshot](https://raw.githubusercontent.com/LukaJankovic/Ambience/stable/screenshots/window-full.png)
 
-## Installation
-
 <a href='https://flathub.org/apps/details/io.github.lukajankovic.ambience/'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
+
+## Installation
 
 Ambience is available on [flathub](https://flathub.org/apps/details/io.github.lukajankovic.ambience) and on [fedora copr](https://copr.fedorainfracloud.org/coprs/lukajan/Ambience/)!
 
@@ -24,7 +24,7 @@ The `lifxlan` package will generally take care of light discovery, but if you ar
 The configuration file defaults to: `~/.config/lights.json` and is a JSON list of device mac and ip address. An example of this is as follows:
 
 ```
-cat ~/.config/lights.json
+$ cat ~/.config/lights.json
 [
    {
       "mac":"d0:xx:xx:xx:xx:xx",
