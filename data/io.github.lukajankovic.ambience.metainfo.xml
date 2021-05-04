@@ -3,6 +3,14 @@
 	<id>io.github.lukajankovic.ambience</id>
   <name>Ambience</name>
   <releases>
+    <release version="1.2.1" date="2020-05-04" type="stable">
+      <description>
+        <ul>
+          <li>Updated lifxlan to version 1.2.7</li>
+          <li>Updated to Gnome Runtime version 40</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.2.0" date="2021-04-03" type="stable">
       <description>
         <p>Feature update, adapts to different kinds of lights with different capabilities.</p>
