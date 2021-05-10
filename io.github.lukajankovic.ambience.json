@@ -22,7 +22,7 @@
         "*.a"
     ],
     "modules" : [
-        "pypi-dependencies.json",
+        "python3-requirements.json",
         {
             "name" : "libhandy",
             "buildsystem" : "meson",
