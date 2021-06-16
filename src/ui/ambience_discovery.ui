@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <requires lib="libhandy" version="1.0"/>
+  <template class="AmbienceDiscovery" parent="GtkDialog">
+    <property name="visible">True</property>
+    <property name="title">Light Management</property>
+    <property name="default-width">300</property>
+    <property name="default-height">400</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkListBox" id="list_box"> 
+            <property name="visible">True</property>
+            <property name="selection-mode">GTK_SELECTION_NONE</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child type="action">
+      <object class="GtkButton" id="reload">
+        <property name="visible">True</property>
+        <signal name="clicked" handler="reload" swapped="no"/>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="icon-name">view-refresh-symbolic</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

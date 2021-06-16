@@ -24,7 +24,6 @@ except ImportError:
     API_AVAIL = False
 
 from gi.repository import Gtk, Gdk, GLib, GObject, Handy
-from .light_item import *
 from .discovery_item import *
 from .product_list import *
 import json
@@ -73,7 +72,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
     refresh_stack = Gtk.Template.Child()
     refresh = Gtk.Template.Child()
     refresh_spinner = Gtk.Template.Child()
-    discovery_btn = Gtk.Template.Child()
     sidebar = Gtk.Template.Child()
 
     content_stack = Gtk.Template.Child()
@@ -110,6 +108,46 @@ class AmbienceWindow(Handy.ApplicationWindow):
     active_light = None
     discovery_active = False
     update_active = False
+
+    def get_lights(self, config):
+        lights = []
+        for light in config:
+            light_item = Light(light["mac"], light["ip"])
+            light_item.offline_conf = light
+
+            try:
+                light_item.get_power() # "Ping"
+                light_item.online = True
+            except WorkflowException:
+                light_item.online = False
+
+            lights.append(light_item)
+
+        return lights
+                
+
+    def get_groups(self, lights):
+        """
+        Discovers groups from list of lights
+        """
+
+        groups = []
+
+        for light in lights:
+
+            group_label = ""
+            try:
+                group_label = light.get_group_label()
+            except WorkflowException:
+                group_label = light.offline_conf["group"]
+                # TODO: Check for old config
+
+            if group_label not in [x.label for x in groups]:
+                group = self.lan.get_devices_by_group(group_label)
+                group.label = group_label
+                groups.append(group)
+
+        return groups
 
     # Misc. File Management
 
@@ -199,87 +237,16 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.refresh_stack.set_visible_child_name("loading")
         self.clear_sidebar()
 
-        if self.discovery_active:
-            config_list = self.get_config()
+        config = self.get_config()
+        self.lights = self.get_lights(config)
+        self.groups = self.get_groups(self.lights)
 
-            for light in self.d_lights:
-                sidebar_item = DiscoveryItem()
-                sidebar_item.light = light
-                sidebar_item.light_label.set_text(light.get_label())
-                sidebar_item.dest_file = self.get_dest_file()
-                sidebar_item.config_list = config_list
-
-                for saved_light in config_list:
-                    if saved_light["mac"] == light.get_mac_addr():
-                        sidebar_item.added = True
-                        sidebar_item.update_icon()
-                        break
-
-                self.sidebar.insert(sidebar_item, -1)
-
-        else:
-            self.lights = []
-            config = self.get_config()
-
-            test_expander = Handy.ExpanderRow()
-            test_expander.set_visible(True)
-            test_expander.set_title("Bedroom")
-            test_expander.set_subtitle("1 Light on")
-
-            test_switch = Gtk.Switch()
-            test_switch.set_visible(True)
-            test_switch.set_valign(Gtk.Align.CENTER)
-            test_switch.set_can_focus(False)
-            test_expander.add_action(test_switch)
-
-            for saved_light in config:
-
-                light = Light(saved_light["mac"], saved_light["ip"])
-
-                menu_item = LightItem()
-                menu_item.light = light
-                menu_item.main_window = self
-
-                try:
-                    menu_item.light_label.set_text(light.get_label())
-                    menu_item.light_switch.set_active(light.get_power() / 65535)
-                except WorkflowException:
-                    menu_item.set_sensitive(False)
-                    menu_item.light_label.set_text(saved_light["label"])
-
-                #self.sidebar.insert(menu_item, -1)
-                test_expander.add(menu_item)
-                self.lights.append(light)
-
-            test_light = LightItem()
-            test_light.light_label.set_text("Bedside Lamp")
-            test_expander.add(test_light)
-
-            self.sidebar.insert(test_expander, -1)
-
-            test_expander2 = Handy.ExpanderRow()
-            test_expander2.set_visible(True)
-            test_expander2.set_title("Livingroom")
-            test_expander2.set_subtitle("3 Lights on")
-
-            test_switch2 = Gtk.Switch()
-            test_switch2.set_visible(True)
-            test_switch2.set_valign(Gtk.Align.CENTER)
-            test_expander2.add_action(test_switch2)
-
-            self.sidebar.insert(test_expander2, -1)
-
-            test_expander3 = Handy.ExpanderRow()
-            test_expander3.set_visible(True)
-            test_expander3.set_title("Kitchen")
-            test_expander3.set_subtitle("No lights on")
-
-            test_switch3 = Gtk.Switch()
-            test_switch3.set_visible(True)
-            test_switch3.set_valign(Gtk.Align.CENTER)
-            test_expander3.add_action(test_switch2)
-
-            self.sidebar.insert(test_expander3, -1)
+        for group in self.groups:
+            group_item = Handy.ActionRow()
+            group_item.set_visible(True)
+            group_item.group = group
+            group_item.set_title(group.label)
+            self.sidebar.insert(group_item, -1)
 
         self.refresh_stack.set_visible_child_name("refresh")
 
@@ -292,34 +259,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if self.discovery_active:
             self.init_discovery()
         else:
-            self.update_sidebar()
-
-    @Gtk.Template.Callback("toggle_discovery")
-    def toggle_discovery(self, sender):
-        """
-        Enables or disables discovery mode. Sets window title bar style etc.
-        """
-
-        self.clear_sidebar()
-        self.active_light = None
-        self.discovery_active = self.discovery_btn.get_active()
-
-        self.title_bar.set_selection_mode(self.discovery_active)
-        self.controls_box.set_visible(not self.discovery_active)
-
-        self.content_stack.set_visible_child_name("empty")
-        self.name_label.set_text("")
-        self.sub_label.set_text("")
-
-        self.content_box.set_visible_child(self.menu)
-
-        if self.discovery_active:
-            self.init_discovery()
-            self.edit.set_sensitive(False)
-        else:
-            self.refresh_stack.set_visible_child_name("loading")
-            self.refresh_spinner.start()
-
             self.update_sidebar()
 
     # Main light management
@@ -501,34 +440,13 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.active_light.light_label.set_label(new_label)
             self.name_label.set_text(new_label)
 
-    # Discovery
-
-    def init_discovery(self):
-        """
-        Initialize discovery thread. Starts spinner etc.
-        """
-
-        self.refresh_stack.set_visible_child_name("loading")
-        self.refresh_spinner.start()
-
-        discovery_thread = threading.Thread(target=self.discovery)
-        discovery_thread.daemon = True
-        discovery_thread.start()
-
-    def discovery(self):
-        """
-        Discovery thread.
-        """
-
-        self.d_lights = self.lan.get_lights()
-        GLib.idle_add(self.update_sidebar)
-
-    def __init__(self, **kwargs):
+    def __init__(self, lan, **kwargs):
         """
         Check if LifxLAN api available, small ui initialization.
         """
 
         super().__init__(**kwargs)
+        self.lan = lan
 
         if not API_AVAIL:
             dialog = Gtk.MessageDialog(
@@ -546,8 +464,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
             dialog.run()
             dialog.destroy()
             exit(1)
-
-        self.lan = lifxlan.LifxLAN()
 
         self.edit.set_sensitive(False)
         self.content_stack.set_visible_child_name("empty")

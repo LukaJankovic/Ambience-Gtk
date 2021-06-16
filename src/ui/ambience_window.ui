@@ -36,19 +36,46 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
+        <property name="margin-start">10</property>
+        <property name="margin-end">10</property>
+        <property name="margin-top">10</property>
+        <property name="margin-bottom">10</property>
         <child>
           <object class="GtkModelButton">
-            <property name="width-request">200</property>
+            <property name="width-request">150</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="action-name">app.about</property>
-            <property name="text" translatable="yes">About</property>
+            <property name="text" translatable="yes">About Ambience</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator"/>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="width-request">150</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="action-name">app.discovery</property>
+            <property name="text" translatable="yes">Manage lights</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
           </packing>
         </child>
       </object>
@@ -163,15 +190,11 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkToggleButton" id="discovery_btn">
+                      <object class="GtkButton">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <signal name="clicked" handler="toggle_discovery" swapped="no"/>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="icon-name">list-add-symbolic</property>
                           </object>
                         </child>
