@@ -221,6 +221,17 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.lights = []
             config = self.get_config()
 
+            test_expander = Handy.ExpanderRow()
+            test_expander.set_visible(True)
+            test_expander.set_title("Bedroom")
+            test_expander.set_subtitle("1 Light on")
+
+            test_switch = Gtk.Switch()
+            test_switch.set_visible(True)
+            test_switch.set_valign(Gtk.Align.CENTER)
+            test_switch.set_can_focus(False)
+            test_expander.add_action(test_switch)
+
             for saved_light in config:
 
                 light = Light(saved_light["mac"], saved_light["ip"])
@@ -236,8 +247,39 @@ class AmbienceWindow(Handy.ApplicationWindow):
                     menu_item.set_sensitive(False)
                     menu_item.light_label.set_text(saved_light["label"])
 
-                self.sidebar.insert(menu_item, -1)
+                #self.sidebar.insert(menu_item, -1)
+                test_expander.add(menu_item)
                 self.lights.append(light)
+
+            test_light = LightItem()
+            test_light.light_label.set_text("Bedside Lamp")
+            test_expander.add(test_light)
+
+            self.sidebar.insert(test_expander, -1)
+
+            test_expander2 = Handy.ExpanderRow()
+            test_expander2.set_visible(True)
+            test_expander2.set_title("Livingroom")
+            test_expander2.set_subtitle("3 Lights on")
+
+            test_switch2 = Gtk.Switch()
+            test_switch2.set_visible(True)
+            test_switch2.set_valign(Gtk.Align.CENTER)
+            test_expander2.add_action(test_switch2)
+
+            self.sidebar.insert(test_expander2, -1)
+
+            test_expander3 = Handy.ExpanderRow()
+            test_expander3.set_visible(True)
+            test_expander3.set_title("Kitchen")
+            test_expander3.set_subtitle("No lights on")
+
+            test_switch3 = Gtk.Switch()
+            test_switch3.set_visible(True)
+            test_switch3.set_valign(Gtk.Align.CENTER)
+            test_expander3.add_action(test_switch2)
+
+            self.sidebar.insert(test_expander3, -1)
 
         self.refresh_stack.set_visible_child_name("refresh")
 
