@@ -24,6 +24,7 @@ except ImportError:
     API_AVAIL = False
 
 from gi.repository import Gtk, Gdk, GLib, GObject, Handy
+from .ambience_light_tile import *
 from .discovery_item import *
 from .product_list import *
 import json
@@ -52,25 +53,6 @@ def encode_circle(nr):
     Convert from range 0 to 365 to 16 bit unsigned integer limit
     """
     return (nr / 365) * 65535
-
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_flow_box.ui')
-class AmbienceFlowBox(Gtk.Box):
-    __gtype_name__ = 'AmbienceFlowBox'
-
-    flowbox = Gtk.Template.Child()
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def insert(self, item, index):
-        self.flowbox.insert(item, index)
-
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_tile.ui')
-class AmbienceTile(Gtk.FlowBoxChild):
-    __gtype_name__ = 'AmbienceTile'
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
@@ -177,6 +159,21 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     # Misc. Window / UI Management
 
+    def create_header_label(self):
+        """
+        Returns a GtkLabel suitable to be used as a header in the tiles list.
+        """
+        label = Gtk.Label()
+        label.get_style_context().add_class("title-3")
+        label.set_visible(True)
+        label.set_margin_start(6)
+        label.set_margin_end(6)
+        label.set_margin_top(6)
+        label.set_margin_bottom(6)
+        label.set_alignment(0, 0)
+
+        return label
+
     @Gtk.Template.Callback("notify_fold_cb")
     def notify_fold_cb(self, sender, user_data):
         """
@@ -222,6 +219,14 @@ class AmbienceWindow(Handy.ApplicationWindow):
         for sidebar_item in self.sidebar.get_children():
             self.sidebar.remove(sidebar_item)
 
+    def clear_tiles(self):
+        """
+        Empties the main view from tiles, headers, etc.
+        """
+
+        for group_item in self.tiles_list.get_children():
+            self.tiles_list.remove(group_item)
+
     def update_sidebar(self):
         """
         Repopulates groups and rebuilds group list.
@@ -260,12 +265,25 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.active_row = self.sidebar.get_selected_row()
         self.title_label.set_text(self.active_row.group.label)
 
+        self.clear_tiles()
+
+        all_tiles = AmbienceFlowBox()
+        all_tile = AmbienceLightTile(None)
+        all_tile.top_label.set_text("All Lights")
+        all_tiles.insert(all_tile, -1)
+
+        self.tiles_list.add(all_tiles)
+
+        lights_label = self.create_header_label()
+        lights_label.set_text("Lights")
+
+        self.tiles_list.add(lights_label)
+
         lights_tiles = AmbienceFlowBox()
 
         for light in self.active_row.group.get_device_list():
-            for i in range(10):
-                flow_item = AmbienceTile()
-                lights_tiles.insert(flow_item, -1)
+            flow_item = AmbienceLightTile(light)
+            lights_tiles.insert(flow_item, -1)
 
         self.tiles_list.add(lights_tiles)
 

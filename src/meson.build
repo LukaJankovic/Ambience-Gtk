@@ -30,6 +30,7 @@ ambience_sources = [
   'main.py',
   'ambience_window.py',
   'ambience_discovery.py',
+  'ambience_light_tile.py',
   'light_item.py',
   'discovery_item.py',
   'product_list.py'
