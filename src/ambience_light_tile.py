@@ -73,14 +73,17 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
             self.text_style_provider = None
 
         if self.light.get_power():
+
+            css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
+
             if (int(r * 255) * 0.299 + int(g * 255) * 0.587 + int(b * 255) * 0.114) > 186:
                 css = '.ambience_light_tile_text { color: #000000; }'.encode()
 
-                self.text_style_provider = Gtk.CssProvider()
-                self.text_style_provider.load_from_data(css)
+            self.text_style_provider = Gtk.CssProvider()
+            self.text_style_provider.load_from_data(css)
 
-                self.top_label.get_style_context().add_provider(self.text_style_provider, 600)
-                self.bottom_label.get_style_context().add_provider(self.text_style_provider, 600)
+            self.top_label.get_style_context().add_provider(self.text_style_provider, 600)
+            self.bottom_label.get_style_context().add_provider(self.text_style_provider, 600)
         else:
             self.bottom_label.set_text("Off")
 

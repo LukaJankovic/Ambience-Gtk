@@ -62,6 +62,20 @@ class AmbienceWindow(Handy.ApplicationWindow):
     light_label = Gtk.Template.Child()
     light_sub_label = Gtk.Template.Child()
 
+    power_switch = Gtk.Template.Child()
+
+    hue_row = Gtk.Template.Child()
+    saturation_row = Gtk.Template.Child()
+    kelvin_row = Gtk.Template.Child() 
+    infrared_row = Gtk.Template.Child()
+
+    hue_scale = Gtk.Template.Child()
+    saturation_scale = Gtk.Template.Child()
+    brightness_scale = Gtk.Template.Child()
+    kelvin_scale = Gtk.Template.Child()
+    kelvin_adj = Gtk.Template.Child()
+    infrared_scale = Gtk.Template.Child()
+
     lan = None
     lights = []
     d_lights = []
@@ -319,11 +333,58 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.active_light = tile.light
         self.in_light = True
+        self.update_active = True
 
         self.light_label.set_text(self.active_light.get_label())
 
         if product_info := self.plist_downloader.get_product(self.active_light.get_product()):
             self.light_sub_label.set_text(product_info["name"])
+
+        self.power_switch.set_active(self.active_light.get_power())
+
+        (hue, saturation, brightness, temperature) = self.active_light.get_color()
+        hue = decode_circle(hue)
+        (saturation, brightness) = map(decode, [saturation, brightness])
+
+        self.brightness_scale.set_value(brightness)
+
+        if self.active_light.supports_color():
+            self.hue_row.set_visible(True)
+            self.saturation_row.set_visible(True)
+
+            self.hue_scale.set_value(hue)
+            self.saturation_scale.set_value(saturation)
+
+        if self.active_light.supports_temperature():
+            self.kelvin_row.set_visible(True)
+            self.kelvin_scale.set_value(temperature)
+
+        if self.active_light.supports_infrared():
+            self.infrared_row.set_visible(True)
+            self.infrared_scale.set_value(decode(self.active_light.get_infrared()))
+
+        self.update_active = False
+
+    @Gtk.Template.Callback("push_color")
+    def push_color(self, sender):
+        """
+        Color data changed by the user, push it to the bulb.
+        """
+        if self.update_active:
+            return
+
+        hue = self.hue_scale.get_value()
+        saturation = self.saturation_scale.get_value()
+        brightness = self.brightness_scale.get_value()
+        kelvin = self.kelvin_scale.get_value()
+
+        self.active_light.set_color((encode_circle(hue),
+                                     encode(saturation),
+                                     encode(brightness),
+                                     kelvin), rapid=True)
+
+        if self.active_light.supports_infrared():
+            self.active_light.set_infrared(encode(self.infrared_scale.get_value()))
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):

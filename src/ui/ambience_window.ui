@@ -87,16 +87,12 @@
       </packing>
     </child>
   </object>
-  <object class="GtkAdjustment" id="saturation_adj">
-    <property name="upper">100</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
-  </object>
   <template class="AmbienceWindow" parent="HdyApplicationWindow">
     <property name="width-request">270</property>
+    <property name="height-request">500</property>
     <property name="can-focus">False</property>
     <property name="default-width">700</property>
-    <property name="default-height">100</property>
+    <property name="default-height">500</property>
     <property name="gravity">center</property>
     <child>
       <object class="GtkBox">
@@ -427,25 +423,26 @@
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow1">
+              <object class="HdyDeck" id="content_deck">
                 <property name="width-request">384</property>
-                <property name="height-request">500</property>
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
+                <property name="can-swipe-back">True</property>
                 <child>
-                  <object class="GtkViewport">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
                     <child>
-                      <object class="HdyDeck" id="content_deck">
+                      <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="can-swipe-back">True</property>
                         <child>
                           <object class="GtkBox" id="tiles_list">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="margin-left">6</property>
+                            <property name="margin-right">6</property>
                             <property name="margin-start">6</property>
                             <property name="margin-end">6</property>
                             <property name="margin-top">6</property>
@@ -457,6 +454,18 @@
                             </child>
                           </object>
                         </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <object class="HdyClamp">
                             <property name="width-request">360</property>
@@ -491,7 +500,7 @@
                                         <property name="selectable">False</property>
                                         <property name="title" translatable="yes">Power</property>
                                         <child>
-                                          <object class="GtkSwitch">
+                                          <object class="GtkSwitch" id="power_switch">
                                             <property name="visible">True</property>
                                             <property name="can-focus">True</property>
                                             <property name="halign">end</property>
@@ -503,7 +512,6 @@
                                     </child>
                                     <child>
                                       <object class="HdyActionRow" id="hue_row">
-                                        <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="activatable">False</property>
                                         <property name="selectable">False</property>
@@ -530,7 +538,6 @@
                                     </child>
                                     <child>
                                       <object class="HdyActionRow" id="saturation_row">
-                                        <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="activatable">False</property>
                                         <property name="selectable">False</property>
@@ -580,7 +587,6 @@
                                     </child>
                                     <child>
                                       <object class="HdyActionRow" id="kelvin_row">
-                                        <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="activatable">False</property>
                                         <property name="selectable">False</property>
@@ -605,7 +611,6 @@
                                     </child>
                                     <child>
                                       <object class="HdyActionRow" id="infrared_row">
-                                        <property name="visible">True</property>
                                         <property name="can-focus">True</property>
                                         <property name="activatable">False</property>
                                         <property name="selectable">False</property>
@@ -728,5 +733,10 @@
       <swipeable name="header_box"/>
       <swipeable name="content_box"/>
     </swipeables>
+  </object>
+  <object class="GtkAdjustment" id="saturation_adj">
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
   </object>
 </interface>
