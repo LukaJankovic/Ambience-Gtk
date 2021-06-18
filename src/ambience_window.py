@@ -28,7 +28,7 @@ from .ambience_light_tile import *
 from .discovery_item import *
 from .product_list import *
 from .helpers import *
-import json
+import json, threading
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
@@ -114,11 +114,20 @@ class AmbienceWindow(Handy.ApplicationWindow):
             try:
                 group_label = light.get_group_label()
             except WorkflowException:
-                group_label = light.offline_conf["group"]
-                # TODO: Check for old config
+                try:
+                    group_label = light.offline_conf["group"]
+                except KeyError:
+                    group_label = "Unknown Group"
 
             if group_label not in [x.label for x in groups]:
-                group = self.lan.get_devices_by_group(group_label)
+                success = False
+                while not success:
+                    try:
+                        group = self.lan.get_devices_by_group(group_label)
+                        success = True
+                    except WorkflowException:
+                        pass
+
                 group.label = group_label
                 groups.append(group)
 
@@ -259,6 +268,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.lights = self.get_lights(config)
         self.groups = self.get_groups(self.lights)
 
+        GLib.idle_add(self.build_group_list)
+
+    def build_group_list(self):
         for group in self.groups:
             group_item = Handy.ActionRow() # TODO: Add power switch
             group_item.set_visible(True)
@@ -273,7 +285,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         Restart discovery or repopulate the sidebar.
         """
-        self.update_sidebar()
+        self.refresh_stack.set_visible_child_name("loading")
+
+        startup_thread = threading.Thread(target=self.startup)
+        startup_thread.daemon = True
+        startup_thread.start()
 
     def set_active_group(self):
         """
@@ -416,6 +432,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
             dialog.destroy()
             exit(1)
 
+        self.reload(self)
+
+    def startup(self):
         self.update_sidebar()
 
         self.plist_downloader = product_list()
