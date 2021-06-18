@@ -159,6 +159,17 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     # Misc. Window / UI Management
 
+    def group_active_count(self, group):
+        """
+        Counts the number of lights that are on for a given group.
+        """
+        count = 0
+        for light in group.get_device_list():
+            if light.get_power():
+                count += 1
+
+        return count
+
     def create_header_label(self):
         """
         Returns a GtkLabel suitable to be used as a header in the tiles list.
@@ -270,6 +281,18 @@ class AmbienceWindow(Handy.ApplicationWindow):
         all_tiles = AmbienceFlowBox()
         all_tile = AmbienceLightTile(None)
         all_tile.top_label.set_text("All Lights")
+
+        lights_on = self.group_active_count(self.active_row.group)
+        sub_text = ""
+
+        if lights_on == 0:
+            sub_text = "No lights on"
+        elif lights_on == 1:
+            sub_text = "1 light on"
+        else:
+            sub_text = str(lights_on) + "lights on"
+
+        all_tile.bottom_label.set_text(sub_text)
         all_tiles.insert(all_tile, -1)
 
         self.tiles_list.add(all_tiles)

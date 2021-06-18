@@ -77,7 +77,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         if self.button_style_provider:
             self.tile_button.get_style_context().remove_provider(self.button_style_provider)
 
-        (r, g, b) = colorsys.hsv_to_rgb(decode_circle(hue), decode(saturation) / 100, decode(brightness) / 100)
+        (r, g, b) = colorsys.hsv_to_rgb(int(decode_circle(hue)), decode(saturation) / 100, decode(brightness) / 100)
 
         css = f'.ambience_light_tile {{ background: { rgb_to_hex(r, g, b) }; }}'.encode()
         self.button_style_provider = Gtk.CssProvider()
