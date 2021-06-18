@@ -27,32 +27,8 @@ from gi.repository import Gtk, Gdk, GLib, GObject, Handy
 from .ambience_light_tile import *
 from .discovery_item import *
 from .product_list import *
+from .helpers import *
 import json
-
-# Helper functions for converting values to / from api
-def decode(nr):
-    """
-    Convert from 16 bit unsigned integer to range between 0 and 100.
-    """
-    return (nr / 65535) * 100
-
-def decode_circle(nr):
-    """
-    Convert from 16 bit unsined integer to range between 0 and 365.
-    """
-    return (nr / 65535) * 365
-
-def encode(nr):
-    """
-    Convert from range 0 to 100 to 16 bit unsigned integer limit
-    """
-    return (nr / 100) * 65535
-
-def encode_circle(nr):
-    """
-    Convert from range 0 to 365 to 16 bit unsigned integer limit
-    """
-    return (nr / 365) * 65535
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
@@ -75,15 +51,21 @@ class AmbienceWindow(Handy.ApplicationWindow):
     refresh_spinner = Gtk.Template.Child()
     sidebar = Gtk.Template.Child()
 
-    sub_header_bar = Gtk.Template.Child()
+    group_header_bar = Gtk.Template.Child()
     back = Gtk.Template.Child()
     title_label = Gtk.Template.Child()
 
+    header_deck = Gtk.Template.Child()
+    content_deck = Gtk.Template.Child()
     tiles_list = Gtk.Template.Child()
+
+    light_label = Gtk.Template.Child()
+    light_sub_label = Gtk.Template.Child()
 
     lan = None
     lights = []
     d_lights = []
+    in_light = False
 
     active_row = None
     update_active = False
@@ -191,28 +173,35 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Window switched between normal and mobile (folded) state.
         """
 
-        folded = self.content_box.get_folded()
+        self.folded = self.content_box.get_folded()
 
-        if folded:
+        if self.folded:
             self.back.show_all()
-
             self.sidebar.unselect_all()
         else:
             self.back.hide()
             self.sidebar.select_row(self.active_row)
 
-        self.header_bar.set_show_close_button(folded)
+        self.header_bar.set_show_close_button(self.folded)
 
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
         """
-        Back button in folded mode pressed.
+        Back button pressed. Either goes back to tiles view or group list.
         """
 
-        self.active_light = None
-        self.sidebar.unselect_all()
-        self.content_box.set_visible_child(self.menu)
-        self.header_box.set_visible_child(self.header_bar)
+        if self.in_light:
+            self.update_tiles()
+
+            self.content_deck.navigate(Handy.NavigationDirection.BACK)
+            self.header_deck.navigate(Handy.NavigationDirection.BACK)
+
+            self.in_light = False
+        else:
+            self.active_group = None
+            self.sidebar.unselect_all()
+            self.content_box.set_visible_child(self.menu)
+            self.header_box.set_visible_child(self.header_bar)
 
     @Gtk.Template.Callback("sidebar_selected")
     def sidebar_selected(self, sender, user_data):
@@ -237,6 +226,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         for group_item in self.tiles_list.get_children():
             self.tiles_list.remove(group_item)
+
+    def update_tiles(self):
+        for group_item in self.tiles_list.get_children():
+            if isinstance(group_item, AmbienceFlowBox):
+                for tile in group_item.get_children()[0].get_children():
+                    tile.update()
 
     def update_sidebar(self):
         """
@@ -306,11 +301,34 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         for light in self.active_row.group.get_device_list():
             flow_item = AmbienceLightTile(light)
+            flow_item.clicked_callback = self.tile_clicked
             lights_tiles.insert(flow_item, -1)
 
         self.tiles_list.add(lights_tiles)
 
-        self.header_box.set_visible_child(self.sub_header_bar)
+        self.header_box.set_visible_child(self.header_deck)
+
+    # Light control
+
+    def tile_clicked(self, tile):
+        """
+        Runs when a tile gets clicked. Switches to the light control page.
+        """
+        self.content_deck.navigate(Handy.NavigationDirection.FORWARD)
+        self.header_deck.navigate(Handy.NavigationDirection.FORWARD)
+
+        self.active_light = tile.light
+        self.in_light = True
+
+        self.light_label.set_text(self.active_light.get_label())
+
+        if product_info := self.plist_downloader.get_product(self.active_light.get_product()):
+            self.light_sub_label.set_text(product_info["name"])
+
+    @Gtk.Template.Callback("set_light_power")
+    def set_light_power(self, sender, user_data):
+        if self.active_light:
+            self.active_light.set_power(sender.get_active(), rapid=True)
 
     def __init__(self, lan, **kwargs):
         """
