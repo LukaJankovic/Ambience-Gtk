@@ -37,10 +37,10 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
 
     tile_button = Gtk.Template.Child()
 
-    def __init__(self, light, **kwargs):
+    def __init__(self, light, online=True, **kwargs):
         super().__init__(**kwargs)
 
-        if light:
+        if light and online:
             self.light = light
 
         self.update()

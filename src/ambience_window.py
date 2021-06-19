@@ -23,8 +23,9 @@ try:
 except ImportError:
     API_AVAIL = False
 
-from gi.repository import Gtk, Gdk, GLib, GObject, Handy
+from gi.repository import Gtk, GLib, Handy
 from .ambience_light_tile import *
+from .ambience_settings import *
 from .discovery_item import *
 from .product_list import *
 from .helpers import *
@@ -78,102 +79,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     lan = None
     lights = []
-    d_lights = []
+    offline_lights = []
     in_light = False
 
     active_row = None
     update_active = False
-
-    def get_lights(self, config):
-        lights = []
-        for light in config:
-            light_item = Light(light["mac"], light["ip"])
-            light_item.offline_conf = light
-
-            try:
-                light_item.get_power() # "Ping"
-                light_item.online = True
-            except WorkflowException:
-                light_item.online = False
-
-            lights.append(light_item)
-
-        return lights
-                
-
-    def get_groups(self, lights):
-        """
-        Discovers groups from list of lights
-        """
-
-        groups = []
-
-        for light in lights:
-
-            group_label = ""
-            try:
-                group_label = light.get_group_label()
-            except WorkflowException:
-                try:
-                    group_label = light.offline_conf["group"]
-                except KeyError:
-                    group_label = "Unknown Group"
-
-            if group_label not in [x.label for x in groups]:
-                success = False
-                while not success:
-                    try:
-                        group = self.lan.get_devices_by_group(group_label)
-                        success = True
-                    except WorkflowException:
-                        pass
-
-                group.label = group_label
-                groups.append(group)
-
-        return groups
-
-    # Misc. File Management
-
-    def get_dest_file(self):
-        """
-        Create / find the file used to store lights.
-        """
-
-        data_dir = GLib.get_user_config_dir()
-        dest = GLib.build_filenamev([data_dir, "lights.json"])
-        return Gio.File.new_for_path(dest)
-
-    def get_config(self):
-        """
-        Loads the config file into a dictionary.
-        """
-
-        dest_file = self.get_dest_file()
-
-        try:
-            (success, content, tag) = dest_file.load_contents()
-            return json.loads(content.decode("utf-8"))
-        except GLib.GError as error:
-            # File doesn't exist
-            dest_file.create(Gio.FileCopyFlags.NONE, None)
-        except (TypeError, ValueError) as e:
-            # File is most likely empty
-            print("Config file empty")
-        return []
-
-    # Misc. Window / UI Management
-
-    def group_active_count(self, group):
-        """
-        Counts the number of lights that are on for a given group.
-        """
-        count = 0
-        for light in group.get_device_list():
-            if light.get_power():
-                count += 1
-
-        return count
 
     def create_header_label(self):
         """
@@ -264,9 +174,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.refresh_stack.set_visible_child_name("loading")
         self.clear_sidebar()
 
-        config = self.get_config()
-        self.lights = self.get_lights(config)
-        self.groups = self.get_groups(self.lights)
+        config = get_config()
+        #self.groups = self.get_groups(config["groups"])
+        self.groups = config["groups"]
 
         GLib.idle_add(self.build_group_list)
 
@@ -275,7 +185,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             group_item = Handy.ActionRow() # TODO: Add power switch
             group_item.set_visible(True)
             group_item.group = group
-            group_item.set_title(group.label)
+            group_item.set_title(group["label"])
             self.sidebar.insert(group_item, -1)
 
         self.refresh_stack.set_visible_child_name("refresh")
@@ -291,6 +201,24 @@ class AmbienceWindow(Handy.ApplicationWindow):
         startup_thread.daemon = True
         startup_thread.start()
 
+    def get_active_lights(self, devices):
+        
+        online = []
+        offline = []
+
+        for light in devices:
+
+            light_item = Light(light["mac"], light["ip"])
+
+            try:
+                light_item.get_info_tuple()
+                online.append(light_item)
+            except WorkflowException:
+                light_item.label = light["label"]
+                offline.append(light_item)
+
+        return (online, offline)
+
     def set_active_group(self):
         """
         User selected a group. Shows all related lights, presets and other controls.
@@ -299,15 +227,43 @@ class AmbienceWindow(Handy.ApplicationWindow):
             return
 
         self.active_row = self.sidebar.get_selected_row()
-        self.title_label.set_text(self.active_row.group.label)
+        self.title_label.set_text(self.active_row.group["label"])
 
         self.clear_tiles()
+
+        group_lights = self.active_row.group["lights"]
 
         all_tiles = AmbienceFlowBox()
         all_tile = AmbienceLightTile(None)
         all_tile.top_label.set_text("All Lights")
 
-        lights_on = self.group_active_count(self.active_row.group)
+        all_tiles.insert(all_tile, -1)
+
+        self.tiles_list.add(all_tiles)
+
+        lights_on = 0
+
+        (online, offline) = self.get_active_lights(group_lights)
+
+        if len(online) > 0:
+            lights_label = self.create_header_label()
+            lights_label.set_text("Lights")
+
+            self.tiles_list.add(lights_label)
+
+            lights_tiles = AmbienceFlowBox()
+
+            for light in group_lights:
+                light_item = Light(light["mac"], light["ip"])
+                if light_item.get_power():
+                    lights_on += 1 
+
+                flow_item = AmbienceLightTile(light_item)
+                flow_item.clicked_callback = self.tile_clicked
+                lights_tiles.insert(flow_item, -1)
+
+            self.tiles_list.add(lights_tiles)
+
         sub_text = ""
 
         if lights_on == 0:
@@ -318,23 +274,22 @@ class AmbienceWindow(Handy.ApplicationWindow):
             sub_text = str(lights_on) + "lights on"
 
         all_tile.bottom_label.set_text(sub_text)
-        all_tiles.insert(all_tile, -1)
 
-        self.tiles_list.add(all_tiles)
+        if len(offline) > 0:
+            offline_label = self.create_header_label()
+            offline_label.set_text("Offline")
 
-        lights_label = self.create_header_label()
-        lights_label.set_text("Lights")
+            self.tiles_list.add(offline_label)
 
-        self.tiles_list.add(lights_label)
+            lights_tiles = AmbienceFlowBox()
 
-        lights_tiles = AmbienceFlowBox()
+            for light in offline:
+                flow_item = AmbienceLightTile(None)
+                flow_item.top_label.set_text(light.label)
+                flow_item.set_sensitive(False)
+                lights_tiles.insert(flow_item, -1)
 
-        for light in self.active_row.group.get_device_list():
-            flow_item = AmbienceLightTile(light)
-            flow_item.clicked_callback = self.tile_clicked
-            lights_tiles.insert(flow_item, -1)
-
-        self.tiles_list.add(lights_tiles)
+            self.tiles_list.add(lights_tiles)
 
         self.header_box.set_visible_child(self.header_deck)
 
