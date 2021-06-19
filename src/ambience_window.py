@@ -82,6 +82,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
     group_label = Gtk.Template.Child()
     location_label = Gtk.Template.Child()
 
+    edit = Gtk.Template.Child()
+    edit_stack = Gtk.Template.Child()
+    light_edit_label = Gtk.Template.Child()
+
     lan = None
     lights = []
     offline_lights = []
@@ -434,6 +438,52 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def set_light_power(self, sender, user_data):
         if self.active_light:
             self.active_light.set_power(sender.get_active(), rapid=True)
+
+    # Editing label
+
+    @Gtk.Template.Callback("name_changed")
+    def name_changed(self, sender):
+        """
+        Checks to see if the edit toggle button should be disabled if the name
+        is empty.
+        """
+        self.edit.set_sensitive(self.light_edit_label.get_text())
+
+    @Gtk.Template.Callback("name_activate")
+    def name_enter(self, sender):
+        """
+        Perform the same action as when toggling the edit button.
+        """
+
+        if self.edit.get_active():
+            self.edit.set_active(False)
+
+    @Gtk.Template.Callback("name_event")
+    def name_event(self, sender, event):
+        """
+        User cancelled edit label event.
+        """
+
+        if event.keyval == Gdk.KEY_Escape:
+            self.light_edit_label.set_text(self.active_light.label)
+            self.edit.set_active(False)
+
+    @Gtk.Template.Callback("do_edit")
+    def do_edit(self, sender):
+        """
+        Toggle edit label mode.
+        """
+        if self.edit.get_active():
+            self.light_edit_label.set_text(self.active_light.label)
+            self.edit_stack.set_visible_child_name("editing")
+        else:
+            new_label = self.light_edit_label.get_text()
+
+            self.edit_stack.set_visible_child_name("normal")
+
+            self.active_light.set_label(new_label)
+            self.active_light.label = new_label
+            self.light_label.set_text(new_label)
 
     def __init__(self, lan, **kwargs):
         """

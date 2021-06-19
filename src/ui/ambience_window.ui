@@ -307,6 +307,9 @@
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="hexpand">True</property>
+                                <signal name="activate" handler="name_activate" swapped="no"/>
+                                <signal name="changed" handler="name_changed" swapped="no"/>
+                                <signal name="key-release-event" handler="name_event" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="name">editing</property>
@@ -339,6 +342,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
+                            <signal name="clicked" handler="do_edit" swapped="no"/>
                             <child>
                               <object class="GtkImage">
                                 <property name="visible">True</property>
@@ -465,6 +469,7 @@
                   <object class="GtkStack" id="light_stack">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="transition-type">crossfade</property>
                     <child>
                       <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
