@@ -59,6 +59,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     header_deck = Gtk.Template.Child()
     content_deck = Gtk.Template.Child()
     tiles_list = Gtk.Template.Child()
+    light_stack = Gtk.Template.Child()
 
     light_label = Gtk.Template.Child()
     light_sub_label = Gtk.Template.Child()
@@ -76,6 +77,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
     kelvin_scale = Gtk.Template.Child()
     kelvin_adj = Gtk.Template.Child()
     infrared_scale = Gtk.Template.Child()
+
+    ip_label = Gtk.Template.Child()
+    group_label = Gtk.Template.Child()
+    location_label = Gtk.Template.Child()
 
     lan = None
     lights = []
@@ -214,6 +219,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Restart discovery or repopulate the sidebar.
         """
         self.refresh_stack.set_visible_child_name("loading")
+        self.content_deck.set_visible_child_name("tiles")
+        self.clear_tiles()
 
         startup_thread = threading.Thread(target=self.startup)
         startup_thread.daemon = True
@@ -248,52 +255,61 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.title_label.set_text(self.active_row.group["label"])
 
         self.clear_tiles()
+        self.refresh_stack.set_visible_child_name("loading")
 
-        group_lights = self.active_row.group["lights"]
+        self.group_lights = self.active_row.group["lights"]
 
-        all_tiles = AmbienceFlowBox()
-        all_tile = AmbienceLightTile(None)
-        all_tile.top_label.set_text("All Lights")
+        light_check_thread = threading.Thread(target=self.group_light_check_thread) 
+        light_check_thread.daemon = False
+        light_check_thread.start()
 
-        all_tiles.insert(all_tile, -1)
+    def group_light_check_thread(self):
+        (self.online, self.offline) = self.get_active_lights(self.group_lights)
+        GLib.idle_add(self.set_active_group_ui)
 
-        self.tiles_list.add(all_tiles)
+    def set_active_group_ui(self):
+        if not self.active_row.group["label"] == "Unknown Group":
+            all_tiles = AmbienceFlowBox()
+            all_tile = AmbienceLightTile(None)
+            all_tile.top_label.set_text("All Lights")
 
-        lights_on = 0
+            all_tiles.insert(all_tile, -1)
 
-        (online, offline) = self.get_active_lights(group_lights)
+            self.tiles_list.add(all_tiles)
 
-        if len(online) > 0:
-            lights_label = self.create_header_label()
-            lights_label.set_text("Lights")
+            lights_on = 0
 
-            self.tiles_list.add(lights_label)
+            if len(self.online) > 0:
+                lights_label = self.create_header_label()
+                lights_label.set_text("Lights")
 
-            lights_tiles = AmbienceFlowBox()
+                self.tiles_list.add(lights_label)
 
-            for light in group_lights:
-                light_item = Light(light["mac"], light["ip"])
-                if light_item.get_power():
-                    lights_on += 1 
+                lights_tiles = AmbienceFlowBox()
 
-                flow_item = AmbienceLightTile(light_item)
-                flow_item.clicked_callback = self.tile_clicked
-                lights_tiles.insert(flow_item, -1)
+                for light in self.group_lights:
+                    light_item = Light(light["mac"], light["ip"])
+                    if light_item.get_power():
+                        lights_on += 1 
 
-            self.tiles_list.add(lights_tiles)
+                    flow_item = AmbienceLightTile(light_item)
+                    flow_item.clicked_callback = self.tile_clicked
+                    lights_tiles.insert(flow_item, -1)
 
-        sub_text = ""
+                self.tiles_list.add(lights_tiles)
 
-        if lights_on == 0:
-            sub_text = "No lights on"
-        elif lights_on == 1:
-            sub_text = "1 light on"
-        else:
-            sub_text = str(lights_on) + "lights on"
+            sub_text = ""
 
-        all_tile.bottom_label.set_text(sub_text)
+            if lights_on == 0:
+                sub_text = "No lights on"
+            elif lights_on == 1:
+                sub_text = "1 light on"
+            else:
+                sub_text = str(lights_on) + "lights on"
 
-        if len(offline) > 0:
+            all_tile.bottom_label.set_text(sub_text)
+
+        if len(self.offline) > 0:
             offline_label = self.create_header_label()
             offline_label.set_text("Offline")
 
@@ -301,7 +317,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             lights_tiles = AmbienceFlowBox()
 
-            for light in offline:
+            for light in self.offline:
                 flow_item = AmbienceLightTile(None)
                 flow_item.top_label.set_text(light.label)
                 flow_item.set_sensitive(False)
@@ -310,6 +326,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.tiles_list.add(lights_tiles)
 
         self.header_box.set_visible_child(self.header_deck)
+        self.refresh_stack.set_visible_child_name("refresh")
+
 
     # Light control
 
@@ -324,35 +342,72 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.in_light = True
         self.update_active = True
 
-        self.light_label.set_text(self.active_light.get_label())
+        self.light_stack.set_visible_child_name("loading")
 
-        if product_info := self.plist_downloader.get_product(self.active_light.get_product()):
-            self.light_sub_label.set_text(product_info["name"])
+        fetch_thread = threading.Thread(target=self.fetch_light_data)
+        fetch_thread.daemon = False
+        fetch_thread.start()
 
-        self.power_switch.set_active(self.active_light.get_power())
+    def fetch_light_data(self):
+        self.active_light.label = self.active_light.get_label()
+        self.active_light.product = self.active_light.get_product()
+        self.active_light.power = self.active_light.get_power()
+
+        self.active_light.has_color = self.active_light.supports_color()
+        self.active_light.has_temp = self.active_light.supports_temperature()
+        self.active_light.has_infrar = self.active_light.supports_infrared()
 
         (hue, saturation, brightness, temperature) = self.active_light.get_color()
-        hue = decode_circle(hue)
-        (saturation, brightness) = map(decode, [saturation, brightness])
 
-        self.brightness_scale.set_value(brightness)
+        self.active_light.brightness = decode(brightness)
+        
+        if self.active_light.has_color:
+            self.active_light.hue = decode_circle(hue)
+            self.active_light.saturation = decode(saturation)
 
-        if self.active_light.supports_color():
+        if self.active_light.has_temp:
+            self.active_light.temperature = temperature
+
+        if self.active_light.has_infrar:
+            self.active_light.infrared = decode(self.active_light.get_infrared())
+
+        self.active_light.ip = self.active_light.get_ip_addr()
+        self.active_light.group = self.active_light.get_group_label()
+        self.active_light.location = self.active_light.get_location_label()
+
+        GLib.idle_add(self.show_light_controls)
+
+    def show_light_controls(self):
+        self.light_label.set_text(self.active_light.label)
+
+        if product_info := self.plist_downloader.get_product(self.active_light.product):
+            self.light_sub_label.set_text(product_info["name"])
+
+        self.power_switch.set_active(self.active_light.power)
+
+        self.brightness_scale.set_value(self.active_light.brightness)
+
+        if self.active_light.has_color:
             self.hue_row.set_visible(True)
             self.saturation_row.set_visible(True)
 
-            self.hue_scale.set_value(hue)
-            self.saturation_scale.set_value(saturation)
+            self.hue_scale.set_value(self.active_light.hue)
+            self.saturation_scale.set_value(self.active_light.saturation)
 
-        if self.active_light.supports_temperature():
+        if self.active_light.has_temp:
             self.kelvin_row.set_visible(True)
-            self.kelvin_scale.set_value(temperature)
+            self.kelvin_scale.set_value(self.active_light.temperature)
 
-        if self.active_light.supports_infrared():
+        if self.active_light.has_infrar:
             self.infrared_row.set_visible(True)
-            self.infrared_scale.set_value(decode(self.active_light.get_infrared()))
+            self.infrared_scale.set_value(self.active_light.infrared)
+
+        self.ip_label.set_label(self.active_light.ip)
+        self.group_label.set_label(self.active_light.group)
+        self.location_label.set_label(self.active_light.location)
 
         self.update_active = False
+        self.light_stack.set_visible_child_name("light")
 
     @Gtk.Template.Callback("push_color")
     def push_color(self, sender):

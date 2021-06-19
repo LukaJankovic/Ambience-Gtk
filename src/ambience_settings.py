@@ -86,6 +86,14 @@ def convert_old_config():
             group = light.get_group_label()
             new = add_light_to_group(new, group, l)
         except WorkflowException:
-            new = add_light_to_group(new, "Unknown Group", l)
+            in_new = False
+            for group in new["groups"]:
+                for light in group["lights"]:
+                    if l["mac"] == light["mac"] and l["ip"] and light["ip"]:
+                        in_new = True
+                        break
+
+            if not in_new:
+                new = add_light_to_group(new, "Unknown Group", l)
 
     write_config(new, get_dest_file())
