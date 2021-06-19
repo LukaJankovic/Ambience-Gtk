@@ -25,6 +25,7 @@ except ImportError:
 
 from gi.repository import Gtk, GLib, Handy
 from .ambience_light_tile import *
+from .ambience_group_tile import *
 from .ambience_settings import *
 from .discovery_item import *
 from .product_list import *
@@ -133,7 +134,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
 
         if self.in_light:
-            self.update_tiles()
+            self.set_active_group()
 
             self.content_deck.navigate(Handy.NavigationDirection.BACK)
             self.header_deck.navigate(Handy.NavigationDirection.BACK)
@@ -168,12 +169,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         for group_item in self.tiles_list.get_children():
             self.tiles_list.remove(group_item)
-
-    def update_tiles(self):
-        for group_item in self.tiles_list.get_children():
-            if isinstance(group_item, AmbienceFlowBox):
-                for tile in group_item.get_children()[0].get_children():
-                    tile.update()
 
     def update_sidebar(self):
         """
@@ -234,6 +229,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         
         online = []
         offline = []
+        threads = []
 
         for light in devices:
 
@@ -241,10 +237,21 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             try:
                 light_item.get_info_tuple()
-                online.append(light_item)
+
+                def finished(light):
+                    online.append(light)
+
+                fetch_thread = threading.Thread(target=fetch_light_data, args=(light_item, finished))
+                fetch_thread.daemon = True 
+                threads.append(fetch_thread)
+
+                fetch_thread.start()
             except WorkflowException:
                 light_item.label = light["label"]
                 offline.append(light_item)
+
+        for thread in threads:
+            thread.join()
 
         return (online, offline)
 
@@ -269,13 +276,18 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def group_light_check_thread(self):
         (self.online, self.offline) = self.get_active_lights(self.group_lights)
+
+        self.active_light_count = 0
+        for light in self.online:
+            if light.get_power():
+                self.active_light_count += 1
+
         GLib.idle_add(self.set_active_group_ui)
 
     def set_active_group_ui(self):
         if not self.active_row.group["label"] == "Unknown Group":
             all_tiles = AmbienceFlowBox()
-            all_tile = AmbienceLightTile(None)
-            all_tile.top_label.set_text("All Lights")
+            all_tile = AmbienceGroupTile(self.active_row.group["label"], self.online)
 
             all_tiles.insert(all_tile, -1)
 
@@ -291,27 +303,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
                 lights_tiles = AmbienceFlowBox()
 
-                for light in self.group_lights:
-                    light_item = Light(light["mac"], light["ip"])
-                    if light_item.get_power():
-                        lights_on += 1 
-
-                    flow_item = AmbienceLightTile(light_item)
+                for light in self.online:
+                    flow_item = AmbienceLightTile(light)
                     flow_item.clicked_callback = self.tile_clicked
                     lights_tiles.insert(flow_item, -1)
 
                 self.tiles_list.add(lights_tiles)
-
-            sub_text = ""
-
-            if lights_on == 0:
-                sub_text = "No lights on"
-            elif lights_on == 1:
-                sub_text = "1 light on"
-            else:
-                sub_text = str(lights_on) + "lights on"
-
-            all_tile.bottom_label.set_text(sub_text)
 
         if len(self.offline) > 0:
             offline_label = self.create_header_label()
@@ -322,7 +319,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             lights_tiles = AmbienceFlowBox()
 
             for light in self.offline:
-                flow_item = AmbienceLightTile(None)
+                flow_item = AmbienceLightTile(light, False)
                 flow_item.top_label.set_text(light.label)
                 flow_item.set_sensitive(False)
                 lights_tiles.insert(flow_item, -1)
@@ -331,7 +328,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.header_box.set_visible_child(self.header_deck)
         self.refresh_stack.set_visible_child_name("refresh")
-
 
     # Light control
 
@@ -348,38 +344,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.light_stack.set_visible_child_name("loading")
 
-        fetch_thread = threading.Thread(target=self.fetch_light_data)
+        def show_light_cb(_):
+            GLib.idle_add(self.show_light_controls)
+
+        fetch_thread = threading.Thread(target=fetch_light_data, args=(self.active_light, show_light_cb))
         fetch_thread.daemon = False
         fetch_thread.start()
-
-    def fetch_light_data(self):
-        self.active_light.label = self.active_light.get_label()
-        self.active_light.product = self.active_light.get_product()
-        self.active_light.power = self.active_light.get_power()
-
-        self.active_light.has_color = self.active_light.supports_color()
-        self.active_light.has_temp = self.active_light.supports_temperature()
-        self.active_light.has_infrar = self.active_light.supports_infrared()
-
-        (hue, saturation, brightness, temperature) = self.active_light.get_color()
-
-        self.active_light.brightness = decode(brightness)
-        
-        if self.active_light.has_color:
-            self.active_light.hue = decode_circle(hue)
-            self.active_light.saturation = decode(saturation)
-
-        if self.active_light.has_temp:
-            self.active_light.temperature = temperature
-
-        if self.active_light.has_infrar:
-            self.active_light.infrared = decode(self.active_light.get_infrared())
-
-        self.active_light.ip = self.active_light.get_ip_addr()
-        self.active_light.group = self.active_light.get_group_label()
-        self.active_light.location = self.active_light.get_location_label()
-
-        GLib.idle_add(self.show_light_controls)
 
     def show_light_controls(self):
         self.light_label.set_text(self.active_light.label)
@@ -515,6 +485,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def startup(self):
         if get_old_dest_file().query_exists():
             convert_old_config()
+            move_old_config()
 
         self.update_sidebar()
 

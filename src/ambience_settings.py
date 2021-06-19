@@ -97,3 +97,9 @@ def convert_old_config():
                 new = add_light_to_group(new, "Unknown Group", l)
 
     write_config(new, get_dest_file())
+
+def move_old_config():
+    data_dir = GLib.get_user_config_dir()
+    dest = GLib.build_filenamev([data_dir, "lights.json.bak"])
+    target = Gio.File.new_for_path(dest)
+    get_old_dest_file().move(target, Gio.FileCopyFlags.NONE, None, None, None)

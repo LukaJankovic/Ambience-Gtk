@@ -3,9 +3,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '1')
 
-from gi.repository import Gtk, Gdk, Gio, Handy
-import colorsys
-import lifxlan
+from gi.repository import Gtk, GLib
+from lifxlan import *
+import colorsys, threading
 
 from .helpers import *
 
@@ -50,42 +50,43 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         if not self.light:
             return
 
-        (hue, saturation, brightness, temperature) = self.light.get_color()
-
-        self.top_label.set_text(self.light.get_label())
+        self.top_label.set_text(self.light.label)
 
         if self.button_style_provider:
             self.tile_button.get_style_context().remove_provider(self.button_style_provider)
 
-        if self.light.get_power():
-            self.bottom_label.set_text(str(int(decode(brightness))) + "%")
-            (r, g, b) = colorsys.hsv_to_rgb(int(decode_circle(hue)), decode(saturation) / 100, decode(brightness) / 100)
+        if self.light.has_color:
+            if self.light.power:
+                self.bottom_label.set_text(str(int(self.light.brightness)) + "%")
 
-            css = f'.ambience_light_tile {{ background: { rgb_to_hex(r, g, b) }; }}'.encode()
-            self.button_style_provider = Gtk.CssProvider()
-            self.button_style_provider.load_from_data(css)
+                (r, g, b) = colorsys.hsv_to_rgb(self.light.hue / 365,
+                                                self.light.saturation / 100,
+                                                self.light.brightness / 100)
 
-            self.tile_button.get_style_context().add_provider(self.button_style_provider, 600) # TODO: fix magic number
+                css = f'.ambience_light_tile {{ background: { rgb_to_hex(r, g, b) }; }}'.encode()
+                self.button_style_provider = Gtk.CssProvider()
+                self.button_style_provider.load_from_data(css)
 
-        if self.text_style_provider:
-            self.top_label.get_style_context().remove_provider(self.text_style_provider)
-            self.bottom_label.get_style_context().remove_provider(self.text_style_provider)
-            self.text_style_provider = None
+                self.tile_button.get_style_context().add_provider(self.button_style_provider, 600) # TODO: fix magic number
 
-        if self.light.get_power():
+            if self.text_style_provider:
+                self.top_label.get_style_context().remove_provider(self.text_style_provider)
+                self.bottom_label.get_style_context().remove_provider(self.text_style_provider)
+                self.text_style_provider = None
 
-            css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
+            if self.light.power:
+                css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
 
-            if (int(r * 255) * 0.299 + int(g * 255) * 0.587 + int(b * 255) * 0.114) > 186:
-                css = '.ambience_light_tile_text { color: #000000; }'.encode()
+                if (int(r * 255) * 0.299 + int(g * 255) * 0.587 + int(b * 255) * 0.114) > 145:
+                    css = '.ambience_light_tile_text { color: #000000; }'.encode()
 
-            self.text_style_provider = Gtk.CssProvider()
-            self.text_style_provider.load_from_data(css)
+                self.text_style_provider = Gtk.CssProvider()
+                self.text_style_provider.load_from_data(css)
 
-            self.top_label.get_style_context().add_provider(self.text_style_provider, 600)
-            self.bottom_label.get_style_context().add_provider(self.text_style_provider, 600)
-        else:
-            self.bottom_label.set_text("Off")
+                self.top_label.get_style_context().add_provider(self.text_style_provider, 600)
+                self.bottom_label.get_style_context().add_provider(self.text_style_provider, 600)
+            else:
+                self.bottom_label.set_text("Off")
 
     @Gtk.Template.Callback("tile_clicked")
     def tile_clicked(self, sender):

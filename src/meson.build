@@ -31,6 +31,7 @@ ambience_sources = [
   'ambience_window.py',
   'ambience_discovery.py',
   'ambience_light_tile.py',
+  'ambience_group_tile.py',
   'ambience_settings.py',
   'light_item.py',
   'discovery_item.py',
