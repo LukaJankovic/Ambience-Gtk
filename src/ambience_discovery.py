@@ -34,7 +34,7 @@ class AmbienceDiscovery(Gtk.Dialog):
         GLib.idle_add(self.update_list)
 
     def update_list(self):
-        config_list = get_config()
+        config_list = get_config(get_dest_file())
 
         for light in self.lights:
             sidebar_item = DiscoveryItem()

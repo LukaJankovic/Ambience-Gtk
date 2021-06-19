@@ -61,7 +61,6 @@ class DiscoveryItem(Gtk.ListBoxRow):
         Add or remove the bulb to the main list.
         """
 
-        permissions = 0o664
 
         if self.added:
             self.config_list = remove_light_from_group(self.config_list, self.light.get_mac_addr())
@@ -75,12 +74,5 @@ class DiscoveryItem(Gtk.ListBoxRow):
 
             self.added = True
 
-        if GLib.mkdir_with_parents(self.dest_file.get_parent().get_path(), permissions) == 0:
-            (success, _) = self.dest_file.replace_contents(str.encode(json.dumps(self.config_list)), None, False, Gio.FileCreateFlags.REPLACE_DESTINATION, None)
-
-            if success:
-                self.update_icon()
-            else:
-                print("Unable to save config file")
-        else:
-            print("Unable to create required directory/ies for config file")
+        write_config(self.config_list, self.dest_file)
+        self.update_icon()

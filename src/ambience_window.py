@@ -174,8 +174,26 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.refresh_stack.set_visible_child_name("loading")
         self.clear_sidebar()
 
-        config = get_config()
-        #self.groups = self.get_groups(config["groups"])
+        config = get_config(get_dest_file())
+
+        # Check for offline lights with no group
+        for group in config["groups"]:
+            if group["label"] == "Unknown Group":
+                for light in group["lights"]:
+                    try:
+                        light_item = Light(light["mac"], light["ip"])
+                        light_group = light_item.get_group_label()
+                        group["lights"].remove(light)
+                        config = add_light_to_group(config, light_group, light)                 
+                    except WorkflowException:
+                        pass
+
+                if len(group["lights"]) == 0:
+                    config["groups"].remove(group)
+
+                break
+
+        write_config(config, get_dest_file())
         self.groups = config["groups"]
 
         GLib.idle_add(self.build_group_list)
@@ -390,6 +408,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.reload(self)
 
     def startup(self):
+        if get_old_dest_file().query_exists():
+            convert_old_config()
+
         self.update_sidebar()
 
         self.plist_downloader = product_list()
