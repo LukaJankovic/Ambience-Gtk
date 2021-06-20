@@ -47,7 +47,7 @@
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="action-name">app.discovery</property>
-            <property name="text" translatable="yes">Manage lights</property>
+            <property name="text" translatable="yes">Add lights</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -655,7 +655,7 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkListBox">
+                                      <object class="GtkListBox" id="details_box">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
                                         <property name="selection-mode">none</property>

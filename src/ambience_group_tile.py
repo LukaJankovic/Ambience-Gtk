@@ -49,10 +49,7 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
         else:
             self.bottom_label.set_text(str(count) + " lights on")
 
-    def fetch(self):
-        pass
-
     @Gtk.Template.Callback("tile_clicked")
     def tile_clicked(self, sender):
         if self.clicked_callback:
-            self.clicked_callback(self)
+            self.clicked_callback()

@@ -23,7 +23,7 @@ try:
 except ImportError:
     API_AVAIL = False
 
-from gi.repository import Gtk, GLib, Handy
+from gi.repository import Gtk, GLib, Handy, Gdk
 from .ambience_light_tile import *
 from .ambience_group_tile import *
 from .ambience_settings import *
@@ -87,6 +87,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
     edit_stack = Gtk.Template.Child()
     light_edit_label = Gtk.Template.Child()
 
+    details_box = Gtk.Template.Child()
+
     lan = None
     lights = []
     offline_lights = []
@@ -94,6 +96,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     active_row = None
     update_active = False
+
+    active_light = None
+    active_group = None
 
     def create_header_label(self):
         """
@@ -140,8 +145,14 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.header_deck.navigate(Handy.NavigationDirection.BACK)
 
             self.in_light = False
-        else:
+            self.active_light = None
             self.active_group = None
+
+            self.hue_row.set_visible(False)
+            self.saturation_row.set_visible(False)
+            self.kelvin_row.set_visible(False)
+            self.infrared_row.set_visible(False)
+        else:
             self.sidebar.unselect_all()
             self.content_box.set_visible_child(self.menu)
             self.header_box.set_visible_child(self.header_bar)
@@ -288,7 +299,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if not self.active_row.group["label"] == "Unknown Group":
             all_tiles = AmbienceFlowBox()
             all_tile = AmbienceGroupTile(self.active_row.group["label"], self.online)
-
+            all_tile.clicked_callback = self.group_edit
             all_tiles.insert(all_tile, -1)
 
             self.tiles_list.add(all_tiles)
@@ -342,6 +353,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.in_light = True
         self.update_active = True
 
+        self.edit.set_visible(True)
         self.light_stack.set_visible_child_name("loading")
 
         def show_light_cb(_):
@@ -396,18 +408,31 @@ class AmbienceWindow(Handy.ApplicationWindow):
         brightness = self.brightness_scale.get_value()
         kelvin = self.kelvin_scale.get_value()
 
-        self.active_light.set_color((encode_circle(hue),
-                                     encode(saturation),
-                                     encode(brightness),
-                                     kelvin), rapid=True)
+        if self.active_light:
+            self.active_light.set_color((encode_circle(hue),
+                                        encode(saturation),
+                                        encode(brightness),
+                                        kelvin), rapid=True)
 
-        if self.active_light.supports_infrared():
-            self.active_light.set_infrared(encode(self.infrared_scale.get_value()))
+            if self.active_light.supports_infrared():
+                self.active_light.set_infrared(encode(self.infrared_scale.get_value()))
+
+        if self.active_group:
+            self.active_group.set_color((encode_circle(hue),
+                                        encode(saturation),
+                                        encode(brightness),
+                                        kelvin), rapid=True)
+
+            if self.active_group.has_infrared:
+                self.active_group.set_infrared(encode(self.infrared_scale.get_value()))
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
         if self.active_light:
             self.active_light.set_power(sender.get_active(), rapid=True)
+
+        if self.active_group:
+            self.active_group.set_power(sender.get_active(), rapid=True)
 
     # Editing label
 
@@ -454,6 +479,62 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.active_light.set_label(new_label)
             self.active_light.label = new_label
             self.light_label.set_text(new_label)
+
+    # Group management
+    def group_edit(self):
+        capabilities = {}
+
+        def show_edit_screen():
+            self.light_stack.set_visible_child_name("light")
+
+            if capabilities["color"]:
+                self.hue_row.set_visible(True)
+                self.saturation_row.set_visible(True)
+
+            if capabilities["temperature"]:
+                self.kelvin_row.set_visible(True)
+
+            if capabilities["infrared"]:
+                self.active_group.has_infrared = True
+                self.infrared_row.set_visible(True)
+
+        def get_capabilities():
+            capabilities["color"] = True
+            capabilities["temperature"] = True
+            capabilities["infrared"] = True
+
+            for light in self.online:
+                if not light.supports_color():
+                    capabilities["color"] = False 
+                if not light.supports_temperature():
+                    capabilities["temperature"] = False 
+                if not light.supports_infrared():
+                    capabilities["infrared"] = False 
+
+            GLib.idle_add(show_edit_screen)
+
+        self.active_light = None
+        self.active_group = Group(self.online)
+        self.active_group.has_infrared = False
+
+        self.edit.set_visible(False)
+        self.details_box.set_visible(False)
+
+        self.content_deck.navigate(Handy.NavigationDirection.FORWARD)
+        self.header_deck.navigate(Handy.NavigationDirection.FORWARD)
+        self.light_stack.set_visible_child_name("loading")
+        self.in_light = True
+
+        self.light_label.set_label(self.active_row.group["label"])
+
+        if len(self.online) == 1:
+            self.light_sub_label.set_label("One light online")
+        else:
+            self.light_sub_label.set_label(str(len(self.online)) + " lights online")
+
+        capabilities_thread = threading.Thread(target=get_capabilities)
+        capabilities_thread.daemon = True
+        capabilities_thread.start()
 
     def __init__(self, lan, **kwargs):
         """
