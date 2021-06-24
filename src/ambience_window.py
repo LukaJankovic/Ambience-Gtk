@@ -24,7 +24,8 @@ try:
 except ImportError:
     API_AVAIL = False
 
-from gi.repository import Gtk, GLib, Handy, Gdk
+from gi.repository import Gtk, GLib, Handy
+from .ambience_light_control import *
 from .ambience_light_tile import *
 from .ambience_group_tile import *
 from .ambience_settings import *
@@ -42,12 +43,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
     __gtype_name__ = 'AmbienceWindow'
 
     main_popover = Gtk.Template.Child()
+    main_leaflet = Gtk.Template.Child()
 
-    title_bar = Gtk.Template.Child()
-    header_box = Gtk.Template.Child()
-    content_box = Gtk.Template.Child()
+    title_label = Gtk.Template.Child()
 
-    menu = Gtk.Template.Child()
+    menu_box = Gtk.Template.Child()
     header_bar = Gtk.Template.Child()
     refresh_stack = Gtk.Template.Child()
     refresh = Gtk.Template.Child()
@@ -56,39 +56,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     group_header_bar = Gtk.Template.Child()
     back = Gtk.Template.Child()
-    title_label = Gtk.Template.Child()
 
-    header_deck = Gtk.Template.Child()
-    content_deck = Gtk.Template.Child()
+    controls_deck = Gtk.Template.Child()
+    tiles_box = Gtk.Template.Child()
+
     tiles_list = Gtk.Template.Child()
-    light_stack = Gtk.Template.Child()
-
-    light_label = Gtk.Template.Child()
-    light_sub_label = Gtk.Template.Child()
-
-    power_switch = Gtk.Template.Child()
-
-    hue_row = Gtk.Template.Child()
-    saturation_row = Gtk.Template.Child()
-    kelvin_row = Gtk.Template.Child() 
-    infrared_row = Gtk.Template.Child()
-
-    hue_scale = Gtk.Template.Child()
-    saturation_scale = Gtk.Template.Child()
-    brightness_scale = Gtk.Template.Child()
-    kelvin_scale = Gtk.Template.Child()
-    kelvin_adj = Gtk.Template.Child()
-    infrared_scale = Gtk.Template.Child()
-
-    ip_label = Gtk.Template.Child()
-    group_label = Gtk.Template.Child()
-    location_label = Gtk.Template.Child()
-
-    edit = Gtk.Template.Child()
-    edit_stack = Gtk.Template.Child()
-    light_edit_label = Gtk.Template.Child()
-
-    details_box = Gtk.Template.Child()
 
     lan = None
     lights = []
@@ -122,7 +94,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Window switched between normal and mobile (folded) state.
         """
 
-        self.folded = self.content_box.get_folded()
+        self.folded = sender.get_folded()
 
         if self.folded:
             self.back.show_all()
@@ -138,25 +110,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         Back button pressed. Either goes back to tiles view or group list.
         """
-
-        if self.in_light:
-            self.set_active_group()
-
-            self.content_deck.navigate(Handy.NavigationDirection.BACK)
-            self.header_deck.navigate(Handy.NavigationDirection.BACK)
-
-            self.in_light = False
-            self.active_light = None
-            self.active_group = None
-
-            self.hue_row.set_visible(False)
-            self.saturation_row.set_visible(False)
-            self.kelvin_row.set_visible(False)
-            self.infrared_row.set_visible(False)
-        else:
-            self.sidebar.unselect_all()
-            self.content_box.set_visible_child(self.menu)
-            self.header_box.set_visible_child(self.header_bar)
+        self.sidebar.unselect_all()
+        self.main_leaflet.set_visible_child(self.menu_box)
 
     @Gtk.Template.Callback("sidebar_selected")
     def sidebar_selected(self, sender, user_data):
@@ -230,8 +185,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Restart discovery or repopulate the sidebar.
         """
         self.refresh_stack.set_visible_child_name("loading")
-        self.content_deck.set_visible_child_name("tiles")
-        self.header_deck.set_visible_child_name("tiles")
         self.clear_tiles()
 
         startup_thread = threading.Thread(target=self.startup)
@@ -334,7 +287,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             self.tiles_list.add(lights_tiles)
 
-        self.header_box.set_visible_child(self.header_deck)
+        self.main_leaflet.set_visible_child(self.controls_deck)
         self.refresh_stack.set_visible_child_name("refresh")
 
     # Light control
@@ -343,152 +296,25 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         Runs when a tile gets clicked. Switches to the light control page.
         """
-        self.content_deck.navigate(Handy.NavigationDirection.FORWARD)
-        self.header_deck.navigate(Handy.NavigationDirection.FORWARD)
+        light_controls = AmbienceLightControl(tile.light,
+                                              self.controls_deck,
+                                              self.plist_downloader,
+                                              self.light_control_exit)
+        light_controls.set_visible(True)
 
-        self.active_light = tile.light
-        self.in_light = True
-        self.update_active = True
+        self.controls_deck.insert_child_after(light_controls, self.tiles_box)
+        self.controls_deck.navigate(Handy.NavigationDirection.FORWARD)
+        light_controls.show()
 
-        self.edit.set_visible(True)
-        self.light_stack.set_visible_child_name("loading")
+    def light_control_exit(self, controls):
+        self.controls_deck.navigate(Handy.NavigationDirection.BACK)
+        self.remove_request = controls
+        self.set_active_group()
 
-        def show_light_cb(_, success):
-            if success:
-                GLib.idle_add(self.show_light_controls)
-            else:
-                def display_error():
-                    error_dialog = Gtk.MessageDialog(transient_for=self,
-                                                    flags=0,
-                                                    message_type=Gtk.MessageType.ERROR,
-                                                    buttons=Gtk.ButtonsType.OK,
-                                                    text="Unable to load light data. Please try again.",)
-                    error_dialog.run()
-                    self.go_back(self)
-                    error_dialog.destroy()
-
-                GLib.idle_add(display_error)
-
-        fetch_thread = threading.Thread(target=fetch_all_data, args=(self.active_light, show_light_cb))
-        fetch_thread.daemon = True
-        fetch_thread.start()
-
-    def show_light_controls(self):
-        self.light_label.set_text(self.active_light.label)
-
-        if product_info := self.plist_downloader.get_product(self.active_light.product):
-            self.light_sub_label.set_text(product_info["name"])
-
-        self.power_switch.set_active(self.active_light.power)
-
-        self.brightness_scale.set_value(self.active_light.brightness)
-
-        if self.active_light.has_color:
-            self.hue_row.set_visible(True)
-            self.saturation_row.set_visible(True)
-
-            self.hue_scale.set_value(self.active_light.hue)
-            self.saturation_scale.set_value(self.active_light.saturation)
-
-        if self.active_light.has_temp:
-            self.kelvin_row.set_visible(True)
-            self.kelvin_scale.set_value(self.active_light.temperature)
-
-        if self.active_light.has_infrar:
-            self.infrared_row.set_visible(True)
-            self.infrared_scale.set_value(self.active_light.infrared)
-
-        self.ip_label.set_label(self.active_light.ip)
-        self.group_label.set_label(self.active_light.group)
-        self.location_label.set_label(self.active_light.location)
-
-        self.update_active = False
-        self.light_stack.set_visible_child_name("light")
-
-    @Gtk.Template.Callback("push_color")
-    def push_color(self, sender):
-        """
-        Color data changed by the user, push it to the bulb.
-        """
-        if self.update_active:
-            return
-
-        hue = self.hue_scale.get_value()
-        saturation = self.saturation_scale.get_value()
-        brightness = self.brightness_scale.get_value()
-        kelvin = self.kelvin_scale.get_value()
-
-        if self.active_light:
-            self.active_light.set_color((encode_circle(hue),
-                                        encode(saturation),
-                                        encode(brightness),
-                                        kelvin), rapid=True)
-
-            if self.active_light.supports_infrared():
-                self.active_light.set_infrared(encode(self.infrared_scale.get_value()))
-
-        if self.active_group:
-            self.active_group.set_color((encode_circle(hue),
-                                        encode(saturation),
-                                        encode(brightness),
-                                        kelvin), rapid=True)
-
-            if self.active_group.has_infrared:
-                self.active_group.set_infrared(encode(self.infrared_scale.get_value()))
-
-    @Gtk.Template.Callback("set_light_power")
-    def set_light_power(self, sender, user_data):
-        if self.active_light:
-            self.active_light.set_power(sender.get_active(), rapid=True)
-
-        if self.active_group:
-            self.active_group.set_power(sender.get_active(), rapid=True)
-
-    # Editing label
-
-    @Gtk.Template.Callback("name_changed")
-    def name_changed(self, sender):
-        """
-        Checks to see if the edit toggle button should be disabled if the name
-        is empty.
-        """
-        self.edit.set_sensitive(self.light_edit_label.get_text())
-
-    @Gtk.Template.Callback("name_activate")
-    def name_enter(self, sender):
-        """
-        Perform the same action as when toggling the edit button.
-        """
-
-        if self.edit.get_active():
-            self.edit.set_active(False)
-
-    @Gtk.Template.Callback("name_event")
-    def name_event(self, sender, event):
-        """
-        User cancelled edit label event.
-        """
-
-        if event.keyval == Gdk.KEY_Escape:
-            self.light_edit_label.set_text(self.active_light.label)
-            self.edit.set_active(False)
-
-    @Gtk.Template.Callback("do_edit")
-    def do_edit(self, sender):
-        """
-        Toggle edit label mode.
-        """
-        if self.edit.get_active():
-            self.light_edit_label.set_text(self.active_light.label)
-            self.edit_stack.set_visible_child_name("editing")
-        else:
-            new_label = self.light_edit_label.get_text()
-
-            self.edit_stack.set_visible_child_name("normal")
-
-            self.active_light.set_label(new_label)
-            self.active_light.label = new_label
-            self.light_label.set_text(new_label)
+    def transition_update(self, sender, user_data):
+        if not sender.get_transition_running() and self.remove_request is not None:
+            sender.remove(self.remove_request)
+            self.remove_request = None
 
     # Group management
     def get_group_value(self, prop):

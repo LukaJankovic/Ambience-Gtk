@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/io/github/lukajankovic/ambience">
     <file>ui/ambience_window.ui</file>
+    <file>ui/ambience_light_control.ui</file>
     <file>ui/ambience_discovery.ui</file>
     <file>ui/ambience_flow_box.ui</file>
     <file>ui/ambience_light_tile.ui</file>
