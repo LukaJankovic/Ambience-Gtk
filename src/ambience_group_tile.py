@@ -36,7 +36,7 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
     def count_on(self):
         count = 0
         for light in self.online:
-            if light.get_power():
+            if light.power:
                 count += 1
         return count
 

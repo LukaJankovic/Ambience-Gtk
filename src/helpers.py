@@ -1,5 +1,7 @@
 from lifxlan import *
 
+MAX_RETRIES = 3
+
 # Helper functions for converting values to / from api
 def decode(nr):
     """
@@ -28,16 +30,75 @@ def encode_circle(nr):
 def rgb_to_hex(r, g, b):
     return '#{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
 
-def fetch_light_data(light, finished_callback):
-    light.label = light.get_label()
-    light.product = light.get_product()
-    light.power = light.get_power()
+def fetch_data_async(light_function, callback):
+    retries = 0
+    return_data = None
 
-    light.has_color = light.supports_color()
-    light.has_temp = light.supports_temperature()
-    light.has_infrar = light.supports_infrared()
+    while retries < MAX_RETRIES:
+        try:
+            return_data = light_function()
+            callback(return_data, True)
+        except WorkflowException:
+            print("invalid response for ", light_function)
+            retries += 1
 
-    (hue, saturation, brightness, temperature) = light.get_color()
+    callback(None, False)
+
+def fetch_data_sync(light_function):
+    retries = 0
+    return_data = None
+
+    while retries < MAX_RETRIES:
+        try:
+            return_data = light_function()
+            return return_data
+        except WorkflowException:
+            print("invalid response for ", light_function)
+            retries += 1
+
+    return None
+
+def fetch_all_data(light, finished_callback):
+    
+    light.label = fetch_data_sync(light.get_label)
+    if light.label is None:
+        finished_callback(light, False)
+        return
+
+    light.product = fetch_data_sync(light.get_product)
+    if light.product is None:
+        finished_callback(light, False)
+        return
+
+    light.power = fetch_data_sync(light.get_power)
+    if light.power is None:
+        finished_callback(light, False)
+        return
+
+    light.has_color = fetch_data_sync(light.supports_color)
+    if light.has_color is None:
+        finished_callback(light, False)
+        return
+
+    light.has_temp = fetch_data_sync(light.supports_temperature)
+    if light.has_temp is None:
+        finished_callback(light, False)
+        return
+
+    light.has_infrar = fetch_data_sync(light.supports_infrared)
+    if light.has_infrar is None:
+        finished_callback(light, False)
+        return
+
+    color_res = fetch_data_sync(light.get_color)
+    if color_res is None:
+        finished_callback(light, False)
+        return
+
+    hue = color_res[0]
+    saturation = color_res[1]
+    brightness = color_res[2]
+    temperature = color_res[3]
 
     light.brightness = decode(brightness)
     
@@ -51,8 +112,19 @@ def fetch_light_data(light, finished_callback):
     if light.has_infrar:
         light.infrared = decode(light.get_infrared())
 
-    light.ip = light.get_ip_addr()
-    light.group = light.get_group_label()
-    light.location = light.get_location_label()
+    light.ip = fetch_data_sync(light.get_ip_addr)
+    if light.ip is None:
+        finished_callback(light, False)
+        return
 
-    finished_callback(light)
+    light.group = fetch_data_sync(light.get_group_label)
+    if light.group is None:
+        finished_callback(light, False)
+        return
+
+    light.location = fetch_data_sync(light.get_location_label)
+    if light.location is None:
+        finished_callback(light, False)
+        return
+
+    finished_callback(light, True)

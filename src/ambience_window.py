@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from struct import error
 import threading
 
 try:
@@ -230,6 +231,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         self.refresh_stack.set_visible_child_name("loading")
         self.content_deck.set_visible_child_name("tiles")
+        self.header_deck.set_visible_child_name("tiles")
         self.clear_tiles()
 
         startup_thread = threading.Thread(target=self.startup)
@@ -246,21 +248,18 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             light_item = Light(light["mac"], light["ip"])
 
-            try:
-                light_item.get_info_tuple()
+            def finished(light_item, success):
+                if success:
+                    online.append(light_item)
+                else:
+                    light_item.label = light["label"]
+                    offline.append(light_item)
 
-                def finished(light):
-                    online.append(light)
-
-                fetch_thread = threading.Thread(target=fetch_light_data, args=(light_item, finished))
-                fetch_thread.daemon = True 
-                threads.append(fetch_thread)
-
-                fetch_thread.start()
-            except WorkflowException:
-                light_item.label = light["label"]
-                offline.append(light_item)
-
+            fetch_thread = threading.Thread(target=fetch_all_data, args=(light_item, finished))
+            fetch_thread.daemon = True 
+            fetch_thread.start()
+            threads.append(fetch_thread)
+                
         for thread in threads:
             thread.join()
 
@@ -282,7 +281,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.group_lights = self.active_row.group["lights"]
 
         light_check_thread = threading.Thread(target=self.group_light_check_thread) 
-        light_check_thread.daemon = False
+        light_check_thread.daemon = True 
         light_check_thread.start()
 
     def group_light_check_thread(self):
@@ -290,7 +289,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.active_light_count = 0
         for light in self.online:
-            if light.get_power():
+            if light.power:
                 self.active_light_count += 1
 
         GLib.idle_add(self.set_active_group_ui)
@@ -303,8 +302,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
             all_tiles.insert(all_tile, -1)
 
             self.tiles_list.add(all_tiles)
-
-            lights_on = 0
 
             if len(self.online) > 0:
                 lights_label = self.create_header_label()
@@ -356,11 +353,24 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.edit.set_visible(True)
         self.light_stack.set_visible_child_name("loading")
 
-        def show_light_cb(_):
-            GLib.idle_add(self.show_light_controls)
+        def show_light_cb(_, success):
+            if success:
+                GLib.idle_add(self.show_light_controls)
+            else:
+                def display_error():
+                    error_dialog = Gtk.MessageDialog(transient_for=self,
+                                                    flags=0,
+                                                    message_type=Gtk.MessageType.ERROR,
+                                                    buttons=Gtk.ButtonsType.OK,
+                                                    text="Unable to load light data. Please try again.",)
+                    error_dialog.run()
+                    self.go_back(self)
+                    error_dialog.destroy()
 
-        fetch_thread = threading.Thread(target=fetch_light_data, args=(self.active_light, show_light_cb))
-        fetch_thread.daemon = False
+                GLib.idle_add(display_error)
+
+        fetch_thread = threading.Thread(target=fetch_all_data, args=(self.active_light, show_light_cb))
+        fetch_thread.daemon = True
         fetch_thread.start()
 
     def show_light_controls(self):
