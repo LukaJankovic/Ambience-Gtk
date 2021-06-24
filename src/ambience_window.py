@@ -491,22 +491,55 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.light_label.set_text(new_label)
 
     # Group management
+    def get_group_value(self, prop):
+        value = -1
+        for light in self.online:
+            if value == -1:
+                value = light.__dict__[prop]
+            elif not value == light.__dict__[prop]:
+                break
+
+        if value == -1:
+            return None
+        return value
+
     def group_edit(self):
         capabilities = {}
 
         def show_edit_screen():
+            self.update_active = True
             self.light_stack.set_visible_child_name("light")
+
+            if power := self.get_group_value("power"):
+                self.power_switch.set_active(power)
+
+            if brightness := self.get_group_value("brightness"):
+                self.brightness_scale.set_value(brightness)
 
             if capabilities["color"]:
                 self.hue_row.set_visible(True)
                 self.saturation_row.set_visible(True)
 
+                if hue := self.get_group_value("hue"):
+                    self.hue_scale.set_value(hue)
+
+                if saturation := self.get_group_value("saturation"):
+                    self.saturation_scale.set_value(saturation)
+
             if capabilities["temperature"]:
                 self.kelvin_row.set_visible(True)
+
+                if temperature := self.get_group_value("temperature"):
+                    self.kelvin_scale.set_value(temperature)
 
             if capabilities["infrared"]:
                 self.active_group.has_infrared = True
                 self.infrared_row.set_visible(True)
+
+                if infrared := self.get_group_value("infrared"):
+                    self.infrared_scale.set_value(infrared)
+
+            self.update_active = False 
 
         def get_capabilities():
             capabilities["color"] = True
@@ -545,6 +578,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         capabilities_thread = threading.Thread(target=get_capabilities)
         capabilities_thread.daemon = True
         capabilities_thread.start()
+
+    # Initialization, startup
 
     def __init__(self, lan, **kwargs):
         """
