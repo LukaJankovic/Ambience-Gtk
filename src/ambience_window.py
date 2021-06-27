@@ -26,13 +26,14 @@ except ImportError:
 
 from gi.repository import Gtk, GLib, Handy
 from .ambience_light_control import *
+from .ambience_group_control import *
 from .ambience_light_tile import *
 from .ambience_group_tile import *
 from .ambience_settings import *
 from .discovery_item import *
 from .product_list import *
 from .helpers import *
-import json, threading
+import threading
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
@@ -68,10 +69,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
     in_light = False
 
     active_row = None
-    update_active = False
-
-    active_light = None
-    active_group = None
 
     def create_header_label(self):
         """
@@ -306,6 +303,18 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.controls_deck.navigate(Handy.NavigationDirection.FORWARD)
         light_controls.show()
 
+    def group_edit(self):
+        group_controls = AmbienceGroupControl(self.active_row.group,
+                                              self.online,
+                                              self.controls_deck,
+                                              self.light_control_exit)
+
+        group_controls.set_visible(True)
+
+        self.controls_deck.insert_child_after(group_controls, self.tiles_box)
+        self.controls_deck.navigate(Handy.NavigationDirection.FORWARD)
+        group_controls.show()
+
     def light_control_exit(self, controls):
         self.controls_deck.navigate(Handy.NavigationDirection.BACK)
         self.remove_request = controls
@@ -328,82 +337,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if value == -1:
             return None
         return value
-
-    def group_edit(self):
-        capabilities = {}
-
-        def show_edit_screen():
-            self.update_active = True
-            self.light_stack.set_visible_child_name("light")
-
-            if power := self.get_group_value("power"):
-                self.power_switch.set_active(power)
-
-            if brightness := self.get_group_value("brightness"):
-                self.brightness_scale.set_value(brightness)
-
-            if capabilities["color"]:
-                self.hue_row.set_visible(True)
-                self.saturation_row.set_visible(True)
-
-                if hue := self.get_group_value("hue"):
-                    self.hue_scale.set_value(hue)
-
-                if saturation := self.get_group_value("saturation"):
-                    self.saturation_scale.set_value(saturation)
-
-            if capabilities["temperature"]:
-                self.kelvin_row.set_visible(True)
-
-                if temperature := self.get_group_value("temperature"):
-                    self.kelvin_scale.set_value(temperature)
-
-            if capabilities["infrared"]:
-                self.active_group.has_infrared = True
-                self.infrared_row.set_visible(True)
-
-                if infrared := self.get_group_value("infrared"):
-                    self.infrared_scale.set_value(infrared)
-
-            self.update_active = False 
-
-        def get_capabilities():
-            capabilities["color"] = True
-            capabilities["temperature"] = True
-            capabilities["infrared"] = True
-
-            for light in self.online:
-                if not light.supports_color():
-                    capabilities["color"] = False 
-                if not light.supports_temperature():
-                    capabilities["temperature"] = False 
-                if not light.supports_infrared():
-                    capabilities["infrared"] = False 
-
-            GLib.idle_add(show_edit_screen)
-
-        self.active_light = None
-        self.active_group = Group(self.online)
-        self.active_group.has_infrared = False
-
-        self.edit.set_visible(False)
-        self.details_box.set_visible(False)
-
-        self.content_deck.navigate(Handy.NavigationDirection.FORWARD)
-        self.header_deck.navigate(Handy.NavigationDirection.FORWARD)
-        self.light_stack.set_visible_child_name("loading")
-        self.in_light = True
-
-        self.light_label.set_label(self.active_row.group["label"])
-
-        if len(self.online) == 1:
-            self.light_sub_label.set_label("One light online")
-        else:
-            self.light_sub_label.set_label(str(len(self.online)) + " lights online")
-
-        capabilities_thread = threading.Thread(target=get_capabilities)
-        capabilities_thread.daemon = True
-        capabilities_thread.start()
 
     # Initialization, startup
 
