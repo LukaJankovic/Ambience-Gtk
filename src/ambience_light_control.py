@@ -58,7 +58,7 @@ class AmbienceLightControl(Gtk.Box):
                 GLib.idle_add(self.update_controls)
             else:
                 def display_error():
-                    error_dialog = Gtk.MessageDialog(transient_for=self,
+                    error_dialog = Gtk.MessageDialog(transient_for=self.get_toplevel(),
                                                     flags=0,
                                                     message_type=Gtk.MessageType.ERROR,
                                                     buttons=Gtk.ButtonsType.OK,
@@ -156,7 +156,7 @@ class AmbienceLightControl(Gtk.Box):
         """
 
         if event.keyval == Gdk.KEY_Escape:
-            self.light_edit_label.set_text(self.active_light.label)
+            self.light_edit_label.set_text(self.light.label)
             self.edit.set_active(False)
 
     @Gtk.Template.Callback("do_edit")
@@ -165,15 +165,15 @@ class AmbienceLightControl(Gtk.Box):
         Toggle edit label mode.
         """
         if self.edit.get_active():
-            self.light_edit_label.set_text(self.active_light.label)
+            self.light_edit_label.set_text(self.light.label)
             self.edit_stack.set_visible_child_name("editing")
         else:
             new_label = self.light_edit_label.get_text()
 
             self.edit_stack.set_visible_child_name("normal")
 
-            self.active_light.set_label(new_label)
-            self.active_light.label = new_label
+            self.light.set_label(new_label)
+            self.light.label = new_label
             self.light_label.set_text(new_label)
 
     @Gtk.Template.Callback("go_back")
