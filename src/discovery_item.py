@@ -61,14 +61,13 @@ class DiscoveryItem(Gtk.ListBoxRow):
         Add or remove the bulb to the main list.
         """
 
-
         if self.added:
             self.config_list = remove_light_from_group(self.config_list, self.light.get_mac_addr())
             self.added = False
         else:
             light = {"ip":      self.light.get_ip_addr(),
-                     "mac":      self.light.get_mac_addr(),
-                     "label":    self.light.get_label()}
+                     "mac":     self.light.get_mac_addr(),
+                     "label":   self.light.get_label()}
 
             self.config_list = add_light_to_group(self.config_list, self.light.get_group_label(), light)
 

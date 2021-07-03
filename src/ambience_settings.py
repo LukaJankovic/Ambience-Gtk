@@ -41,7 +41,12 @@ def remove_light_from_group(config, mac):
         for light in config["groups"][group_idx]["lights"]:
             if light["mac"] == mac:
                 config["groups"][group_idx]["lights"].remove(light)
-                return config
+                break
+        
+        if len(config["groups"][group_idx]["lights"]) == 0:
+            config["groups"].pop(group_idx)
+
+        return config
 
 def add_light_to_group(config, label, light):
     group_index = -1

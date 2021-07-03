@@ -4,7 +4,7 @@
   <requires lib="libhandy" version="1.0"/>
   <template class="AmbienceDiscovery" parent="GtkDialog">
     <property name="visible">True</property>
-    <property name="title">Light Management</property>
+    <property name="title">Lights</property>
     <property name="default-width">300</property>
     <property name="default-height">400</property>
     <child internal-child="vbox">
@@ -19,14 +19,37 @@
       </object>
     </child>
     <child type="action">
-      <object class="GtkButton" id="reload">
+      <object class="GtkStack" id="reload_stack">
         <property name="visible">True</property>
-        <signal name="clicked" handler="reload" swapped="no"/>
         <child>
-          <object class="GtkImage">
+          <object class="GtkButton" id="reload">
             <property name="visible">True</property>
-            <property name="icon-name">view-refresh-symbolic</property>
+            <signal name="clicked" handler="reload" swapped="no"/>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="icon-name">view-refresh-symbolic</property>
+              </object>
+            </child>
           </object>
+          <packing>
+            <property name="name">button</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSpinner">
+            <property name="visible">True</property>
+            <property name="active">True</property>
+            <property name="margin-left">9</property>
+            <property name="margin-right">9</property>
+            <property name="margin-start">9</property>
+            <property name="margin-end">9</property>
+            <property name="margin-top">9</property>
+            <property name="margin-bottom">9</property>
+          </object>
+          <packing>
+            <property name="name">loading</property>
+          </packing>
         </child>
       </object>
     </child>
