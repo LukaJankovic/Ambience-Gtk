@@ -17,6 +17,7 @@
 
 import sys
 import gi
+import lifxlan
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '1')
@@ -24,19 +25,27 @@ gi.require_version('Handy', '1')
 from gi.repository import Gtk, Gdk, Gio, Handy
 
 from .ambience_window import AmbienceWindow
+from .ambience_discovery import AmbienceDiscovery
 
 class Application(Gtk.Application):
 
     win = None
+    lan = None
     version = ""
 
     def __init__(self):
         super().__init__(application_id='io.github.lukajankovic.ambience',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
+        self.lan = lifxlan.LifxLAN()
+
         about_action = Gio.SimpleAction.new("about", None)
         about_action.connect("activate", self.about)
         self.add_action(about_action)
+
+        discovery_action = Gio.SimpleAction.new("discovery", None)
+        discovery_action.connect("activate", self.show_discovery)
+        self.add_action(discovery_action)
 
     def about(self, state, user_data):
         about = Gtk.AboutDialog(transient_for=self.win, modal=True)
@@ -52,10 +61,14 @@ class Application(Gtk.Application):
 
         about.show_all()
 
+    def show_discovery(self, state, user_data):
+        discovery_window = AmbienceDiscovery(self.lan, transient_for=self.win, modal=True, use_header_bar=1)
+        discovery_window.show_all()
+
     def do_activate(self):
         self.win = self.props.active_window
         if not self.win:
-            self.win = AmbienceWindow(application=self)
+            self.win = AmbienceWindow(self.lan, application=self)
 
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()

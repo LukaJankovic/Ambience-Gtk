@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from gi.repository import Gtk, GLib, GObject, Gio
+
+from .ambience_settings import *
+
 import json
 
 try:
@@ -58,25 +61,17 @@ class DiscoveryItem(Gtk.ListBoxRow):
         Add or remove the bulb to the main list.
         """
 
-        permissions = 0o664
-
         if self.added:
-            for light in self.config_list:
-                if light["mac"] == self.light.get_mac_addr():
-                    self.config_list.remove(light)
-                    self.added = False
+            self.config_list = remove_light_from_group(self.config_list, self.light.get_mac_addr())
+            self.added = False
         else:
-            self.config_list.append({"ip":      self.light.get_ip_addr(),
-                                    "mac":      self.light.get_mac_addr(),
-                                    "label":    self.light.get_label()})
+            light = {"ip":      self.light.get_ip_addr(),
+                     "mac":     self.light.get_mac_addr(),
+                     "label":   self.light.get_label()}
+
+            self.config_list = add_light_to_group(self.config_list, self.light.get_group_label(), light)
+
             self.added = True
 
-        if GLib.mkdir_with_parents(self.dest_file.get_parent().get_path(), permissions) == 0:
-            (success, tag) = self.dest_file.replace_contents(str.encode(json.dumps(self.config_list)), None, False, Gio.FileCreateFlags.REPLACE_DESTINATION, None)
-
-            if success:
-                self.update_icon()
-            else:
-                print("Unable to save config file")
-        else:
-            print("Unable to create required directory/ies for config file")
+        write_config(self.config_list, self.dest_file)
+        self.update_icon()

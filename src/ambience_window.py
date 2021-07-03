@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from struct import error
 import threading
 
 try:
@@ -23,36 +24,16 @@ try:
 except ImportError:
     API_AVAIL = False
 
-from gi.repository import Gtk, Gdk, GLib, GObject, Handy
-from .light_item import *
+from gi.repository import Gtk, GLib, Handy
+from .ambience_light_control import *
+from .ambience_group_control import *
+from .ambience_light_tile import *
+from .ambience_group_tile import *
+from .ambience_settings import *
 from .discovery_item import *
 from .product_list import *
-import json
-
-# Helper functions for converting values to / from api
-def decode(nr):
-    """
-    Convert from 16 bit unsigned integer to range between 0 and 100.
-    """
-    return (nr / 65535) * 100
-
-def decode_circle(nr):
-    """
-    Convert from 16 bit unsined integer to range between 0 and 365.
-    """
-    return (nr / 65535) * 365
-
-def encode(nr):
-    """
-    Convert from range 0 to 100 to 16 bit unsigned integer limit
-    """
-    return (nr / 100) * 65535
-
-def encode_circle(nr):
-    """
-    Convert from range 0 to 365 to 16 bit unsigned integer limit
-    """
-    return (nr / 365) * 65535
+from .helpers import *
+import threading
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
@@ -63,84 +44,46 @@ class AmbienceWindow(Handy.ApplicationWindow):
     __gtype_name__ = 'AmbienceWindow'
 
     main_popover = Gtk.Template.Child()
+    main_leaflet = Gtk.Template.Child()
 
-    title_bar = Gtk.Template.Child()
-    header_box = Gtk.Template.Child()
-    content_box = Gtk.Template.Child()
+    title_label = Gtk.Template.Child()
 
-    menu = Gtk.Template.Child()
+    menu_box = Gtk.Template.Child()
     header_bar = Gtk.Template.Child()
     refresh_stack = Gtk.Template.Child()
     refresh = Gtk.Template.Child()
     refresh_spinner = Gtk.Template.Child()
-    discovery_btn = Gtk.Template.Child()
     sidebar = Gtk.Template.Child()
 
-    content_stack = Gtk.Template.Child()
-    sub_header_bar = Gtk.Template.Child()
-    edit_stack = Gtk.Template.Child()
+    group_header_bar = Gtk.Template.Child()
     back = Gtk.Template.Child()
-    edit = Gtk.Template.Child()
-    edit_label = Gtk.Template.Child()
-    name_label = Gtk.Template.Child()
-    sub_label = Gtk.Template.Child()
 
-    controls_box = Gtk.Template.Child()
-    power_row = Gtk.Template.Child()
-    hue_row = Gtk.Template.Child()
-    saturation_row = Gtk.Template.Child()
-    kelvin_row = Gtk.Template.Child() 
-    infrared_row = Gtk.Template.Child()
-    power_switch = Gtk.Template.Child()
-    hue_scale = Gtk.Template.Child()
-    saturation_scale = Gtk.Template.Child()
-    brightness_scale = Gtk.Template.Child()
-    kelvin_scale = Gtk.Template.Child()
-    kelvin_adj = Gtk.Template.Child()
-    infrared_scale = Gtk.Template.Child()
+    controls_deck = Gtk.Template.Child()
+    tiles_box = Gtk.Template.Child()
 
-    ip_label = Gtk.Template.Child()
-    group_label = Gtk.Template.Child()
-    location_label = Gtk.Template.Child()
+    tiles_list = Gtk.Template.Child()
 
     lan = None
     lights = []
-    d_lights = []
+    offline_lights = []
+    in_light = False
 
-    active_light = None
-    discovery_active = False
-    update_active = False
+    active_row = None
 
-    # Misc. File Management
-
-    def get_dest_file(self):
+    def create_header_label(self):
         """
-        Create / find the file used to store lights.
+        Returns a GtkLabel suitable to be used as a header in the tiles list.
         """
+        label = Gtk.Label()
+        label.get_style_context().add_class("title-3")
+        label.set_visible(True)
+        label.set_margin_start(6)
+        label.set_margin_end(6)
+        label.set_margin_top(6)
+        label.set_margin_bottom(6)
+        label.set_alignment(0, 0)
 
-        data_dir = GLib.get_user_config_dir()
-        dest = GLib.build_filenamev([data_dir, "lights.json"])
-        return Gio.File.new_for_path(dest)
-
-    def get_config(self):
-        """
-        Loads the config file into a dictionary.
-        """
-
-        dest_file = self.get_dest_file()
-
-        try:
-            (success, content, tag) = dest_file.load_contents()
-            return json.loads(content.decode("utf-8"))
-        except GLib.GError as error:
-            # File doesn't exist
-            dest_file.create(Gio.FileCopyFlags.NONE, None)
-        except (TypeError, ValueError) as e:
-            # File is most likely empty
-            print("Config file empty")
-        return []
-
-    # Misc. Window / UI Management
+        return label
 
     @Gtk.Template.Callback("notify_fold_cb")
     def notify_fold_cb(self, sender, user_data):
@@ -148,39 +91,32 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Window switched between normal and mobile (folded) state.
         """
 
-        folded = self.content_box.get_folded()
+        self.folded = sender.get_folded()
 
-        if folded:
+        if self.folded:
             self.back.show_all()
-            self.power_row.show_all()
-
             self.sidebar.unselect_all()
         else:
             self.back.hide()
-            self.power_row.hide()
+            self.sidebar.select_row(self.active_row)
 
-            self.sidebar.select_row(self.active_light)
-
-        self.header_bar.set_show_close_button(folded)
+        self.header_bar.set_show_close_button(self.folded)
 
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
         """
-        Back button in folded mode pressed.
+        Back button pressed. Either goes back to tiles view or group list.
         """
-
-        self.active_light = None
         self.sidebar.unselect_all()
-        self.content_box.set_visible_child(self.menu)
-        self.header_box.set_visible_child(self.header_bar)
+        self.main_leaflet.set_visible_child(self.menu_box)
 
     @Gtk.Template.Callback("sidebar_selected")
     def sidebar_selected(self, sender, user_data):
         """
-        Light in sidebar selected.
+        Group in sidebar selected by user.
         """
 
-        self.set_active_light()
+        self.set_active_group()
 
     def clear_sidebar(self):
         """
@@ -190,54 +126,53 @@ class AmbienceWindow(Handy.ApplicationWindow):
         for sidebar_item in self.sidebar.get_children():
             self.sidebar.remove(sidebar_item)
 
+    def clear_tiles(self):
+        """
+        Empties the main view from tiles, headers, etc.
+        """
+
+        for group_item in self.tiles_list.get_children():
+            self.tiles_list.remove(group_item)
+
     def update_sidebar(self):
         """
-        Repopulates the sidebar. Starts discovery if in discovery mode
-        otherwise loads the lights from config.
+        Repopulates groups and rebuilds group list.
         """
 
         self.refresh_stack.set_visible_child_name("loading")
         self.clear_sidebar()
 
-        if self.discovery_active:
-            config_list = self.get_config()
+        config = get_config(get_dest_file())
 
-            for light in self.d_lights:
-                sidebar_item = DiscoveryItem()
-                sidebar_item.light = light
-                sidebar_item.light_label.set_text(light.get_label())
-                sidebar_item.dest_file = self.get_dest_file()
-                sidebar_item.config_list = config_list
+        # Check for offline lights with no group
+        for group in config["groups"]:
+            if group["label"] == "Unknown Group":
+                for light in group["lights"]:
+                    try:
+                        light_item = Light(light["mac"], light["ip"])
+                        light_group = light_item.get_group_label()
+                        group["lights"].remove(light)
+                        config = add_light_to_group(config, light_group, light)                 
+                    except WorkflowException:
+                        pass
 
-                for saved_light in config_list:
-                    if saved_light["mac"] == light.get_mac_addr():
-                        sidebar_item.added = True
-                        sidebar_item.update_icon()
-                        break
+                if len(group["lights"]) == 0:
+                    config["groups"].remove(group)
 
-                self.sidebar.insert(sidebar_item, -1)
+                break
 
-        else:
-            self.lights = []
-            config = self.get_config()
+        write_config(config, get_dest_file())
+        self.groups = config["groups"]
 
-            for saved_light in config:
+        GLib.idle_add(self.build_group_list)
 
-                light = Light(saved_light["mac"], saved_light["ip"])
-
-                menu_item = LightItem()
-                menu_item.light = light
-                menu_item.main_window = self
-
-                try:
-                    menu_item.light_label.set_text(light.get_label())
-                    menu_item.light_switch.set_active(light.get_power() / 65535)
-                except WorkflowException:
-                    menu_item.set_sensitive(False)
-                    menu_item.light_label.set_text(saved_light["label"])
-
-                self.sidebar.insert(menu_item, -1)
-                self.lights.append(light)
+    def build_group_list(self):
+        for group in self.groups:
+            group_item = Handy.ActionRow() # TODO: Add power switch
+            group_item.set_visible(True)
+            group_item.group = group
+            group_item.set_title(group["label"])
+            self.sidebar.insert(group_item, -1)
 
         self.refresh_stack.set_visible_child_name("refresh")
 
@@ -246,247 +181,172 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         Restart discovery or repopulate the sidebar.
         """
+        self.refresh_stack.set_visible_child_name("loading")
+        self.clear_tiles()
 
-        if self.discovery_active:
-            self.init_discovery()
-        else:
-            self.update_sidebar()
+        startup_thread = threading.Thread(target=self.startup)
+        startup_thread.daemon = True
+        startup_thread.start()
 
-    @Gtk.Template.Callback("toggle_discovery")
-    def toggle_discovery(self, sender):
+    def get_active_lights(self, devices):
+        
+        online = []
+        offline = []
+        threads = []
+
+        for light in devices:
+
+            light_item = Light(light["mac"], light["ip"])
+
+            def finished(light_item, success):
+                if success:
+                    online.append(light_item)
+                else:
+                    light_item.label = light["label"]
+                    offline.append(light_item)
+
+            fetch_thread = threading.Thread(target=fetch_all_data, args=(light_item, finished))
+            fetch_thread.daemon = True 
+            fetch_thread.start()
+            threads.append(fetch_thread)
+                
+        for thread in threads:
+            thread.join()
+
+        return (online, offline)
+
+    def set_active_group(self):
         """
-        Enables or disables discovery mode. Sets window title bar style etc.
+        User selected a group. Shows all related lights, presets and other controls.
         """
-
-        self.clear_sidebar()
-        self.active_light = None
-        self.discovery_active = self.discovery_btn.get_active()
-
-        self.title_bar.set_selection_mode(self.discovery_active)
-        self.controls_box.set_visible(not self.discovery_active)
-
-        self.content_stack.set_visible_child_name("empty")
-        self.name_label.set_text("")
-        self.sub_label.set_text("")
-
-        self.content_box.set_visible_child(self.menu)
-
-        if self.discovery_active:
-            self.init_discovery()
-            self.edit.set_sensitive(False)
-        else:
-            self.refresh_stack.set_visible_child_name("loading")
-            self.refresh_spinner.start()
-
-            self.update_sidebar()
-
-    # Main light management
-
-    @Gtk.Template.Callback("set_light_power")
-    def set_light_power(self, sender, user_data):
-        """
-        Handler for power switch (only visible in folded state).
-        """
-
-        self.update_power(self.power_switch.get_active())
-
-    def update_power(self, power):
-        """
-        Updates the bulbs power state and makes sure the power switches are in
-        sync.
-        """
-
-        self.active_light.light.set_power(power, rapid=True)
-        self.active_light.light_switch.set_active(power)
-        self.power_switch.set_active(power)
-
-    def update_light_state(self):
-        """
-        Probes the bulb for color information so it can be stored locally.
-        """
-
-        if self.active_light.light.supports_color() or \
-           self.active_light.light.supports_temperature():
-            (hue, saturation, brightness, kelvin) = self.active_light.light.get_color()
-
-            self.active_light.light.hue = decode_circle(hue)
-            self.active_light.light.saturation = decode(saturation)
-            self.active_light.light.brightness = decode(brightness)
-            self.active_light.light.kelvin = kelvin
-
-        if self.active_light.light.supports_infrared():
-            self.active_light.light.infrared = decode(self.active_light.light.get_infrared())
-
-    def set_active_light(self):
-        """
-        Prepares the window for a change in active light. Updates color data etc.
-        Shows appropriate controls depending on light capabilities.
-        """
-
         if not self.sidebar.get_selected_row():
             return
 
-        self.active_light = self.sidebar.get_selected_row()
-        self.update_active = True
+        self.active_row = self.sidebar.get_selected_row()
+        self.title_label.set_text(self.active_row.group["label"])
 
-        if not self.discovery_active:
-            self.edit.set_sensitive(True)
-
-            self.update_light_state()
-
-            self.power_switch.set_active(self.active_light.light.get_power() / 65535)
-
-            self.hue_row.set_visible(False)
-            self.saturation_row.set_visible(False)
-            self.kelvin_row.set_visible(False)
-            self.infrared_row.set_visible(False)
-
-            if self.active_light.light.supports_color():
-                self.hue_row.set_visible(True)
-                self.saturation_row.set_visible(True)
-
-                self.hue_scale.set_value(self.active_light.light.hue)
-                self.saturation_scale.set_value(self.active_light.light.saturation)
-
-            if self.active_light.light.supports_temperature():
-                self.kelvin_row.set_visible(True)
-                self.kelvin_scale.set_value(self.active_light.light.kelvin)
-
-            if self.active_light.light.supports_infrared():
-                self.infrared_row.set_visible(True)
-                self.infrared_scale.set_value(self.active_light.light.infrared)
-
-            self.brightness_scale.set_value(self.active_light.light.brightness)
-
-        if product_info := self.plist_downloader.get_product(self.active_light.light.get_product()):
-            self.sub_label.set_text(product_info["name"])
-
-            temp_range = product_info["features"]["temperature_range"]
-            self.kelvin_adj.set_lower(temp_range[0])
-            self.kelvin_adj.set_upper(temp_range[1])
-
-        self.name_label.set_text(self.active_light.light.get_label())
-        self.ip_label.set_text(self.active_light.light.get_ip_addr())
-
-        self.content_stack.set_visible_child_name("controls")
-        self.content_box.set_visible_child(self.content_stack)
-
-        self.header_box.set_visible_child(self.sub_header_bar)
-
-        self.group_label.set_text(self.active_light.light.get_group_label())
-        self.location_label.set_text(self.active_light.light.get_location_label())
-
-        self.update_active = False
-        
-    @Gtk.Template.Callback("push_color")
-    def push_color(self, sender):
-        """
-        Color data changed by the user, push it to the bulb.
-        """
-
-        if self.update_active:
-            return
-
-        hue = self.hue_scale.get_value()
-        saturation = self.saturation_scale.get_value()
-        brightness = self.brightness_scale.get_value()
-        kelvin = self.kelvin_scale.get_value()
-
-        if int(hue) == int(self.active_light.light.hue) and \
-           int(saturation) == int(self.active_light.light.saturation) and \
-           int(brightness) == int(self.active_light.light.brightness) and \
-           int(kelvin) == int(self.active_light.light.kelvin):
-               return
-
-        self.active_light.light.set_color((encode_circle(hue),
-                                           encode(saturation),
-                                           encode(brightness),
-                                           kelvin), rapid=True)
-
-        self.active_light.light.hue = hue
-        self.active_light.light.saturation = saturation
-        self.active_light.light.brightness = brightness
-        self.active_light.light.kelvin = kelvin
-
-    # Editing label
-
-    @Gtk.Template.Callback("name_changed")
-    def name_changed(self, sender):
-        """
-        Checks to see if the edit toggle button should be disabled if the name
-        is empty.
-        """
-
-        self.edit.set_sensitive(self.edit_label.get_text())
-
-    @Gtk.Template.Callback("name_activate")
-    def name_enter(self, sender):
-        """
-        Perform the same action as when toggling the edit button.
-        """
-
-        if self.edit.get_active():
-            self.edit.set_active(False)
-
-    @Gtk.Template.Callback("name_event")
-    def name_event(self, sender, event):
-        """
-        User cancelled edit label event.
-        """
-
-        if event.keyval == Gdk.KEY_Escape:
-            self.edit_label.set_text(self.active_light.light_label.get_text())
-            self.edit.set_active(False)
-
-    @Gtk.Template.Callback("do_edit")
-    def do_edit(self, sender):
-        """
-        Toggle edit label mode.
-        """
-
-        if not isinstance(self.active_light, LightItem):
-            return
-
-        if self.edit.get_active():
-            self.edit_label.set_text(self.active_light.light_label.get_text())
-            self.edit_stack.set_visible_child_name("editing")
-        else:
-            new_label = self.edit_label.get_text()
-
-            self.edit_stack.set_visible_child_name("normal")
-
-            self.active_light.light.set_label(new_label)
-            self.active_light.light_label.set_label(new_label)
-            self.name_label.set_text(new_label)
-
-    # Discovery
-
-    def init_discovery(self):
-        """
-        Initialize discovery thread. Starts spinner etc.
-        """
-
+        self.clear_tiles()
         self.refresh_stack.set_visible_child_name("loading")
-        self.refresh_spinner.start()
 
-        discovery_thread = threading.Thread(target=self.discovery)
-        discovery_thread.daemon = True
-        discovery_thread.start()
+        self.group_lights = self.active_row.group["lights"]
 
-    def discovery(self):
+        light_check_thread = threading.Thread(target=self.group_light_check_thread) 
+        light_check_thread.daemon = True 
+        light_check_thread.start()
+
+    def group_light_check_thread(self):
+        (self.online, self.offline) = self.get_active_lights(self.group_lights)
+
+        self.active_light_count = 0
+        for light in self.online:
+            if light.power:
+                self.active_light_count += 1
+
+        GLib.idle_add(self.set_active_group_ui)
+
+    def set_active_group_ui(self):
+        if not self.active_row.group["label"] == "Unknown Group":
+            all_tiles = AmbienceFlowBox()
+            all_tile = AmbienceGroupTile(self.active_row.group["label"], self.online)
+            all_tile.clicked_callback = self.group_edit
+            all_tiles.insert(all_tile, -1)
+
+            self.tiles_list.add(all_tiles)
+
+            if len(self.online) > 0:
+                lights_label = self.create_header_label()
+                lights_label.set_text("Lights")
+
+                self.tiles_list.add(lights_label)
+
+                lights_tiles = AmbienceFlowBox()
+
+                for light in self.online:
+                    flow_item = AmbienceLightTile(light)
+                    flow_item.clicked_callback = self.tile_clicked
+                    lights_tiles.insert(flow_item, -1)
+
+                self.tiles_list.add(lights_tiles)
+
+        if len(self.offline) > 0:
+            offline_label = self.create_header_label()
+            offline_label.set_text("Offline")
+
+            self.tiles_list.add(offline_label)
+
+            lights_tiles = AmbienceFlowBox()
+
+            for light in self.offline:
+                flow_item = AmbienceLightTile(light, False)
+                flow_item.top_label.set_text(light.label)
+                flow_item.set_sensitive(False)
+                lights_tiles.insert(flow_item, -1)
+
+            self.tiles_list.add(lights_tiles)
+
+        self.main_leaflet.set_visible_child(self.controls_deck)
+        self.refresh_stack.set_visible_child_name("refresh")
+
+    # Light control
+
+    def tile_clicked(self, tile):
         """
-        Discovery thread.
+        Runs when a tile gets clicked. Switches to the light control page.
         """
+        light_controls = AmbienceLightControl(tile.light,
+                                              self.controls_deck,
+                                              self.plist_downloader,
+                                              self.light_control_exit)
+        light_controls.set_visible(True)
 
-        self.d_lights = self.lan.get_lights()
-        GLib.idle_add(self.update_sidebar)
+        self.controls_deck.insert_child_after(light_controls, self.tiles_box)
+        self.controls_deck.navigate(Handy.NavigationDirection.FORWARD)
+        light_controls.show()
 
-    def __init__(self, **kwargs):
+    def group_edit(self):
+        group_controls = AmbienceGroupControl(self.active_row.group,
+                                              self.online,
+                                              self.controls_deck,
+                                              self.light_control_exit)
+
+        group_controls.set_visible(True)
+
+        self.controls_deck.insert_child_after(group_controls, self.tiles_box)
+        self.controls_deck.navigate(Handy.NavigationDirection.FORWARD)
+        group_controls.show()
+
+    def light_control_exit(self, controls):
+        self.controls_deck.navigate(Handy.NavigationDirection.BACK)
+        self.remove_request = controls
+        self.set_active_group()
+
+    def transition_update(self, sender, user_data):
+        if not sender.get_transition_running() and self.remove_request is not None:
+            sender.remove(self.remove_request)
+            self.remove_request = None
+
+    # Group management
+    def get_group_value(self, prop):
+        value = -1
+        for light in self.online:
+            if value == -1:
+                value = light.__dict__[prop]
+            elif not value == light.__dict__[prop]:
+                break
+
+        if value == -1:
+            return None
+        return value
+
+    # Initialization, startup
+
+    def __init__(self, lan, **kwargs):
         """
         Check if LifxLAN api available, small ui initialization.
         """
 
         super().__init__(**kwargs)
+        self.lan = lan
 
         if not API_AVAIL:
             dialog = Gtk.MessageDialog(
@@ -505,10 +365,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
             dialog.destroy()
             exit(1)
 
-        self.lan = lifxlan.LifxLAN()
+        self.reload(self)
 
-        self.edit.set_sensitive(False)
-        self.content_stack.set_visible_child_name("empty")
+    def startup(self):
+        if get_old_dest_file().query_exists():
+            convert_old_config()
+            move_old_config()
 
         self.update_sidebar()
 
