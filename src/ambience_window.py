@@ -61,6 +61,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     controls_deck = Gtk.Template.Child()
     tiles_box = Gtk.Template.Child()
 
+    loading_stack = Gtk.Template.Child()
     tiles_list = Gtk.Template.Child()
 
     lan = None
@@ -95,10 +96,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         if self.folded:
             self.back.show_all()
-            self.sidebar.unselect_all()
         else:
             self.back.hide()
-            self.sidebar.select_row(self.active_row)
+            
+            if self.active_row:
+                self.sidebar.select_row(self.active_row)
 
         self.header_bar.set_show_close_button(self.folded)
 
@@ -195,18 +197,19 @@ class AmbienceWindow(Handy.ApplicationWindow):
         threads = []
 
         for light in devices:
-
             light_item = Light(light["mac"], light["ip"])
 
-            def finished(light_item, success):
+            def finished(finished_light, success, label):
                 if success:
-                    online.append(light_item)
+                    online.append(finished_light)
                 else:
-                    light_item.label = light["label"]
-                    offline.append(light_item)
+                    finished_light.label = label
+                    offline.append(finished_light)
 
-            fetch_thread = threading.Thread(target=fetch_all_data, args=(light_item, finished))
-            fetch_thread.daemon = True 
+            fetch_thread = threading.Thread(target=fetch_all_data,
+                                            args=(light_item, finished),
+                                            kwargs={'data':light["label"]})
+            fetch_thread.daemon = False 
             fetch_thread.start()
             threads.append(fetch_thread)
                 
@@ -230,6 +233,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.group_lights = self.active_row.group["lights"]
 
+        self.main_leaflet.set_visible_child(self.controls_deck)
+
+        if self.folded:
+            self.loading_stack.set_visible_child_name("loading")
+
         light_check_thread = threading.Thread(target=self.group_light_check_thread) 
         light_check_thread.daemon = True 
         light_check_thread.start()
@@ -247,9 +255,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def set_active_group_ui(self):
         if not self.active_row.group["label"] == "Unknown Group":
             all_tiles = AmbienceFlowBox()
-            all_tile = AmbienceGroupTile(self.active_row.group["label"], self.online)
-            all_tile.clicked_callback = self.group_edit
-            all_tiles.insert(all_tile, -1)
+            self.all_tile = AmbienceGroupTile(self.active_row.group["label"], self.online)
+            self.all_tile.clicked_callback = self.group_edit
+            all_tiles.insert(self.all_tile, -1)
 
             self.tiles_list.add(all_tiles)
 
@@ -277,15 +285,15 @@ class AmbienceWindow(Handy.ApplicationWindow):
             lights_tiles = AmbienceFlowBox()
 
             for light in self.offline:
-                flow_item = AmbienceLightTile(light, False)
+                flow_item = AmbienceLightTile(None, False)
                 flow_item.top_label.set_text(light.label)
                 flow_item.set_sensitive(False)
                 lights_tiles.insert(flow_item, -1)
 
             self.tiles_list.add(lights_tiles)
 
-        self.main_leaflet.set_visible_child(self.controls_deck)
         self.refresh_stack.set_visible_child_name("refresh")
+        self.loading_stack.set_visible_child_name("tiles")
 
     # Light control
 

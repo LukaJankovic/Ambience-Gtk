@@ -57,8 +57,8 @@ def add_light_to_group(config, label, light):
 
     if group_index > -1:
         exists = False
-        for light in config["groups"][group_index]["lights"]:
-            if light["ip"] == light["ip"] and light["mac"] == light["mac"]:
+        for l in config["groups"][group_index]["lights"]:
+            if l["ip"] == light["ip"] and l["mac"] == light["mac"]:
                 exists = True
                 break
 

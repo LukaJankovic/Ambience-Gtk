@@ -58,41 +58,47 @@ def fetch_data_sync(light_function):
 
     return None
 
-def fetch_all_data(light, finished_callback):
+def fetch_all_data(light, finished_callback, data=None):
     
+    def call_callback(success):
+        if data is not None:
+            finished_callback(light, success, data)
+        else:
+            finished_callback(light, success)
+
     light.label = fetch_data_sync(light.get_label)
     if light.label is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     light.product = fetch_data_sync(light.get_product)
     if light.product is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     light.power = fetch_data_sync(light.get_power)
     if light.power is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     light.has_color = fetch_data_sync(light.supports_color)
     if light.has_color is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     light.has_temp = fetch_data_sync(light.supports_temperature)
     if light.has_temp is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     light.has_infrar = fetch_data_sync(light.supports_infrared)
     if light.has_infrar is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     color_res = fetch_data_sync(light.get_color)
     if color_res is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     hue = color_res[0]
@@ -114,17 +120,17 @@ def fetch_all_data(light, finished_callback):
 
     light.ip = fetch_data_sync(light.get_ip_addr)
     if light.ip is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     light.group = fetch_data_sync(light.get_group_label)
     if light.group is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
     light.location = fetch_data_sync(light.get_location_label)
     if light.location is None:
-        finished_callback(light, False)
+        call_callback(False)
         return
 
-    finished_callback(light, True)
+    call_callback(True)
