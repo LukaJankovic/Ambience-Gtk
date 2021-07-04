@@ -274,6 +274,15 @@ class AmbienceWindow(Handy.ApplicationWindow):
                     flow_item.clicked_callback = self.tile_clicked
                     lights_tiles.insert(flow_item, -1)
 
+                TEST = False
+
+                if TEST:
+                    test_item = AmbienceLightTile(None)
+                    test_item.top_label.set_text("Workspace Lamp")
+                    test_item.bottom_label.set_text("Off")
+
+                    lights_tiles.insert(test_item, -1)
+
                 self.tiles_list.add(lights_tiles)
 
         if len(self.offline) > 0:

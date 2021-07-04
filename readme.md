@@ -1,7 +1,8 @@
 # Ambience
 Gtk (Handy) app to control LIFX smart lights using the [lifxlan](https://github.com/mclarkk/lifxlan) api.
 
-![Screenshot](https://raw.githubusercontent.com/LukaJankovic/Ambience/stable/screenshots/window-full.png)
+![Screenshot](https://raw.githubusercontent.com/LukaJankovic/Ambience/stable/screenshots/window-tiles.png)
+![Screenshot](https://raw.githubusercontent.com/LukaJankovic/Ambience/stable/screenshots/window-controls.png)
 
 <a href='https://flathub.org/apps/details/io.github.lukajankovic.ambience/'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
 
@@ -17,28 +18,28 @@ If not running through flatpak, remember to install the [lifxlan](https://flathu
 # pip3 install lifxlan
 ```
 
-rpm, deb (and maybe more) packages comming soon.
+## Update 1.3
 
-### Manual Configuration
-The `lifxlan` package will generally take care of light discovery, but if you are unable to perform this due to firewall rules a manual configuration can be generated. 
-The configuration file defaults to: `~/.config/lights.json` and is a JSON list of device mac and ip address. An example of this is as follows:
+With update 1.3 the UI has been reworked to allow easier management of lights in groups. This also makes adding new features in the future much easier (such as scenes etc.) **A lot of things have been changed, especially under the hood, and its difficult for me to test group features because I only have one light, so please report any bugs you encounter!**
+
+## Configuration file
+The lights are saved in `~/.config/ambience.json` with the format: 
 
 ```
-$ cat ~/.config/lights.json
-[
-   {
-      "mac":"d0:xx:xx:xx:xx:xx",
-      "ip":"192.168.1.10"
-   }
-]
+{
+  "groups": [
+    {
+      "label": "Group Label",
+      "lights": [
+        {
+          "ip": "172.16.2.xxx",
+          "mac": "d0:xx:xx:xx:xx:xx",
+          "label": "Light label"
+        }
+      ]
+    }
+  ]
+}
 ```
 
-## Todo
-- [X] Flathub
-- [X] Create rpm
-- [X] Create deb
-- [X] Show different controls for lights with different features
-- [ ] Migrate to GTK4
-- [ ] Add translations (Will need help)
-- [ ] ~~Migrate to HdyFlap~~ Possibly not relevant, needs to be researched further.
-- [ ] ~~Edit location, group~~ Not available in API, requries more work. Postponed.
+This is different from previous versions, which stored lights in `~/.config/lights.json` in a different format. The old config file is converted automatically upon startup.

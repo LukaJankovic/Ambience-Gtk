@@ -3,8 +3,20 @@
 	<id>io.github.lukajankovic.ambience</id>
   <name>Ambience</name>
   <releases>
-    <release version="1.2.1" date="2020-05-10" type="stable">
+    <release version="1.3" date="2021-07-04" type="stable">
       <description>
+        <p>Introducing an entirely new user interface which focuses on managing lights on a group by group basis!</p>
+        <ul>
+          <li>New UI which shows lights in a grid view</li>
+          <li>Separation of lights that are offline</li>
+          <li>Support for controlling all lights in a group at the same time</li>
+          <li>Bugfixes</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.2.1" date="2021-05-10" type="stable">
+      <description>
+        <p>Runtime and library updates.</p>
         <ul>
           <li>Updated lifxlan to version 1.2.7</li>
           <li>Updated to Gnome Runtime version 40</li>
@@ -70,7 +82,10 @@
   <launchable type="desktop-id">io.github.lukajankovic.ambience.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image type="source" width="1600" height="900">https://github.com/LukaJankovic/Ambience/raw/stable/screenshots/window.png</image>
+      <image type="source" width="1600" height="900">https://github.com/LukaJankovic/Ambience/raw/stable/screenshots/store-tiles.png</image>
+    </screenshot>
+    <screenshot>
+      <image type="source" width="1600" height="900">https://github.com/LukaJankovic/Ambience/raw/stable/screenshots/store-controls.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1" />
