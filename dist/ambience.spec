@@ -1,5 +1,5 @@
 Name: ambience
-Version: 1.2.0
+Version: 1.3
 Release: 1%{?dist}
 Summary: Control LIFX lights on the local network.
 License: GPLv3
@@ -37,6 +37,9 @@ Control LIFX lights on the local network. Use the discovery mode to add the ligh
 %{_datarootdir}/metainfo/io.github.lukajankovic.ambience.metainfo.xml
 
 %changelog
+* Sun Jul 04 2021 Luka Jankovic <lukjan1999@gmail.com> -
+- Bump to version 1.3
+
 * Sat Apr 03 2021 Luka Jankovic <lukjan1999@gmail.com> -
 - Bump to version 1.2.0
 
