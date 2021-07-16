@@ -112,6 +112,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Group in sidebar selected by user.
         """
 
+        self.controls_deck.set_visible_child_name("tiles")
+        for child in self.controls_deck.get_children()[1:]:
+            self.controls_deck.remove(child)
+
         self.set_active_group()
 
     def clear_sidebar(self):

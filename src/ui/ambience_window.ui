@@ -343,6 +343,9 @@
                   </packing>
                 </child>
               </object>
+              <packing>
+                <property name="name">tiles</property>
+              </packing>
             </child>
           </object>
         </child>
