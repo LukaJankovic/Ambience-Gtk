@@ -17,7 +17,8 @@
 
 import sys
 import gi
-import lifxlan
+
+from .helpers import *
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '1')
@@ -37,7 +38,10 @@ class Application(Gtk.Application):
         super().__init__(application_id='io.github.lukajankovic.ambience',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
-        self.lan = lifxlan.LifxLAN()
+        if API_AVAIL:
+            self.lan = LifxLAN()
+        else:
+            self.lan = None
 
         about_action = Gio.SimpleAction.new("about", None)
         about_action.connect("activate", self.about)

@@ -18,12 +18,6 @@
 from struct import error
 import threading
 
-try:
-    import lifxlan
-    API_AVAIL = True
-except ImportError:
-    API_AVAIL = False
-
 from gi.repository import Gtk, GLib, Handy
 from .ambience_light_control import *
 from .ambience_group_control import *
@@ -363,9 +357,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
 
         super().__init__(**kwargs)
-        self.lan = lan
 
-        if not API_AVAIL:
+        if not API_AVAIL or not lan:
             dialog = Gtk.MessageDialog(
                 transient_for=self,
                 flags=0,
@@ -375,12 +368,15 @@ class AmbienceWindow(Handy.ApplicationWindow):
             )
 
             dialog.format_secondary_text(
-                "Please install using pip then relaunch Ambience."
+                "Please install lifxlan using pip then relaunch Ambience."
             )
 
             dialog.run()
             dialog.destroy()
             exit(1)
+
+        self.lan = lan
+
 
         self.reload(self)
 

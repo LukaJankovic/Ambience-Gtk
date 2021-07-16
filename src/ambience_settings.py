@@ -1,7 +1,8 @@
 from typing import Dict
 from gi.repository import GLib, Gio
-from lifxlan import *
 import json
+
+from .helpers import *
 
 def get_old_dest_file():
     """

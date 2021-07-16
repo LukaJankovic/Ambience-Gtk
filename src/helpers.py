@@ -1,4 +1,8 @@
-from lifxlan import *
+try:
+    from lifxlan import *
+    API_AVAIL = True
+except:
+    API_AVAIL = False
 
 MAX_RETRIES = 3
 

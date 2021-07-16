@@ -1,8 +1,6 @@
 import threading
 
 from gi.repository import Gtk, Gdk, GLib
-from lifxlan import *
-
 from .helpers import *
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_light_control.ui')

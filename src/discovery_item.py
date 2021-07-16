@@ -21,11 +21,6 @@ from .ambience_settings import *
 
 import json
 
-try:
-    from lifxlan import *
-except:
-    pass
-
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/discovery_item.ui')
 class DiscoveryItem(Gtk.ListBoxRow):
     """

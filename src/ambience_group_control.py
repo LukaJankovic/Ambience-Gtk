@@ -1,7 +1,6 @@
 import threading
 
 from gi.repository import Gtk, Gdk, GLib
-from lifxlan import *
 
 from .helpers import *
 
