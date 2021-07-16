@@ -11,9 +11,21 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <child>
-          <object class="GtkListBox" id="list_box"> 
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
-            <property name="selection-mode">GTK_SELECTION_NONE</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <child> 
+              <object class="GtkViewport">
+                <property name="visible">True</property>
+                <child>
+                  <object class="GtkListBox" id="list_box"> 
+                    <property name="visible">True</property>
+                    <property name="selection-mode">GTK_SELECTION_NONE</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
