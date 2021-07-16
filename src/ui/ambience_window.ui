@@ -326,7 +326,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinner">
+                      <object class="GtkSpinner" id="tiles_spinner">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="active">True</property>

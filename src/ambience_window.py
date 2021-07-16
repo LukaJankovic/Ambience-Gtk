@@ -46,7 +46,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
     header_bar = Gtk.Template.Child()
     refresh_stack = Gtk.Template.Child()
     refresh = Gtk.Template.Child()
-    refresh_spinner = Gtk.Template.Child()
     sidebar = Gtk.Template.Child()
 
     group_header_bar = Gtk.Template.Child()
@@ -58,16 +57,20 @@ class AmbienceWindow(Handy.ApplicationWindow):
     loading_stack = Gtk.Template.Child()
     tiles_list = Gtk.Template.Child()
 
+    refresh_spinner = Gtk.Template.Child()
+    tiles_spinner = Gtk.Template.Child()
+
     lan = None
     lights = []
     offline_lights = []
     in_light = False
 
     active_row = None
-    loading_group = False
 
     remove_request = None
-
+    
+    loading_group = False
+    request_count = 0
 
     def create_header_label(self):
         """
@@ -94,8 +97,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         if self.folded:
             self.back.show_all()
-            self.sidebar.unselect_all()
+
+            if self.loading_group:
+                self.loading_stack.set_visible_child_name("loading")
+                self.tiles_spinner.start()
         else:
+            self.loading_stack.set_visible_child_name("tiles")
             self.back.hide()
             
             if self.active_row:
@@ -106,9 +113,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
         """
-        Back button pressed. Either goes back to tiles view or group list.
+        Back button pressed. Goes back to group list.
         """
         self.sidebar.unselect_all()
+        self.refresh_stack.set_visible_child_name("refresh")
         self.main_leaflet.set_visible_child(self.menu_box)
 
     @Gtk.Template.Callback("sidebar_selected")
@@ -145,6 +153,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
 
         self.refresh_stack.set_visible_child_name("loading")
+        self.refresh_spinner.start()
         self.clear_sidebar()
 
         config = get_config(get_dest_file())
@@ -187,6 +196,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Restart discovery or repopulate the sidebar.
         """
         self.refresh_stack.set_visible_child_name("loading")
+        self.refresh_spinner.start()
         self.clear_tiles()
 
         startup_thread = threading.Thread(target=self.startup)
@@ -228,9 +238,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if not self.sidebar.get_selected_row():
             return
 
-        if self.loading_group:
-            return
-
+        self.request_count += 1
         self.loading_group = True
 
         self.active_row = self.sidebar.get_selected_row()
@@ -238,6 +246,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.clear_tiles()
         self.refresh_stack.set_visible_child_name("loading")
+        self.refresh_spinner.start()
 
         self.group_lights = self.active_row.group["lights"]
 
@@ -245,6 +254,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         if self.folded:
             self.loading_stack.set_visible_child_name("loading")
+            self.tiles_spinner.start()
 
         light_check_thread = threading.Thread(target=self.group_light_check_thread) 
         light_check_thread.daemon = True 
@@ -261,6 +271,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
         GLib.idle_add(self.set_active_group_ui)
 
     def set_active_group_ui(self):
+
+        if not self.request_count == 1:
+            self.request_count -= 1
+            return
+
         if not self.active_row.group["label"] == "Unknown Group":
             all_tiles = AmbienceFlowBox()
             self.all_tile = AmbienceGroupTile(self.active_row.group["label"], self.online)
@@ -313,6 +328,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.loading_stack.set_visible_child_name("tiles")
 
         self.loading_group = False
+        self.request_count -= 1
 
     # Light control
 
@@ -331,6 +347,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         light_controls.show()
 
     def group_edit(self):
+
         group_controls = AmbienceGroupControl(self.active_row.group,
                                               self.online,
                                               self.controls_deck,
@@ -343,8 +360,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         group_controls.show()
 
     def light_control_exit(self, controls):
-        self.controls_deck.navigate(Handy.NavigationDirection.BACK)
         self.remove_request = controls
+        self.controls_deck.navigate(Handy.NavigationDirection.BACK)
 
     @Gtk.Template.Callback("transition_update")
     def transition_update(self, sender, user_data):
