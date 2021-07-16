@@ -64,6 +64,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
     in_light = False
 
     active_row = None
+    loading_group = False
+
+    remove_request = None
+
 
     def create_header_label(self):
         """
@@ -90,6 +94,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         if self.folded:
             self.back.show_all()
+            self.sidebar.unselect_all()
         else:
             self.back.hide()
             
@@ -223,6 +228,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if not self.sidebar.get_selected_row():
             return
 
+        if self.loading_group:
+            return
+
+        self.loading_group = True
+
         self.active_row = self.sidebar.get_selected_row()
         self.title_label.set_text(self.active_row.group["label"])
 
@@ -302,6 +312,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.refresh_stack.set_visible_child_name("refresh")
         self.loading_stack.set_visible_child_name("tiles")
 
+        self.loading_group = False
+
     # Light control
 
     def tile_clicked(self, tile):
@@ -333,12 +345,23 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def light_control_exit(self, controls):
         self.controls_deck.navigate(Handy.NavigationDirection.BACK)
         self.remove_request = controls
-        self.set_active_group()
 
+    @Gtk.Template.Callback("transition_update")
     def transition_update(self, sender, user_data):
-        if not sender.get_transition_running() and self.remove_request is not None:
-            sender.remove(self.remove_request)
-            self.remove_request = None
+        """
+        Runs whenever a change in the controls deck happens.
+        If a transition started it means the last view should be queued for removal.
+        If a transition is finished the previous view can be removed safely.
+        """
+
+        if not sender.get_transition_running():
+            if self.remove_request is not None:
+                sender.remove(self.remove_request)
+                self.remove_request = None
+                self.set_active_group()
+            
+            else:
+                self.remove_request = sender.get_children()[-1]
 
     # Group management
     def get_group_value(self, prop):

@@ -78,6 +78,7 @@
       <object class="HdyLeaflet" id="main_leaflet">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="can-swipe-back">True</property>
         <signal name="notify::fold" handler="notify_fold_cb" swapped="no"/>
         <child>
           <object class="GtkBox" id="menu_box">
@@ -225,6 +226,7 @@
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
+            <property name="can-swipe-back">True</property>
             <signal name="notify::transition-running" handler="transition_update" swapped="no"/>
             <child>
               <object class="GtkBox" id="tiles_box">
