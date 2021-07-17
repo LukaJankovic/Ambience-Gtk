@@ -110,6 +110,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.header_bar.set_show_close_button(self.folded)
 
+    @Gtk.Template.Callback("notify_visible_child_name")
+    def notify_visible_child_name(self, sender, user_data):
+        if sender.get_visible_child_name() == "menu":
+            self.go_back(sender)
+
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
         """
@@ -363,8 +368,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.remove_request = controls
         self.controls_deck.navigate(Handy.NavigationDirection.BACK)
 
-    @Gtk.Template.Callback("transition_update")
-    def transition_update(self, sender, user_data):
+    @Gtk.Template.Callback("control_transition_update")
+    def control_transition_update(self, sender, user_data):
         """
         Runs whenever a change in the controls deck happens.
         If a transition started it means the last view should be queued for removal.
