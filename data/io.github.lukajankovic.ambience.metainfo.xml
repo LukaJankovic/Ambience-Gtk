@@ -3,6 +3,17 @@
 	<id>io.github.lukajankovic.ambience</id>
   <name>Ambience</name>
   <releases>
+    <release version="1.3.1" date="2021-07-17" type="stable">
+      <description>
+        <p>UI bugfixes</p>
+        <ul>
+          <li>Fixed bug where the window for adding lights won't show a scroll bar</li>
+          <li>Switching groups shows list of light tiles</li>
+          <li>Improved reliability</li>
+          <li>Improved experience for touch inputs</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.3" date="2021-07-04" type="stable">
       <description>
         <p>Introducing an entirely new user interface which focuses on managing lights on a group by group basis!</p>

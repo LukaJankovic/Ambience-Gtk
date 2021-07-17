@@ -51,7 +51,7 @@
                 {
                     "type" : "git",
                     "url" : "https://github.com/LukaJankovic/Ambience",
-                    "tag" : "v1.3"
+                    "tag" : "v1.3.1"
                 }
             ]
         }
