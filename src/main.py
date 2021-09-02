@@ -76,7 +76,7 @@ class Application(Gtk.Application):
 
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()
-        provider.load_from_resource("/io/github/lukajankovic/ambience/ui/stylesheet.css")
+        provider.load_from_resource("/io/github/lukajankovic/ambience/stylesheet.css")
         Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         self.win.present()

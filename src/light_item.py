@@ -22,7 +22,7 @@ try:
 except ImportError:
     pass
 
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/light_item.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/light_item.ui')
 class LightItem(Gtk.ListBoxRow):
     """
     Sidebar item containing the name of the bulb as well as a power switch.

@@ -1,3 +1,20 @@
+# ambience_light_tile.py
+#
+# Copyright 2021 Luka Jankovic
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -8,7 +25,7 @@ import colorsys, threading
 
 from .helpers import *
 
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_flow_box.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_flow_box.ui')
 class AmbienceFlowBox(Gtk.Box):
     __gtype_name__ = 'AmbienceFlowBox'
 
@@ -20,7 +37,7 @@ class AmbienceFlowBox(Gtk.Box):
     def insert(self, item, index):
         self.flowbox.insert(item, index)
 
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_light_tile.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_light_tile.ui')
 class AmbienceLightTile(Gtk.FlowBoxChild):
     __gtype_name__ = 'AmbienceLightTile'
 

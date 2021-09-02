@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/io/github/lukajankovic/ambience">
+    <file>ambience_window.ui</file>
+    <file>ambience_light_control.ui</file>
+    <file>ambience_group_control.ui</file>
+    <file>ambience_discovery.ui</file>
+    <file>ambience_flow_box.ui</file>
+    <file>ambience_light_tile.ui</file>
+    <file>ambience_group_tile.ui</file>
+    <file>light_item.ui</file>
+    <file>discovery_item.ui</file>
+    <file>stylesheet.css</file>
+    <file>document-edit-symbolic.svg</file>
+  </gresource>
+</gresources>

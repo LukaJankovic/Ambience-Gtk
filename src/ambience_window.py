@@ -29,7 +29,7 @@ from .product_list import *
 from .helpers import *
 import threading
 
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/ambience_window.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_window.ui')
 class AmbienceWindow(Handy.ApplicationWindow):
     """
     Controls almost every aspect of the main window, including maintaining

@@ -21,7 +21,7 @@ from .ambience_settings import *
 
 import json
 
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ui/discovery_item.ui')
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/discovery_item.ui')
 class DiscoveryItem(Gtk.ListBoxRow):
     """
     Sidebar item when in discovery mode. Contains a toggle box instead of a
