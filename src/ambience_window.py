@@ -426,7 +426,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.lan = lan
 
-
         self.reload(self)
 
     def startup(self):

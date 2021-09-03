@@ -66,18 +66,15 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         if not self.light:
             return
 
-        self.top_label.set_text(self.light.label)
+        self.top_label.set_text(self.light.get_label())
 
         if self.button_style_provider:
             self.tile_button.get_style_context().remove_provider(self.button_style_provider)
 
-        if self.light.has_color:
+        if self.light.get_has_color():
             if self.light.power:
-                self.bottom_label.set_text(str(int(self.light.brightness)) + "%")
-
-                (r, g, b) = colorsys.hsv_to_rgb(self.light.hue / 365,
-                                                self.light.saturation / 100,
-                                                self.light.brightness / 100)
+                self.bottom_label.set_text(str(int(self.light.get_brightness())) + "%")
+                (r, g, b) = self.light.get_color()
 
                 css = f'.ambience_light_tile {{ background: { rgb_to_hex(r, g, b) }; }}'.encode()
                 self.button_style_provider = Gtk.CssProvider()
@@ -93,7 +90,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
             if self.light.power:
                 css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
 
-                if (int(r * 255) * 0.299 + int(g * 255) * 0.587 + int(b * 255) * 0.114) > 145:
+                if darkmode_color(r, g, b):
                     css = '.ambience_light_tile_text { color: #000000; }'.encode()
 
                 self.text_style_provider = Gtk.CssProvider()

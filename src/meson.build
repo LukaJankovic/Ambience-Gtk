@@ -34,3 +34,7 @@ ambience_sources = [
 ]
 
 install_data(ambience_sources, install_dir: moduledir)
+
+subdir('model')
+subdir('lifx')
+subdir('backend')
