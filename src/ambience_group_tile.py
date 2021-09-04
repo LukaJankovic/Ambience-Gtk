@@ -39,20 +39,17 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
 
     tile_button = Gtk.Template.Child()
 
-    def __init__(self, label, online, **kwargs):
+    def __init__(self, group, **kwargs):
         super().__init__(**kwargs)
 
-        self.label = label
-        self.online = online
-
+        self.group = group
         self.top_label.set_text("All lights")
-
         self.update()
 
     def count_on(self):
         count = 0
-        for light in self.online:
-            if light.power:
+        for light in self.group.online:
+            if light.get_power():
                 count += 1
         return count
 

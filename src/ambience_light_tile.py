@@ -23,6 +23,7 @@ gi.require_version('Handy', '1')
 from gi.repository import Gtk, GLib
 import colorsys, threading
 
+from .ambience_light import *
 from .helpers import *
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_flow_box.ui')
@@ -71,8 +72,8 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         if self.button_style_provider:
             self.tile_button.get_style_context().remove_provider(self.button_style_provider)
 
-        if self.light.get_has_color():
-            if self.light.power:
+        if AmbienceLightCapabilities.COLOR in self.light.capabilities:
+            if self.light.get_power():
                 self.bottom_label.set_text(str(int(self.light.get_brightness())) + "%")
                 (r, g, b) = self.light.get_color()
 
@@ -87,7 +88,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
                 self.bottom_label.get_style_context().remove_provider(self.text_style_provider)
                 self.text_style_provider = None
 
-            if self.light.power:
+            if self.light.get_power():
                 css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
 
                 if darkmode_color(r, g, b):

@@ -38,11 +38,6 @@ class Application(Gtk.Application):
         super().__init__(application_id='io.github.lukajankovic.ambience',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
-        if API_AVAIL:
-            self.lan = LifxLAN()
-        else:
-            self.lan = None
-
         about_action = Gio.SimpleAction.new("about", None)
         about_action.connect("activate", self.about)
         self.add_action(about_action)

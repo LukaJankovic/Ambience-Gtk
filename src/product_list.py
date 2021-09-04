@@ -19,7 +19,7 @@ import requests, json
 
 P_LIST_URL = "https://raw.githubusercontent.com/LIFX/products/master/products.json"
 
-class product_list:
+class ProductList():
     """
     Class that attempts to download as well as manage the product list from 
     Lifx's official Github.

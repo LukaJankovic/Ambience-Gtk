@@ -17,11 +17,12 @@
 
 from gi.repository import GLib, Gio
 
-from ambience_group import *
+from .ambience_group import *
+from .helpers import *
 
 import json
 
-class AmbienceLoader():
+class AmbienceLoader(metaclass=Singleton):
     """
     Loads config file, checks which lights are online and creates lists containing
     AmbienceLight descended objects.
@@ -46,12 +47,20 @@ class AmbienceLoader():
             print("Config file empty or invalid")
         return {"groups":[]}
 
-    def get_lights(self):
+    def get_group_labels(self):
         conf_file = self.read_config_file(self.CONFIG_FILE_NAME)
         config = self.get_config(conf_file)
         groups = []
 
         for group in config["groups"]:
-            groups.append(AmbienceGroup(group))
+            groups.append(group["label"])
 
         return groups
+
+    def get_group(self, label):
+        conf_file = self.read_config_file(self.CONFIG_FILE_NAME)
+        config = self.get_config(conf_file)
+
+        for group in config["groups"]:
+            if group["label"] == label:
+                return AmbienceGroup(group)

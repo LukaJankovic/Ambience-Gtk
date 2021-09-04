@@ -23,7 +23,7 @@ class AmbienceGroup():
     """
 
     def __init__(self, group_config):
-        self.label = group_config["label"]   
+        self.label = group_config["label"]
 
         self.online = []
         self.offline = [] 
@@ -31,7 +31,8 @@ class AmbienceGroup():
         for light_config in group_config["lights"]: # TODO: parallelize using joblib
             light = None
             if light_config["kind"] == "lifx":
-                light = AmbienceLIFXLight(light_config)
+                light = AmbienceLIFXLight(light_config, self)
+                light.get_capabilities()
             else:
                 continue
 

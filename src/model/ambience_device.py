@@ -1,4 +1,4 @@
-# ambience_light.py
+# ambience_device.py
 #
 # Copyright 2021 Luka Jankovic
 #
@@ -15,31 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
-from .ambience_device import *
-
-class AmbienceLightException(Exception):
+class AmbienceDeviceException(Exception):
     """
     Raised when a function call is made directly onto an (illegal)
     AmbienceLight object.
     """
     pass
 
-class AmbienceLightCapabilities(Enum):
-    COLOR       = 1
-    TEMPERATURE = 2
-    MULTIZONE   = 3
-    INFRARED    = 4
-
-class AmbienceLight(AmbienceDevice):
+class AmbienceDevice():
     """
-    Template class extended by different providers to bind actions to ui.
+    Template class to be extended by other template classes that want to
+    represent a unique kind of device. (i.e. light)
     """
-    def get_capabilities(self):
-        raise AmbienceLightException
 
-    def get_color(self) -> tuple[float, float, float]:
-        raise AmbienceLightException 
-    
-    def get_brightness(self) -> int:
-        raise AmbienceLightException
+    def get_label(self) -> str:
+        raise AmbienceDeviceException 
+
+    def get_online(self) -> bool:
+        raise AmbienceDeviceException
