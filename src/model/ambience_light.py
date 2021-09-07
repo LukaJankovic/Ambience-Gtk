@@ -35,11 +35,9 @@ class AmbienceLight(AmbienceDevice):
     """
     Template class extended by different providers to bind actions to ui.
     """
-    def get_capabilities(self):
+    def get_capabilities(self) -> list:
         raise AmbienceLightException
 
     def get_color(self) -> tuple[float, float, float]:
         raise AmbienceLightException 
     
-    def get_brightness(self) -> int:
-        raise AmbienceLightException

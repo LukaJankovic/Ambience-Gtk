@@ -17,20 +17,22 @@
 
 from lifxlan import *
 from .ambience_light import *
-import colorsys
 
 class AmbienceLIFXLight(AmbienceLight):
     """
     Bridge between lifxlan and ui.
     """
+
+    capabilities = []
     
     def __init__(self, light_config, group):
         self.light = Light(light_config["mac"], light_config["ip"])
         self.label = light_config["label"]
         self.group = group
 
-    def get_capabilities(self):
-        self.capabilities = []
+    def get_capabilities(self) -> list:
+        if self.capabilities:
+            return self.capabilities
 
         if self.light.supports_color():
             self.capabilities.append(AmbienceLightCapabilities.COLOR)
@@ -43,6 +45,8 @@ class AmbienceLIFXLight(AmbienceLight):
 
         if self.light.supports_infrared():
             self.capabilities.append(AmbienceLightCapabilities.INFRARED)
+
+        return self.capabilities
 
     def get_online(self) -> bool:
         try:
@@ -61,11 +65,9 @@ class AmbienceLIFXLight(AmbienceLight):
     def get_power(self) -> bool:
         return False if self.light.get_power() == 0 else True
 
-    def get_has_color(self) -> bool:
-        return self.light.has_color
+    def get_color(self) -> tuple[float, float, float, float]:
+        color_hsvk = list(self.light.get_color())
+        for i in range(3):
+            color_hsvk[i] = color_hsvk[i] / 65535
 
-    def get_color(self) -> tuple[float, float, float]:
-        return colorsys.hsv_to_rgb(self.light.hue / 365,
-                                   self.light.saturation / 100,
-                                   self.light.brightness / 100)
-        
+        return tuple(color_hsvk)

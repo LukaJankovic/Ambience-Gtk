@@ -23,6 +23,7 @@ from .ambience_loader import *
 from .ambience_group import *
 from .ambience_light_tile import *
 from .ambience_group_tile import *
+from .ambience_light_control import *
 import threading
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_window.ui')
@@ -121,7 +122,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             lights_category = AmbienceFlowBox()
 
             for light in lights:
-                lights_category.insert(AmbienceLightTile(light), -1)
+                lights_category.insert(AmbienceLightTile(light, self.tile_clicked), -1)
 
             self.tiles_list.add(lights_category)
 
@@ -183,7 +184,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         light_controls = AmbienceLightControl(tile.light,
                                               self.controls_deck,
-                                              self.plist_downloader,
                                               self.light_control_exit)
         light_controls.set_visible(True)
 
@@ -207,23 +207,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def light_control_exit(self, controls):
         self.remove_request = controls
         self.controls_deck.navigate(Handy.NavigationDirection.BACK)
-
-    @Gtk.Template.Callback("control_transition_update")
-    def control_transition_update(self, sender, user_data):
-        """
-        Runs whenever a change in the controls deck happens.
-        If a transition started it means the last view should be queued for removal.
-        If a transition is finished the previous view can be removed safely.
-        """
-
-        if not sender.get_transition_running():
-            if self.remove_request is not None:
-                sender.remove(self.remove_request)
-                self.remove_request = None
-                self.set_active_group()
-            
-            else:
-                self.remove_request = sender.get_children()[-1]
 
     # Group management
     def get_group_value(self, prop):

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .ambience_light import AmbienceLightCapabilities
 import threading
 
 from gi.repository import Gtk, Gdk, GLib
@@ -54,71 +55,29 @@ class AmbienceLightControl(Gtk.Box):
     light = None
     deck = None
     back_callback = None
-    plist_downloader = None
 
-    def __init__(self, light, deck, plist_downloader, back_callback, **kwargs):
+    def __init__(self, light, deck, back_callback, **kwargs):
         self.light = light
         self.deck = deck
-        self.plist_downloader = plist_downloader
         self.back_callback = back_callback
 
         super().__init__(**kwargs)
 
     def show(self):
-        self.update_active = True
-        self.main_stack.set_visible_child_name("loading")
 
-        def show_light_cb(_, success):
-            if success:
-                GLib.idle_add(self.update_controls)
-            else:
-                def display_error():
-                    error_dialog = Gtk.MessageDialog(transient_for=self.get_toplevel(),
-                                                    flags=0,
-                                                    message_type=Gtk.MessageType.ERROR,
-                                                    buttons=Gtk.ButtonsType.OK,
-                                                    text="Unable to load light data. Please try again.",)
-                    error_dialog.run()
-                    self.back_callback(self)
-                    error_dialog.destroy()
+        (hue, saturation, brightness) = self.light.get_color()
 
-                GLib.idle_add(display_error)
-
-        fetch_thread = threading.Thread(target=fetch_all_data, args=(self.light, show_light_cb))
-        fetch_thread.daemon = True
-        fetch_thread.start()
-
-    def update_controls(self):
-        self.light_label.set_text(self.light.label)
-
-        if product_info := self.plist_downloader.get_product(self.light.product):
-            self.light_sub_label.set_text(product_info["name"])
-
-        self.power_switch.set_active(self.light.power)
-
-        self.brightness_scale.set_value(self.light.brightness)
-
-        if self.light.has_color:
+        if AmbienceLightCapabilities.COLOR in self.light.get_capabilities():
             self.hue_row.set_visible(True)
             self.saturation_row.set_visible(True)
 
-            self.hue_scale.set_value(self.light.hue)
-            self.saturation_scale.set_value(self.light.saturation)
+            self.hue_row.set_value(hue)
+            self.saturation_row.set_value(saturation)
 
-        if self.light.has_temp:
+        if AmbienceLightCapabilities.TEMPERATURE in self.light.get_capabilties():
             self.kelvin_row.set_visible(True)
-            self.kelvin_scale.set_value(self.light.temperature)
+            self.kelvin_row.set_value()
 
-        if self.light.has_infrar:
-            self.infrared_row.set_visible(True)
-            self.infrared_scale.set_value(self.light.infrared)
-
-        self.ip_label.set_label(self.light.ip)
-        self.group_label.set_label(self.light.group)
-        self.location_label.set_label(self.light.location)
-
-        self.update_active = False
-        self.main_stack.set_visible_child_name("controls")
 
     @Gtk.Template.Callback("push_color")
     def push_color(self, sender):

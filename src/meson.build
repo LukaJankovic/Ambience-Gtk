@@ -21,20 +21,22 @@ ambience_sources = [
   '__init__.py',
   'main.py',
   'ambience_window.py',
-  'ambience_light_control.py',
   'ambience_group_control.py',
   'ambience_discovery.py',
-  'ambience_light_tile.py',
   'ambience_group_tile.py',
   'ambience_settings.py',
   'light_item.py',
   'discovery_item.py',
   'product_list.py',
-  'helpers.py'
+  'helpers.py',
+  'backend/ambience_loader.py',
+  'model/ambience_device.py',
+  'model/ambience_group.py',
+  'model/ambience_light.py',
+  'ui/ambience_light_control.py',
+  'ui/ambience_light_tile.py',
 ]
 
 install_data(ambience_sources, install_dir: moduledir)
 
-subdir('model')
-subdir('lifx')
-subdir('backend')
+subdir('providers')

@@ -54,28 +54,25 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
 
     tile_button = Gtk.Template.Child()
 
-    def __init__(self, light, online=True, **kwargs):
-        super().__init__(**kwargs)
-
-        if light and online:
-            self.light = light
-
-        self.update()
-
-    def update(self):
-
-        if not self.light:
-            return
-
-        self.top_label.set_text(self.light.get_label())
-
+    def clear_styles(self):
         if self.button_style_provider:
             self.tile_button.get_style_context().remove_provider(self.button_style_provider)
 
+        if self.text_style_provider:
+                self.top_label.get_style_context().remove_provider(self.text_style_provider)
+                self.bottom_label.get_style_context().remove_provider(self.text_style_provider)
+                self.text_style_provider = None
+
+    def update(self):
+        self.top_label.set_text(self.light.get_label())
+        self.clear_styles()
+
         if AmbienceLightCapabilities.COLOR in self.light.capabilities:
             if self.light.get_power():
-                self.bottom_label.set_text(str(int(self.light.get_brightness())) + "%")
-                (r, g, b) = self.light.get_color()
+                (h, s, v, k) = self.light.get_color()
+                (r, g, b) = colorsys.hsv_to_rgb(h, s, v)
+
+                self.bottom_label.set_text(str(int(v * 100)) + "%")
 
                 css = f'.ambience_light_tile {{ background: { rgb_to_hex(r, g, b) }; }}'.encode()
                 self.button_style_provider = Gtk.CssProvider()
@@ -83,12 +80,6 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
 
                 self.tile_button.get_style_context().add_provider(self.button_style_provider, 600) # TODO: fix magic number
 
-            if self.text_style_provider:
-                self.top_label.get_style_context().remove_provider(self.text_style_provider)
-                self.bottom_label.get_style_context().remove_provider(self.text_style_provider)
-                self.text_style_provider = None
-
-            if self.light.get_power():
                 css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
 
                 if darkmode_color(r, g, b):
@@ -99,6 +90,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
 
                 self.top_label.get_style_context().add_provider(self.text_style_provider, 600)
                 self.bottom_label.get_style_context().add_provider(self.text_style_provider, 600)
+
             else:
                 self.bottom_label.set_text("Off")
 
@@ -106,3 +98,11 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
     def tile_clicked(self, sender):
         if self.clicked_callback:
             self.clicked_callback(self)
+
+    def __init__(self, light, clicked_callback, **kwargs):
+        super().__init__(**kwargs)
+
+        self.light = light
+        self.clicked_callback = clicked_callback
+
+        self.update()
