@@ -41,3 +41,5 @@ class AmbienceLight(AmbienceDevice):
     def get_color(self) -> tuple[float, float, float]:
         raise AmbienceLightException 
     
+    def set_color(self, hsvk):
+        raise AmbienceLightException

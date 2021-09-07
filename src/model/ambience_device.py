@@ -31,5 +31,14 @@ class AmbienceDevice():
     def get_label(self) -> str:
         raise AmbienceDeviceException 
 
+    def set_label(self, label):
+        raise AmbienceDeviceException
+
     def get_online(self) -> bool:
+        raise AmbienceDeviceException
+
+    def get_power(self) -> bool:
+        raise AmbienceDeviceException
+
+    def set_power(self, power):
         raise AmbienceDeviceException

@@ -50,11 +50,11 @@ class AmbienceLightControl(Gtk.Box):
     power_switch = Gtk.Template.Child()
 
     light_label = Gtk.Template.Child()
-    light_sub_label = Gtk.Template.Child()
 
     light = None
     deck = None
     back_callback = None
+    update_active = False
 
     def __init__(self, light, deck, back_callback, **kwargs):
         self.light = light
@@ -64,20 +64,31 @@ class AmbienceLightControl(Gtk.Box):
         super().__init__(**kwargs)
 
     def show(self):
+        self.update_active = True
 
-        (hue, saturation, brightness) = self.light.get_color()
+        self.light_label.set_label(self.light.get_label())
+        self.power_switch.set_active(self.light.get_power())
+
+        (hue, saturation, brightness, kelvin) = self.light.get_color()
+
+        self.brightness_scale.set_value(brightness * 100)
 
         if AmbienceLightCapabilities.COLOR in self.light.get_capabilities():
             self.hue_row.set_visible(True)
             self.saturation_row.set_visible(True)
 
-            self.hue_row.set_value(hue)
-            self.saturation_row.set_value(saturation)
+            self.hue_scale.set_value(hue * 365)
+            self.saturation_scale.set_value(saturation * 100)
 
-        if AmbienceLightCapabilities.TEMPERATURE in self.light.get_capabilties():
+        if AmbienceLightCapabilities.TEMPERATURE in self.light.get_capabilities():
             self.kelvin_row.set_visible(True)
-            self.kelvin_row.set_value()
+            self.kelvin_scale.set_value(kelvin)
 
+        if AmbienceLightCapabilities.INFRARED in self.light.get_capabilities():
+            self.infrared_row.set_visible(True)
+            self.infrared_scale.set_value(self.light.get_infrared())
+
+        self.update_active = False
 
     @Gtk.Template.Callback("push_color")
     def push_color(self, sender):
@@ -92,17 +103,14 @@ class AmbienceLightControl(Gtk.Box):
         brightness = self.brightness_scale.get_value()
         kelvin = self.kelvin_scale.get_value()
 
-        self.light.set_color((encode_circle(hue),
-                                    encode(saturation),
-                                    encode(brightness),
-                                    kelvin), rapid=True)
+        self.light.set_color([hue / 365, saturation / 100, brightness / 100, kelvin])
 
-        if self.light.supports_infrared():
-            self.light.set_infrared(encode(self.infrared_scale.get_value()))
+        if AmbienceLightCapabilities.INFRARED in self.light.get_capabilities():
+            self.light.set_infrared(self.infrared_scale.get_value() * 100)
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
-        self.light.set_power(sender.get_active(), rapid=True)
+        self.light.set_power(sender.get_active())
 
     # Editing label
 

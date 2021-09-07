@@ -62,8 +62,14 @@ class AmbienceLIFXLight(AmbienceLight):
     def get_label(self) -> str:
         return self.light.label
 
+    def set_label(self, label):
+        self.light.set_label(label)
+
     def get_power(self) -> bool:
         return False if self.light.get_power() == 0 else True
+
+    def set_power(self, power):
+        self.light.set_power(power, rapid=True)
 
     def get_color(self) -> tuple[float, float, float, float]:
         color_hsvk = list(self.light.get_color())
@@ -71,3 +77,14 @@ class AmbienceLIFXLight(AmbienceLight):
             color_hsvk[i] = color_hsvk[i] / 65535
 
         return tuple(color_hsvk)
+
+    def set_color(self, hsvk):
+        for i in range(3):
+            hsvk[i] = hsvk[i] * 65535
+        self.light.set_color(hsvk, rapid=True)
+
+    def get_infrared(self) -> float:
+        return self.light.get_infrared() / 65535
+
+    def set_infrared(self, i):
+        self.light.set_infrared(i * 65535)
