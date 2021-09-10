@@ -43,3 +43,9 @@ class AmbienceLight(AmbienceDevice):
     
     def set_color(self, hsvk):
         raise AmbienceLightException
+
+    def get_infrared(self):
+        raise AmbienceLightException
+
+    def set_infrared(self, i):
+        raise AmbienceLightCapabilities

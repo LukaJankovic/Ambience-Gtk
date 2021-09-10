@@ -22,8 +22,6 @@ class AmbienceLIFXLight(AmbienceLight):
     """
     Bridge between lifxlan and ui.
     """
-
-    capabilities = []
     
     def __init__(self, light_config, group):
         self.light = Light(light_config["mac"], light_config["ip"])
@@ -31,22 +29,21 @@ class AmbienceLIFXLight(AmbienceLight):
         self.group = group
 
     def get_capabilities(self) -> list:
-        if self.capabilities:
-            return self.capabilities
+        capabilities = []
 
         if self.light.supports_color():
-            self.capabilities.append(AmbienceLightCapabilities.COLOR)
+            capabilities.append(AmbienceLightCapabilities.COLOR)
 
         if self.light.supports_temperature():
-            self.capabilities.append(AmbienceLightCapabilities.TEMPERATURE)
+            capabilities.append(AmbienceLightCapabilities.TEMPERATURE)
 
         if self.light.supports_multizone():
-            self.capabilities.append(AmbienceLightCapabilities.MULTIZONE)
+            capabilities.append(AmbienceLightCapabilities.MULTIZONE)
 
         if self.light.supports_infrared():
-            self.capabilities.append(AmbienceLightCapabilities.INFRARED)
+            capabilities.append(AmbienceLightCapabilities.INFRARED)
 
-        return self.capabilities
+        return capabilities
 
     def get_online(self) -> bool:
         try:
@@ -88,3 +85,9 @@ class AmbienceLIFXLight(AmbienceLight):
 
     def set_infrared(self, i):
         self.light.set_infrared(i * 65535)
+
+    def get_info(self):
+        return {AmbienceDeviceInfoType.IP       : self.light.get_ip_addr(),
+                AmbienceDeviceInfoType.GROUP    : self.light.get_group(),
+                AmbienceDeviceInfoType.LOCATION : self.light.get_location()
+                }

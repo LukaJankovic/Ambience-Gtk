@@ -67,7 +67,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         self.top_label.set_text(self.light.get_label())
         self.clear_styles()
 
-        if AmbienceLightCapabilities.COLOR in self.light.capabilities:
+        if AmbienceLightCapabilities.COLOR in self.light.get_capabilities():
             if self.light.get_power():
                 (h, s, v, k) = self.light.get_color()
                 (r, g, b) = colorsys.hsv_to_rgb(h, s, v)

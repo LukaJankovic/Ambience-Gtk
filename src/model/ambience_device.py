@@ -15,12 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import Enum
+
 class AmbienceDeviceException(Exception):
     """
     Raised when a function call is made directly onto an (illegal)
     AmbienceLight object.
     """
     pass
+
+class AmbienceDeviceInfoType(Enum):
+    MODEL       = 0
+    IP          = 1
+    GROUP       = 2
+    LOCATION    = 3  
 
 class AmbienceDevice():
     """
@@ -41,4 +49,7 @@ class AmbienceDevice():
         raise AmbienceDeviceException
 
     def set_power(self, power):
+        raise AmbienceDeviceException
+
+    def get_info(self) -> dict:
         raise AmbienceDeviceException
