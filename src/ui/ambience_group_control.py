@@ -51,9 +51,9 @@ class AmbienceGroupControl(Gtk.Box):
     capabilities = {}
     has_infrared = False
 
-    def __init__(self, group, online, deck, back_callback, **kwargs):
+    def __init__(self, group, deck, back_callback, **kwargs):
         self.group = group
-        self.online = online
+        self.online = group.online # TODO: Update online devices
         self.deck = deck
         self.back_callback = back_callback
 

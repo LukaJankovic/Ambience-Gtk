@@ -65,4 +65,4 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
     @Gtk.Template.Callback("tile_clicked")
     def tile_clicked(self, sender):
         if self.clicked_callback:
-            self.clicked_callback()
+            self.clicked_callback(self)

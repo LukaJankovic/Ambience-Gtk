@@ -24,6 +24,7 @@ from .ambience_group import *
 from .ambience_light_tile import *
 from .ambience_group_tile import *
 from .ambience_light_control import *
+from .ambience_group_control import *
 import threading
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_window.ui')
@@ -77,7 +78,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         Window switched between normal and mobile (folded) state.
         """
-        pass
+        if sender.get_folded():
+            self.back.show_all()
+        else:
+            self.back.hide()
+
+        self.header_bar.set_show_close_button(sender.get_folded())
 
     @Gtk.Template.Callback("notify_visible_child_name")
     def notify_visible_child_name(self, sender, user_data):
@@ -98,13 +104,16 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         Group in sidebar selected by user.
         """
-        self.refresh_stack.set_visible_child_name("loading")
-        self.refresh_spinner.start()
+
+        if not self.sidebar.get_selected_row():
+            return
 
         self.clear_controls()
         self.clear_tiles()
 
         active_group = AmbienceLoader().get_group(self.sidebar.get_selected_row().get_title())
+
+        self.title_label.set_text(active_group.label)
 
         all_category = AmbienceFlowBox()
         all_tile = AmbienceGroupTile(active_group)
@@ -132,9 +141,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if len(active_group.offline) > 0:
             create_category(active_group.offline, "Offline")
 
-        self.refresh_stack.set_visible_child_name("refresh")
-        self.refresh_spinner.stop()
-
+        self.main_leaflet.set_visible_child(self.controls_deck)
     def clear_controls(self):
         """
         Removes control views from deck.
@@ -191,10 +198,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.controls_deck.navigate(Handy.NavigationDirection.FORWARD)
         light_controls.show()
 
-    def group_edit(self):
-
-        group_controls = AmbienceGroupControl(self.active_row.group,
-                                              self.online,
+    def group_edit(self, tile):
+        group_controls = AmbienceGroupControl(tile.group,
                                               self.controls_deck,
                                               self.light_control_exit)
 
@@ -205,7 +210,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         group_controls.show()
 
     def light_control_exit(self, controls):
-        self.remove_request = controls
         self.controls_deck.navigate(Handy.NavigationDirection.BACK)
 
     # Group management

@@ -21,9 +21,7 @@ ambience_sources = [
   '__init__.py',
   'main.py',
   'ambience_window.py',
-  'ambience_group_control.py',
   'ambience_discovery.py',
-  'ambience_group_tile.py',
   'ambience_settings.py',
   'light_item.py',
   'discovery_item.py',
@@ -35,6 +33,8 @@ ambience_sources = [
   'model/ambience_light.py',
   'ui/ambience_light_control.py',
   'ui/ambience_light_tile.py',
+  'ui/ambience_group_tile.py',
+  'ui/ambience_group_control.py',
 ]
 
 install_data(ambience_sources, install_dir: moduledir)
