@@ -16,10 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .ambience_lifx_light import AmbienceLIFXLight
+from lifxlan import Group
 
 class AmbienceGroup():
     """
-    Colleciton of  AmbienceLights.
+    Colleciton of AmbienceLights.
     """
 
     def __init__(self, group_config):
@@ -40,3 +41,17 @@ class AmbienceGroup():
                 self.online.append(light)
             else:
                 self.offline.append(light) 
+
+    def get_lifx_lights(self):
+        return [light.lifx_light for light in self.online if isinstance(light, AmbienceLIFXLight)]
+
+    def set_color(self, hsvk):
+        for i in range(3):
+            hsvk[i] = hsvk[i] * 65535
+        Group(self.get_lifx_lights()).set_color(hsvk)
+
+    def set_infrared(self, infrared):
+        Group(self.get_lifx_lights()).set_infrared(infrared)
+
+    def set_power(self, power):
+        Group(self.get_lifx_lights()).set_power(power)

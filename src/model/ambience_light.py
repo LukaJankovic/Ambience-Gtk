@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
+from mmap import PROT_WRITE
 from .ambience_device import *
 
 class AmbienceLightException(Exception):
@@ -30,6 +31,7 @@ class AmbienceLightCapabilities(Enum):
     TEMPERATURE = 2
     MULTIZONE   = 3
     INFRARED    = 4
+    POWER       = 5
 
 class AmbienceLight(AmbienceDevice):
     """
@@ -49,3 +51,13 @@ class AmbienceLight(AmbienceDevice):
 
     def set_infrared(self, i):
         raise AmbienceLightCapabilities
+
+    def get_data(self, capability):
+        if capability == AmbienceLightCapabilities.COLOR:
+            return self.get_color()
+        if capability == AmbienceLightCapabilities.TEMPERATURE:
+            return self.get_temperature()
+        if capability == AmbienceLightCapabilities.INFRARED:
+            return self.get_infrared()
+        if capability == AmbienceLightCapabilities.POWER:
+            return self.get_power()

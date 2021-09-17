@@ -24,32 +24,32 @@ class AmbienceLIFXLight(AmbienceLight):
     """
     
     def __init__(self, light_config, group):
-        self.light = Light(light_config["mac"], light_config["ip"])
+        self.lifx_light = Light(light_config["mac"], light_config["ip"])
         self.label = light_config["label"]
         self.group = group
 
     def get_capabilities(self) -> list:
         capabilities = []
 
-        if self.light.supports_color():
+        if self.lifx_light.supports_color():
             capabilities.append(AmbienceLightCapabilities.COLOR)
 
-        if self.light.supports_temperature():
+        if self.lifx_light.supports_temperature():
             capabilities.append(AmbienceLightCapabilities.TEMPERATURE)
 
-        if self.light.supports_multizone():
+        if self.lifx_light.supports_multizone():
             capabilities.append(AmbienceLightCapabilities.MULTIZONE)
 
-        if self.light.supports_infrared():
+        if self.lifx_light.supports_infrared():
             capabilities.append(AmbienceLightCapabilities.INFRARED)
 
         return capabilities
 
     def get_online(self) -> bool:
         try:
-            remote_label = self.light.get_label()
+            remote_label = self.lifx_light.get_label()
             if not remote_label == self.label: # Config remote mismatch
-                self.light.label = remote_label
+                self.lifx_light.label = remote_label
                 # TODO: write config file
 
             return True
@@ -57,19 +57,19 @@ class AmbienceLIFXLight(AmbienceLight):
             return False
 
     def get_label(self) -> str:
-        return self.light.label
+        return self.lifx_light.label
 
     def set_label(self, label):
-        self.light.set_label(label)
+        self.lifx_light.set_label(label)
 
     def get_power(self) -> bool:
-        return False if self.light.get_power() == 0 else True
+        return False if self.lifx_light.get_power() == 0 else True
 
     def set_power(self, power):
-        self.light.set_power(power, rapid=True)
+        self.lifx_light.set_power(power, rapid=True)
 
     def get_color(self) -> tuple[float, float, float, float]:
-        color_hsvk = list(self.light.get_color())
+        color_hsvk = list(self.lifx_light.get_color())
         for i in range(3):
             color_hsvk[i] = color_hsvk[i] / 65535
 
@@ -78,16 +78,18 @@ class AmbienceLIFXLight(AmbienceLight):
     def set_color(self, hsvk):
         for i in range(3):
             hsvk[i] = hsvk[i] * 65535
-        self.light.set_color(hsvk, rapid=True)
+        self.lifx_light.set_color(hsvk, rapid=True)
 
     def get_infrared(self) -> float:
-        return self.light.get_infrared() / 65535
+        if AmbienceLightCapabilities.INFRARED in self.get_capabilities():
+            return self.lifx_light.get_infrared() / 65535
+        return 0
 
     def set_infrared(self, i):
-        self.light.set_infrared(i * 65535)
+        self.lifx_light.set_infrared(i * 65535)
 
     def get_info(self):
-        return {AmbienceDeviceInfoType.IP       : self.light.get_ip_addr(),
-                AmbienceDeviceInfoType.GROUP    : self.light.get_group(),
-                AmbienceDeviceInfoType.LOCATION : self.light.get_location()
+        return {AmbienceDeviceInfoType.IP       : self.lifx_light.get_ip_addr(),
+                AmbienceDeviceInfoType.GROUP    : self.lifx_light.get_group(),
+                AmbienceDeviceInfoType.LOCATION : self.lifx_light.get_location()
                 }
