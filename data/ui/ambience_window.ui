@@ -80,7 +80,7 @@
         <property name="can-focus">False</property>
         <property name="can-swipe-back">True</property>
         <signal name="notify::fold" handler="notify_fold_cb" swapped="no"/>
-        <signal name="notify::visible-child-name" handler="notify_visible_child_name" swapped="no"/>
+        <signal name="notify::visible-child-name" handler="notify_main_visible_child_name" swapped="no"/>
         <child>
           <object class="GtkBox" id="menu_box">
             <property name="visible">True</property>
@@ -234,7 +234,7 @@
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="can-swipe-back">True</property>
-            <signal name="notify::transition-running" handler="control_transition_update" swapped="no"/>
+            <signal name="notify::visible-child-name" handler="notify_controls_visible_child_name" swapped="no"/>
             <child>
               <object class="GtkBox" id="tiles_box">
                 <property name="visible">True</property>

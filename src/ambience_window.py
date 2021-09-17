@@ -85,10 +85,26 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.header_bar.set_show_close_button(sender.get_folded())
 
-    @Gtk.Template.Callback("notify_visible_child_name")
+    @Gtk.Template.Callback("notify_main_visible_child_name")
     def notify_visible_child_name(self, sender, user_data):
         if sender.get_visible_child_name() == "menu":
             self.go_back(sender)
+            self.clear_tiles()
+
+    @Gtk.Template.Callback("notify_controls_visible_child_name")
+    def visible_child_name_changed(self, sender, user_data):
+        if self.controls_deck.get_visible_child_name() == "tiles":
+
+            def wait_finished():
+                self.sidebar_selected(self, None)
+
+            def wait_thread():
+                while self.controls_deck.get_transition_running():
+                    pass
+                GLib.idle_add(lambda: self.sidebar_selected(self, None))
+
+            t = threading.Thread(target=wait_thread)
+            t.start()
 
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
@@ -111,6 +127,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.clear_controls()
         self.clear_tiles()
 
+        tile_size_group = Gtk.SizeGroup()
+        tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
+
         active_group = AmbienceLoader().get_group(self.sidebar.get_selected_row().get_title())
 
         self.title_label.set_text(active_group.label)
@@ -118,6 +137,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         all_category = AmbienceFlowBox()
         all_tile = AmbienceGroupTile(active_group)
         all_tile.clicked_callback = self.group_edit
+
+        tile_size_group.add_widget(all_tile)
         all_category.insert(all_tile, -1)
 
         self.tiles_list.add(all_category)
@@ -131,7 +152,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
             lights_category = AmbienceFlowBox()
 
             for light in lights:
-                lights_category.insert(AmbienceLightTile(light, self.tile_clicked), -1)
+                light_tile = AmbienceLightTile(light, self.tile_clicked)
+                tile_size_group.add_widget(light_tile)
+                lights_category.insert(light_tile, -1)
 
             self.tiles_list.add(lights_category)
 
@@ -142,6 +165,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             create_category(active_group.offline, "Offline")
 
         self.main_leaflet.set_visible_child(self.controls_deck)
+
     def clear_controls(self):
         """
         Removes control views from deck.
