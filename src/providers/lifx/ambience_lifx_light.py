@@ -16,7 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from lifxlan import *
+
 from .ambience_light import *
+from .ambience_lifx_device_type import AmbienceLifxDeviceType
 
 class AmbienceLIFXLight(AmbienceLight):
     """
@@ -89,7 +91,16 @@ class AmbienceLIFXLight(AmbienceLight):
         self.lifx_light.set_infrared(i * 65535)
 
     def get_info(self):
-        return {AmbienceDeviceInfoType.IP       : self.lifx_light.get_ip_addr(),
-                AmbienceDeviceInfoType.GROUP    : self.lifx_light.get_group(),
-                AmbienceDeviceInfoType.LOCATION : self.lifx_light.get_location()
-                }
+
+        device_type = AmbienceLifxDeviceType()
+
+        device_info =  {
+                        AmbienceDeviceInfoType.IP       : self.lifx_light.get_ip_addr(),
+                        AmbienceDeviceInfoType.GROUP    : self.lifx_light.get_group(),
+                        AmbienceDeviceInfoType.LOCATION : self.lifx_light.get_location(),
+        }
+               
+        if model := device_type.get_product(self.lifx_light.get_version_tuple()[1]):
+            device_info[AmbienceDeviceInfoType.MODEL] = model["name"]
+
+        return device_info

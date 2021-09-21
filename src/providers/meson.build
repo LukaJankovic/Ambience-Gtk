@@ -4,6 +4,7 @@ moduledir = join_paths(pkgdatadir, 'ambience')
 lifx_sources = [
     'lifx/ambience_lifx_lan.py',
     'lifx/ambience_lifx_light.py',
+    'lifx/ambience_lifx_device_type.py'
 ]
 
 ambience_sources = []
