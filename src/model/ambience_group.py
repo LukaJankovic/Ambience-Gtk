@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ambience.providers.lifx.ambience_lifx_light import AmbienceLIFXLight
+from ambience.providers.ambience_providers import AmbienceProviders
+
 from lifxlan import Group
 
 class AmbienceGroup():
@@ -23,35 +24,40 @@ class AmbienceGroup():
     Colleciton of AmbienceLights.
     """
 
+    providers = AmbienceProviders()
+
     def __init__(self, group_config):
         self.label = group_config["label"]
 
         self.online = []
         self.offline = [] 
 
-        for light_config in group_config["lights"]: # TODO: parallelize using joblib
-            light = None
-            if light_config["kind"] == "lifx":
-                light = AmbienceLIFXLight(light_config, self)
-                light.get_capabilities()
-            else:
-                continue
+        for light_config in group_config["lights"]: # TODO: parallelize using joblib (maybe)
+            module = light_config["kind"]
+            connector = self.providers.import_provider(module)
+            light = connector.create_device(light_config, self)
+            self.providers.unimport_provider(connector) 
 
             if light.get_online():
                 self.online.append(light)
             else:
                 self.offline.append(light) 
 
-    def get_lifx_lights(self):
-        return [light.lifx_light for light in self.online if isinstance(light, AmbienceLIFXLight)]
+    def get_lights_of_kind(self, connector):
+        lights = [light for light in self.online if connector.compare_device(light)]
+        return lights
 
     def set_color(self, hsvk):
-        for i in range(3):
-            hsvk[i] = hsvk[i] * 65535
-        Group(self.get_lifx_lights()).set_color(hsvk)
+        for kind in self.providers.get_provider_list():
+            connector = self.providers.import_provider(kind)
+            connector.create_group(self.get_lights_of_kind(connector)).set_color(hsvk) 
 
     def set_infrared(self, infrared):
-        Group(self.get_lifx_lights()).set_infrared(infrared)
+        for kind in self.providers.get_provider_list():
+            connector = self.providers.import_provider(kind)
+            connector.create_group(self.get_lights_of_kind(connector)).set_infrared(infrared) 
 
     def set_power(self, power):
-        Group(self.get_lifx_lights()).set_power(power)
+        for kind in self.providers.get_provider_list():
+            connector = self.providers.import_provider(kind)
+            connector.create_group(self.get_lights_of_kind(connector)).set_power(power) 

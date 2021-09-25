@@ -1,5 +1,4 @@
-pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
-widgetsdir = join_paths(pkgdatadir, 'ambience', 'widgets')
+widgetsdir = join_paths(moduledir, 'widgets')
 
 widgets_sources = [
   'ambience_flow_box.py',

@@ -1,5 +1,4 @@
-pkgdatadir = join_paths(get_option('datadir'), meson.project_name())
-viewsdir = join_paths(pkgdatadir, 'ambience', 'views')
+viewsdir = join_paths(moduledir, 'views')
 
 views_sources = [
   'ambience_light_control.py',

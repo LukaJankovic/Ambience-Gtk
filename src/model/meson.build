@@ -1,5 +1,4 @@
-pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
-modeldir = join_paths(pkgdatadir, 'ambience', 'model')
+modeldir = join_paths(moduledir, 'model')
 
 ambience_sources = [
     'ambience_device.py',
