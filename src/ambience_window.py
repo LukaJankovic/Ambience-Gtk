@@ -20,11 +20,16 @@ import threading
 
 from gi.repository import Gtk, GLib, Handy
 from .ambience_loader import *
-from .ambience_group import *
-from .ambience_light_tile import *
-from .ambience_group_tile import *
-from .ambience_light_control import *
-from .ambience_group_control import *
+
+from ambience.model.ambience_group import *
+
+from ambience.widgets.ambience_flow_box import AmbienceFlowBox
+from ambience.widgets.ambience_group_tile import AmbienceGroupTile
+from ambience.widgets.ambience_light_tile import AmbienceLightTile
+
+from ambience.views.ambience_group_control import AmbienceGroupControl
+from ambience.views.ambience_light_control import AmbienceLightControl
+
 import threading
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_window.ui')

@@ -15,12 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .ambience_light import AmbienceLightCapabilities
-import threading
+from gi.repository import Gtk, Gdk
 
-from gi.repository import Gtk, Gdk, GLib
-from .ambience_device import *
-from .helpers import *
+from ambience.model.ambience_light import AmbienceLightCapabilities
+from ambience.model.ambience_device import AmbienceDeviceInfoType
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_light_control.ui')
 class AmbienceLightControl(Gtk.Box):

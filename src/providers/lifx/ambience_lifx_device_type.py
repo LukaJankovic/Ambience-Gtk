@@ -17,7 +17,7 @@
 
 import requests, json
 
-from .helpers import *
+from ambience.singleton import Singleton
 
 P_LIST_URL = "https://raw.githubusercontent.com/LIFX/products/master/products.json"
 

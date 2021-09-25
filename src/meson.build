@@ -26,17 +26,14 @@ ambience_sources = [
   'light_item.py',
   'discovery_item.py',
   'product_list.py',
-  'helpers.py',
-  'backend/ambience_loader.py',
-  'model/ambience_device.py',
-  'model/ambience_group.py',
-  'model/ambience_light.py',
-  'ui/ambience_light_control.py',
-  'ui/ambience_light_tile.py',
-  'ui/ambience_group_tile.py',
-  'ui/ambience_group_control.py',
+  'singleton.py',
+  'ambience_loader.py'
 ]
 
 install_data(ambience_sources, install_dir: moduledir)
 
+subdir('model')
 subdir('providers')
+
+subdir('views')
+subdir('widgets')

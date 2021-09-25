@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from mmap import PROT_WRITE
 from .ambience_device import *
 
 class AmbienceLightException(Exception):

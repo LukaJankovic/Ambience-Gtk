@@ -20,10 +20,7 @@ gi.require_version('Gtk', '3.0')
 
 gi.require_version('Handy', '1')
 
-from gi.repository import Gtk, GLib
-import threading
-
-from .helpers import *
+from gi.repository import Gtk
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_group_tile.ui')
 class AmbienceGroupTile(Gtk.FlowBoxChild):

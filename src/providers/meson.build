@@ -1,13 +1,10 @@
 pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
-moduledir = join_paths(pkgdatadir, 'ambience')
+providersdir = join_paths(pkgdatadir, 'ambience', 'providers')
 
-lifx_sources = [
-    'lifx/ambience_lifx_lan.py',
-    'lifx/ambience_lifx_light.py',
-    'lifx/ambience_lifx_device_type.py'
+providers_sources = [
+    '__init__.py'
 ]
 
-ambience_sources = []
-ambience_sources += lifx_sources
+install_data(providers_sources, install_dir: providersdir)
 
-install_data(ambience_sources, install_dir: moduledir)
+subdir('lifx')

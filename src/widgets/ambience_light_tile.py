@@ -20,23 +20,16 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '1')
 
-from gi.repository import Gtk, GLib
-import colorsys, threading
+from gi.repository import Gtk
+import colorsys
 
-from .ambience_light import *
-from .helpers import *
+from ambience.model.ambience_light import AmbienceLightCapabilities
 
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_flow_box.ui')
-class AmbienceFlowBox(Gtk.Box):
-    __gtype_name__ = 'AmbienceFlowBox'
+def rgb_to_hex(r, g, b):
+    return '#{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
 
-    flowbox = Gtk.Template.Child()
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def insert(self, item, index):
-        self.flowbox.insert(item, index)
+def darkmode_color(r, g, b):
+    return (int(r * 255) * 0.299 + int(g * 255) * 0.587 + int(b * 255) * 0.114) > 145
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_light_tile.ui')
 class AmbienceLightTile(Gtk.FlowBoxChild):

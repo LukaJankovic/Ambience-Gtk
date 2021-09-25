@@ -15,10 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk
 
-from .ambience_light import *
+from ambience.model.ambience_light import AmbienceLightCapabilities
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_group_control.ui')
 class AmbienceGroupControl(Gtk.Box):

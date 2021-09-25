@@ -17,7 +17,9 @@
 
 from lifxlan import *
 
-from .ambience_light import *
+from ambience.model.ambience_device import AmbienceDeviceInfoType
+from ambience.model.ambience_light import AmbienceLight, AmbienceLightCapabilities
+
 from .ambience_lifx_device_type import AmbienceLifxDeviceType
 
 class AmbienceLIFXLight(AmbienceLight):
