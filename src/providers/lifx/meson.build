@@ -4,6 +4,8 @@ lifx_sources = [
     '__init__.py',
     'ambience_connector.py',
     'ambience_lifx_device_type.py',
+    'ambience_lifx_discovery.py',
+    'ambience_lifx_group.py',
     'ambience_lifx_lan.py',
     'ambience_lifx_light.py'
 ]

@@ -17,8 +17,8 @@
 
 from gi.repository import GLib, Gio
 
-from .ambience_group import *
-from .helpers import *
+from ambience.model.ambience_group import *
+from .singleton import *
 
 import json
 
@@ -35,7 +35,8 @@ class AmbienceLoader(metaclass=Singleton):
         dest = GLib.build_filenamev([data_dir, file])
         return Gio.File.new_for_path(dest)
 
-    def get_config(self, file):
+    def get_config(self):
+        file = self.read_config_file(self.CONFIG_FILE_NAME)
         try:
             (_, content, _) = file.load_contents()
             return json.loads(content.decode("utf-8"))
@@ -48,8 +49,7 @@ class AmbienceLoader(metaclass=Singleton):
         return {"groups":[]}
 
     def get_group_labels(self):
-        conf_file = self.read_config_file(self.CONFIG_FILE_NAME)
-        config = self.get_config(conf_file)
+        config = self.get_config()
         groups = []
 
         for group in config["groups"]:
@@ -58,9 +58,32 @@ class AmbienceLoader(metaclass=Singleton):
         return groups
 
     def get_group(self, label):
-        conf_file = self.read_config_file(self.CONFIG_FILE_NAME)
-        config = self.get_config(conf_file)
+        config = self.get_config()
 
         for group in config["groups"]:
             if group["label"] == label:
                 return AmbienceGroup(group)
+
+    def add_light(self, group, ip, mac, kind):
+        config = self.get_config()
+
+        light = {
+            "kind": kind,
+            "ip":   ip,
+            "mac":  mac
+        }
+
+        added = False
+        for group in config["groups"]:
+            if group["label"] == group.label:
+                if "lights" in group:
+                    group["lights"].append(light)
+                else:
+                    group["lights"] = [light]
+                added = True
+
+        if not added:
+            config["groups"].append({
+                "label": group.label,
+                "lights": [light]
+            })

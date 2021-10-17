@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .ambience_device import AmbienceDevice
+from gi.repository import Gtk
+
 class AmbienceModuleConnectorException(Exception):
     """
     Raised when a function call is made directly onto an AmbienceModuleConnector
@@ -39,3 +42,6 @@ class AmbienceModuleConnector():
 
     def create_group(self, devices):
         raise AmbienceModuleConnectorException
+
+    def discovery_dialog(self) -> Gtk.Dialog:
+        raise AmbienceModuleConnectorException 

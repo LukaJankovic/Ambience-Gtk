@@ -19,8 +19,6 @@ from typing import Dict
 from gi.repository import GLib, Gio
 import json
 
-from .helpers import *
-
 def get_old_dest_file():
     """
     Create / find the obsolete file used to store lights.

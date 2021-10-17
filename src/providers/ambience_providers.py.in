@@ -23,14 +23,17 @@ class AmbienceProviders():
     def get_provider_list(self):
         return self.providers.split(" ")
 
+    def get_name_for_provider(self, provider):
+        connector = self.import_provider(provider)
+        res = connector.display_name()
+        self.unimport_provider(connector)
+        return res
+
     def get_provider_names(self):
-        providers = self.providers.split(" ")
         final_list = {}
 
-        for provider in providers:
-            connector = self.import_provider(provider)
-            final_list[provider] = connector.display_name()
-            self.unimport_provider(connector)
+        for provider in self.get_provider_list():
+            final_list[provider] = self.get_name_for_provider(provider) 
         
         return final_list
 

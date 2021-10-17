@@ -12,5 +12,6 @@
     <file>discovery_item.ui</file>
     <file>stylesheet.css</file>
     <file>document-edit-symbolic.svg</file>
+    <file>ambience_lifx_discovery.ui</file>
   </gresource>
 </gresources>

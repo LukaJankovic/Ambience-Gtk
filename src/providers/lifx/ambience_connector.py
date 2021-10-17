@@ -15,12 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ambience.module.ambience_module_group_connector import AmbienceModuleGroupConnector
+from ambience.model.ambience_module_connector import AmbienceModuleConnector
 
 from .ambience_lifx_light import AmbienceLIFXLight
 from .ambience_lifx_group import AmbienceLIFXGroup
+from .ambience_lifx_discovery import AmbienceLIFXDiscovery
 
-class AmbienceConnector(AmbienceModuleGroupConnector):
+class AmbienceConnector(AmbienceModuleConnector):
     def display_name(self):
         return "LIFX"
 
@@ -32,3 +33,6 @@ class AmbienceConnector(AmbienceModuleGroupConnector):
 
     def create_group(self, devices):
         return AmbienceLIFXGroup(devices)
+
+    def discovery_dialog(self):
+        return AmbienceLIFXDiscovery()

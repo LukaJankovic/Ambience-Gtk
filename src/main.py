@@ -59,7 +59,7 @@ class Application(Gtk.Application):
         about.show_all()
 
     def show_discovery(self, state, user_data):
-        discovery_window = AmbienceDiscovery(self.lan, transient_for=self.win, modal=True, use_header_bar=1)
+        discovery_window = AmbienceDiscovery(transient_for=self.win, modal=True, use_header_bar=1)
         discovery_window.show_all()
 
     def do_activate(self):
