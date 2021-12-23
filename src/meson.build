@@ -24,7 +24,6 @@ ambience_sources = [
   'ambience_discovery.py',
   'ambience_settings.py',
   'light_item.py',
-  'discovery_item.py',
   'singleton.py',
   'ambience_loader.py'
 ]

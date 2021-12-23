@@ -17,9 +17,9 @@
 
 from ambience.model.ambience_module_connector import AmbienceModuleConnector
 
+from .ambience_lifx_lan import AmbienceLIFXLan
 from .ambience_lifx_light import AmbienceLIFXLight
 from .ambience_lifx_group import AmbienceLIFXGroup
-from .ambience_lifx_discovery import AmbienceLIFXDiscovery
 
 class AmbienceConnector(AmbienceModuleConnector):
     def display_name(self):
@@ -34,5 +34,5 @@ class AmbienceConnector(AmbienceModuleConnector):
     def create_group(self, devices):
         return AmbienceLIFXGroup(devices)
 
-    def discovery_dialog(self):
-        return AmbienceLIFXDiscovery()
+    def discovery_list(self):
+        return [AmbienceLIFXLight.fromLifxLAN(x) for x in AmbienceLIFXLan().get_lan().get_devices()]

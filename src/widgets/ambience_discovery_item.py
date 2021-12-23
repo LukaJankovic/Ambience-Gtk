@@ -1,4 +1,4 @@
-# discovery_item.py
+# ambience_discovery_item.py
 #
 # Copyright 2021 Luka Jankovic
 #
@@ -15,20 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk, GLib, GObject, Gio
+from gi.repository import Gtk
 
-from .ambience_settings import *
-
-import json
-
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/discovery_item.ui')
-class DiscoveryItem(Gtk.ListBoxRow):
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_discovery_item.ui')
+class AmbienceDiscoveryItem(Gtk.ListBoxRow):
     """
     Sidebar item when in discovery mode. Contains a toggle box instead of a
     power switch which is used to add the bulb to the main list.
     """
 
-    __gtype_name__ = 'DiscoveryItem'
+    __gtype_name__ = 'AmbienceDiscoveryItem'
 
     light_label  = Gtk.Template.Child()
     add_btn      = Gtk.Template.Child()
@@ -57,16 +53,16 @@ class DiscoveryItem(Gtk.ListBoxRow):
         """
 
         if self.added:
-            self.config_list = remove_light_from_group(self.config_list, self.light.get_mac_addr())
+            print("removed")
             self.added = False
         else:
-            light = {"ip":      self.light.get_ip_addr(),
-                     "mac":     self.light.get_mac_addr(),
-                     "label":   self.light.get_label()}
-
-            self.config_list = add_light_to_group(self.config_list, self.light.get_group_label(), light)
-
+            print("added")
             self.added = True
 
-        write_config(self.config_list, self.dest_file)
         self.update_icon()
+
+    def __init__(self, light, **kwargs):
+        super().__init__(**kwargs)
+
+        self.light = light
+        self.light_label.set_label(self.light.get_label())

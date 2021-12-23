@@ -2,10 +2,10 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <requires lib="libhandy" version="1.0"/>
   <template class="AmbienceDiscovery" parent="GtkDialog">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="title">Add Lights</property>
     <property name="default-width">300</property>
     <property name="default-height">400</property>
     <property name="type-hint">normal</property>
@@ -19,7 +19,11 @@
         <property name="vexpand">False</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox">
+            <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <child>
+              <placeholder/>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -28,24 +32,59 @@
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow">
+          <object class="HdyDeck" id="main_deck">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="hexpand">True</property>
-            <property name="vexpand">True</property>
+            <property name="can-swipe-back">True</property>
             <child>
-              <object class="GtkViewport">
+              <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
                 <child>
-                  <object class="GtkListBox" id="menu">
+                  <object class="GtkViewport">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hexpand">True</property>
-                    <signal name="row-selected" handler="sidebar_selected" swapped="no"/>
+                    <child>
+                      <object class="GtkListBox" id="providers_list">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <signal name="row-selected" handler="provider_selected" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
+              <packing>
+                <property name="name">providers</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkListBox" id="devices_list">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <signal name="row-selected" handler="sidebar_selected" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">devices</property>
+              </packing>
             </child>
           </object>
           <packing>
@@ -56,5 +95,105 @@
         </child>
       </object>
     </child>
+    <child type="titlebar">
+      <object class="HdyDeck" id="header_deck">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="HdyHeaderBar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="title" translatable="yes">Add Devices</property>
+            <property name="show-close-button">True</property>
+            <property name="decoration-layout">:close</property>
+            <child>
+              <object class="GtkStack">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="HdyHeaderBar" id="subheader">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="show-close-button">True</property>
+            <child>
+              <object class="GtkButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="go_back" swapped="no"/>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">carousel-arrow-previous-symbolic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStack" id="reload_stack">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="transition-type">crossfade</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="reload_devices" swapped="no"/>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">view-refresh-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="name">button</property>
+                    <property name="title" translatable="yes">button</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinner" id="device_spinner">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
+                    <property name="margin-top">8</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="active">True</property>
+                  </object>
+                  <packing>
+                    <property name="name">loading</property>
+                    <property name="title" translatable="yes">loading</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
   </template>
+  <object class="HdySwipeGroup">
+    <swipeables>
+      <swipeable name="main_deck"/>
+      <swipeable name="header_deck"/>
+    </swipeables>
+  </object>
 </interface>

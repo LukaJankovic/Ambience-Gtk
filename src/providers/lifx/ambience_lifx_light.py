@@ -26,11 +26,23 @@ class AmbienceLIFXLight(AmbienceLight):
     """
     Bridge between lifxlan and ui.
     """
-    
-    def __init__(self, light_config, group):
-        self.lifx_light = Light(light_config["mac"], light_config["ip"])
-        self.label = light_config["label"]
-        self.group = group
+
+    def __init__(self):
+        pass
+
+    @classmethod
+    def fromConfig(cls, light_config, group):
+        new = cls()
+        new.lifx_light = Light(light_config["mac"], light_config["ip"])
+        new.label = light_config["label"]
+        new.group = group
+        return new
+
+    @classmethod
+    def fromLifxLAN(cls, light):
+        new = cls()
+        new.lifx_light = light
+        return new        
 
     def get_capabilities(self) -> list:
         capabilities = []
@@ -61,7 +73,7 @@ class AmbienceLIFXLight(AmbienceLight):
             return False
 
     def get_label(self) -> str:
-        return self.lifx_light.label
+        return self.lifx_light.get_label()
 
     def set_label(self, label):
         self.lifx_light.set_label(label)

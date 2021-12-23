@@ -1,6 +1,3 @@
-import gi
-
-gi.require_version('Gtk', '3.0')
 # ambience_group_tile.py
 #
 # Copyright 2021 Luka Jankovic
@@ -17,8 +14,6 @@ gi.require_version('Gtk', '3.0')
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-gi.require_version('Handy', '1')
 
 from gi.repository import Gtk
 

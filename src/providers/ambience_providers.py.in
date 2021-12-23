@@ -26,7 +26,7 @@ class AmbienceProviders():
     def get_name_for_provider(self, provider):
         connector = self.import_provider(provider)
         res = connector.display_name()
-        self.unimport_provider(connector)
+        #self.unimport_provider(connector) TODO: unnecessary?
         return res
 
     def get_provider_names(self):

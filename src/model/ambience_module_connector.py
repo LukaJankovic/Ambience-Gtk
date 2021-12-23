@@ -43,5 +43,5 @@ class AmbienceModuleConnector():
     def create_group(self, devices):
         raise AmbienceModuleConnectorException
 
-    def discovery_dialog(self) -> Gtk.Dialog:
+    def discovery_list(self) -> list[AmbienceDevice]:
         raise AmbienceModuleConnectorException 
