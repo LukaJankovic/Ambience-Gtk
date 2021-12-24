@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .ambience_device import AmbienceDevice
 from gi.repository import Gtk
+import json
+
+from ambience.model.ambience_device import AmbienceDevice
 
 class AmbienceModuleConnectorException(Exception):
     """
@@ -34,11 +36,14 @@ class AmbienceModuleConnector():
     def display_name(self) -> str:
         raise AmbienceModuleConnectorException
 
-    def create_device(self, config, group) -> AmbienceDevice:
-        raise AmbienceModuleConnector
-
-    def compare_device(self, device):
+    def compare_device(self, device) -> bool:
         raise AmbienceModuleConnectorException
+
+    def save_device(self, device) -> dict:
+        raise AmbienceModuleConnectorException
+
+    def load_device(self, config, group) -> AmbienceDevice:
+        raise AmbienceModuleConnector
 
     def create_group(self, devices):
         raise AmbienceModuleConnectorException

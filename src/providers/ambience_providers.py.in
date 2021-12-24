@@ -19,6 +19,7 @@ import importlib
 
 class AmbienceProviders():
     providers = "@PROVIDERS@"
+    active_connectors = {}
 
     def get_provider_list(self):
         return self.providers.split(" ")
@@ -26,7 +27,6 @@ class AmbienceProviders():
     def get_name_for_provider(self, provider):
         connector = self.import_provider(provider)
         res = connector.display_name()
-        #self.unimport_provider(connector) TODO: unnecessary?
         return res
 
     def get_provider_names(self):
@@ -38,8 +38,14 @@ class AmbienceProviders():
         return final_list
 
     def import_provider(self, provider):
-        connector = importlib.import_module("ambience.providers."+provider+".ambience_connector")
-        return connector.AmbienceConnector()
+        if provider in self.active_connectors:
+            return self.active_connectors[provider] 
+
+        else:
+            connector = importlib.import_module("ambience.providers."+provider+".ambience_connector")
+            self.active_connectors[provider] = connector.AmbienceConnector()
+
+        return self.active_connectors[provider] 
 
     def unimport_provider(self, connector):
         del connector

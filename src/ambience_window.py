@@ -127,6 +127,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
 
         if not self.sidebar.get_selected_row():
+            self.clear_tiles()
             return
 
         self.clear_controls()
@@ -135,7 +136,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         tile_size_group = Gtk.SizeGroup()
         tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
 
-        active_group = AmbienceLoader().get_group(self.sidebar.get_selected_row().get_title())
+        active_group = self.sidebar.get_selected_row().group
 
         self.title_label.set_text(active_group.label)
 
@@ -163,11 +164,19 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             self.tiles_list.add(lights_category)
 
-        if len(active_group.online) > 0:
-            create_category(active_group.online, "Lights")
+        online = []
+        offline = []
+        for device in active_group.devices:
+            if device.get_online():
+                online.append(device)
+            else:
+                offline.append(device)
 
-        if len(active_group.offline) > 0:
-            create_category(active_group.offline, "Offline")
+        if len(online) > 0:
+            create_category(online, "Lights")
+
+        if len(offline) > 0:
+            create_category(offline, "Offline")
 
         self.main_leaflet.set_visible_child(self.controls_deck)
 
@@ -203,12 +212,13 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.clear_tiles()
         self.clear_sidebar()
 
-        self.groups = AmbienceLoader().get_group_labels()
+        self.groups = AmbienceLoader().get_all_groups()
 
         for group in self.groups:
             group_item = Handy.ActionRow()
             group_item.set_visible(True)
-            group_item.set_title(group)
+            group_item.set_title(group.label)
+            group_item.group = group
             
             self.sidebar.insert(group_item, -1)
 

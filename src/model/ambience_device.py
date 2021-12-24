@@ -36,6 +36,9 @@ class AmbienceDevice():
     represent a unique kind of device. (i.e. light)
     """
 
+    group = None
+    kind = None
+
     def get_label(self) -> str:
         raise AmbienceDeviceException 
 
@@ -52,4 +55,7 @@ class AmbienceDevice():
         raise AmbienceDeviceException
 
     def get_info(self) -> dict:
+        raise AmbienceDeviceException
+
+    def write_config(self) -> dict:
         raise AmbienceDeviceException

@@ -28,21 +28,27 @@ class AmbienceLIFXLight(AmbienceLight):
     """
 
     def __init__(self):
-        pass
+        self.kind = "lifx"
 
     @classmethod
-    def fromConfig(cls, light_config, group):
+    def from_config(cls, light_config, group):
         new = cls()
-        new.lifx_light = Light(light_config["mac"], light_config["ip"])
+        new.lifx_light = Light(light_config["data"]["mac"], light_config["data"]["ip"])
         new.label = light_config["label"]
         new.group = group
         return new
 
     @classmethod
-    def fromLifxLAN(cls, light):
+    def from_LifxLAN(cls, light):
         new = cls()
         new.lifx_light = light
         return new        
+
+    def write_config(self):
+        return {
+            "ip": self.lifx_light.get_ip_addr(),
+            "mac": self.lifx_light.get_mac_addr()
+        }
 
     def get_capabilities(self) -> list:
         capabilities = []
@@ -118,3 +124,6 @@ class AmbienceLIFXLight(AmbienceLight):
             device_info[AmbienceDeviceInfoType.MODEL] = model["name"]
 
         return device_info
+
+    def get_lifx_group_label(self):
+        return self.lifx_light.get_group()

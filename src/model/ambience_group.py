@@ -24,24 +24,41 @@ class AmbienceGroup():
     Colleciton of AmbienceLights.
     """
 
+    label = ""
+    devices = []
     providers = AmbienceProviders()
 
-    def __init__(self, group_config):
-        self.label = group_config["label"]
+    @classmethod
+    def from_config(cls, group_config):
+        new = cls()
+        new.label = group_config["label"]
 
-        self.online = []
-        self.offline = [] 
+        new.online = []
+        new.offline = [] 
 
-        for light_config in group_config["lights"]: # TODO: parallelize using joblib (maybe)
-            module = light_config["kind"]
-            connector = self.providers.import_provider(module)
-            light = connector.create_device(light_config, self)
-            self.providers.unimport_provider(connector) 
+        for device_config in group_config["devices"]: # TODO: parallelize using joblib (maybe)
+            module = device_config["kind"]
+            connector = new.providers.import_provider(module)
+            device = connector.load_device(device_config, new)
+            new.devices.append(device)
 
-            if light.get_online():
-                self.online.append(light)
-            else:
-                self.offline.append(light) 
+        return new
+
+    def write_config(self):
+        config = {
+            "label": self.label,
+            "devices": []
+        }
+
+        for device in self.devices:
+            device_config = {
+                "label": device.get_label(),
+                "kind": device.kind,
+                "data": device.write_config()
+            }
+            config["devices"].append(device_config)
+
+        return config
 
     def get_lights_of_kind(self, connector):
         lights = [light for light in self.online if connector.compare_device(light)]

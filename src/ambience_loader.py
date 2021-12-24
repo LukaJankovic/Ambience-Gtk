@@ -18,7 +18,7 @@
 from gi.repository import GLib, Gio
 
 from ambience.model.ambience_group import *
-from .singleton import *
+from ambience.singleton import *
 
 import json
 
@@ -48,42 +48,45 @@ class AmbienceLoader(metaclass=Singleton):
             print("Config file empty or invalid")
         return {"groups":[]}
 
-    def get_group_labels(self):
-        config = self.get_config()
-        groups = []
+    def write_config(self, config):
+        permissions = 0o664
+        target_file = self.read_config_file(self.CONFIG_FILE_NAME)
+        if GLib.mkdir_with_parents(target_file.get_parent().get_path(), permissions) == 0:
+            (success, _) = target_file.replace_contents(str.encode(json.dumps(config)), None, False, Gio.FileCreateFlags.REPLACE_DESTINATION, None)
 
-        for group in config["groups"]:
-            groups.append(group["label"])
-
-        return groups
+            if not success:
+                print("Unable to save config file")
+        else:
+            print("Unable to create required directory/ies for config file")
 
     def get_group(self, label):
         config = self.get_config()
 
         for group in config["groups"]:
             if group["label"] == label:
-                return AmbienceGroup(group)
+                return AmbienceGroup.from_config(group)
 
-    def add_light(self, group, ip, mac, kind):
-        config = self.get_config()
+        group = AmbienceGroup()
+        group.label = label
 
-        light = {
-            "kind": kind,
-            "ip":   ip,
-            "mac":  mac
-        }
+        config["groups"].append(group.write_config())
 
-        added = False
-        for group in config["groups"]:
-            if group["label"] == group.label:
-                if "lights" in group:
-                    group["lights"].append(light)
-                else:
-                    group["lights"] = [light]
-                added = True
+        self.write_config(config)
+        return group
+    
+    def remove_group(self, config, group):
+        for g in config["groups"]:
+            if g["label"] == group.label:
+                config["groups"].remove(g)
+        return config
 
-        if not added:
-            config["groups"].append({
-                "label": group.label,
-                "lights": [light]
-            })
+    def get_all_groups(self):
+        return [AmbienceGroup.from_config(x) for x in self.get_config()["groups"]]
+
+    def add_device(self, group, device):
+        print("add device?")
+        config = self.remove_group(self.get_config(), group)
+        group.devices.append(device)
+        config["groups"].append(group.write_config())
+
+        self.write_config(config)

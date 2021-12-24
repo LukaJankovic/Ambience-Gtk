@@ -17,6 +17,8 @@
 
 from gi.repository import Gtk
 
+from ambience.ambience_loader import AmbienceLoader
+
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_discovery_item.ui')
 class AmbienceDiscoveryItem(Gtk.ListBoxRow):
     """
@@ -58,6 +60,9 @@ class AmbienceDiscoveryItem(Gtk.ListBoxRow):
         else:
             print("added")
             self.added = True
+
+            group = AmbienceLoader().get_group(self.light.get_lifx_group_label())
+            AmbienceLoader().add_device(group, self.light)
 
         self.update_icon()
 

@@ -25,14 +25,17 @@ class AmbienceConnector(AmbienceModuleConnector):
     def display_name(self):
         return "LIFX"
 
-    def create_device(self, config, group):
-        return AmbienceLIFXLight(config, group)
-
     def compare_device(self, device):
         return isinstance(device, AmbienceLIFXLight)
+
+    def save_device(self, device):
+        return device.write_config()
+
+    def load_device(self, config, group):
+        return AmbienceLIFXLight.from_config(config, group)
 
     def create_group(self, devices):
         return AmbienceLIFXGroup(devices)
 
     def discovery_list(self):
-        return [AmbienceLIFXLight.fromLifxLAN(x) for x in AmbienceLIFXLan().get_lan().get_devices()]
+        return [AmbienceLIFXLight.from_LifxLAN(x) for x in AmbienceLIFXLan().get_lan().get_devices()]
