@@ -27,7 +27,7 @@
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
             <property name="action-name">app.discovery</property>
-            <property name="text" translatable="yes">Add Devices</property>
+            <property name="text" translatable="yes">Manage Devices</property>
           </object>
           <packing>
             <property name="expand">False</property>
