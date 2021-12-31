@@ -40,8 +40,8 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
 
     def count_on(self):
         count = 0
-        for light in self.group.online:
-            if light.get_power():
+        for light in self.group.get_devices():
+            if light.get_online() and light.get_power():
                 count += 1
         return count
 

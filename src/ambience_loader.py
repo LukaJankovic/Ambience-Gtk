@@ -76,17 +76,38 @@ class AmbienceLoader(metaclass=Singleton):
     
     def remove_group(self, config, group):
         for g in config["groups"]:
-            if g["label"] == group.label:
+            if g["label"] == group.get_label():
                 config["groups"].remove(g)
         return config
 
     def get_all_groups(self):
         return [AmbienceGroup.from_config(x) for x in self.get_config()["groups"]]
 
-    def add_device(self, group, device):
-        print("add device?")
-        config = self.remove_group(self.get_config(), group)
-        group.devices.append(device)
-        config["groups"].append(group.write_config())
+    def has_device(self, device):
+        config = self.get_config()
 
+        for group in config["groups"]:
+            for d in group["devices"]:
+                if device.write_config() == d["data"]:
+                    return True
+        return False
+
+    def modify_group(self, group, modify_fn):
+        config = self.remove_group(self.get_config(), group)
+        modify_fn()
+        print(group.devices)
+        config["groups"].append(group.write_config())
         self.write_config(config)
+
+    def add_device(self, group, device):
+        def add_fn():
+            group.add_device(device)
+        self.modify_group(group, add_fn)
+        device.set_group(group)
+
+    def remove_device(self, device, group=None):
+        if not group:
+            group = device.get_group()
+        def rm_fn():
+            group.remove_device(device)
+        self.modify_group(group, rm_fn)

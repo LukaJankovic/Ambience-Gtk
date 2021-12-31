@@ -149,7 +149,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.tiles_list.add(all_category)
 
-        def create_category(lights, title):
+        def create_category(lights, title, offline=False):
             lights_label = self.create_header_label()
             lights_label.set_text(title)
 
@@ -161,6 +161,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 light_tile = AmbienceLightTile(light, self.tile_clicked)
                 tile_size_group.add_widget(light_tile)
                 lights_category.insert(light_tile, -1)
+
+                if offline:
+                    light_tile.set_sensitive(False)
 
             self.tiles_list.add(lights_category)
 
@@ -217,7 +220,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         for group in self.groups:
             group_item = Handy.ActionRow()
             group_item.set_visible(True)
-            group_item.set_title(group.label)
+            group_item.set_title(group.get_label())
             group_item.group = group
             
             self.sidebar.insert(group_item, -1)

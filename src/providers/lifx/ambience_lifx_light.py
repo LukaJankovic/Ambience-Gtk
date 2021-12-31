@@ -27,6 +27,8 @@ class AmbienceLIFXLight(AmbienceLight):
     Bridge between lifxlan and ui.
     """
 
+    label = ""
+
     def __init__(self):
         self.kind = "lifx"
 
@@ -51,6 +53,9 @@ class AmbienceLIFXLight(AmbienceLight):
         }
 
     def get_capabilities(self) -> list:
+        if not self.get_online():
+            return []
+
         capabilities = []
 
         if self.lifx_light.supports_color():
@@ -75,17 +80,22 @@ class AmbienceLIFXLight(AmbienceLight):
                 # TODO: write config file
 
             return True
-        except:
+        except Exception as e:
+            print("lifx exception", e)
             return False
 
     def get_label(self) -> str:
-        return self.lifx_light.get_label()
+        if self.get_online():
+            return self.lifx_light.get_label()
+        return self.label
 
     def set_label(self, label):
         self.lifx_light.set_label(label)
 
     def get_power(self) -> bool:
-        return False if self.lifx_light.get_power() == 0 else True
+        if self.get_online():
+            return False if self.lifx_light.get_power() == 0 else True
+        return False
 
     def set_power(self, power):
         self.lifx_light.set_power(power, rapid=True)

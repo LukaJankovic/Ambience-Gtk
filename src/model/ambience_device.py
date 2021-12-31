@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from ambience.model.ambience_group import AmbienceGroup
 from enum import Enum
 
 class AmbienceDeviceException(Exception):
@@ -59,3 +60,10 @@ class AmbienceDevice():
 
     def write_config(self) -> dict:
         raise AmbienceDeviceException
+
+
+    def set_group(self, group):
+        self.group = group
+
+    def get_group(self) -> AmbienceGroup:
+        return self.group

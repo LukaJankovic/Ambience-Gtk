@@ -28,11 +28,11 @@ class AmbienceDiscoveryItem(Gtk.ListBoxRow):
 
     __gtype_name__ = 'AmbienceDiscoveryItem'
 
-    light_label  = Gtk.Template.Child()
+    device_label  = Gtk.Template.Child()
     add_btn      = Gtk.Template.Child()
     add_img      = Gtk.Template.Child()
 
-    light = None
+    device = None
     added = False
     dest_file = None
     config_list = []
@@ -54,20 +54,23 @@ class AmbienceDiscoveryItem(Gtk.ListBoxRow):
         Add or remove the bulb to the main list.
         """
 
+        group = AmbienceLoader().get_group(self.device.get_lifx_group_label())
         if self.added:
-            print("removed")
-            self.added = False
+            AmbienceLoader().remove_device(self.device, group=group)
         else:
-            print("added")
-            self.added = True
+            AmbienceLoader().add_device(group, self.device)
 
-            group = AmbienceLoader().get_group(self.light.get_lifx_group_label())
-            AmbienceLoader().add_device(group, self.light)
+        self.added = not self.added
 
         self.update_icon()
 
-    def __init__(self, light, **kwargs):
+    def __init__(self, device, **kwargs):
         super().__init__(**kwargs)
 
-        self.light = light
-        self.light_label.set_label(self.light.get_label())
+        self.device = device 
+        self.device_label.set_label(self.device.get_label())
+
+        if AmbienceLoader().has_device(self.device):
+            self.added = True
+
+        self.update_icon()

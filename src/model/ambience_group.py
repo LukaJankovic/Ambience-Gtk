@@ -17,7 +17,7 @@
 
 from ambience.providers.ambience_providers import AmbienceProviders
 
-from lifxlan import Group
+from lifxlan import Group, group
 
 class AmbienceGroup():
     """
@@ -33,13 +33,13 @@ class AmbienceGroup():
         new = cls()
         new.label = group_config["label"]
 
-        new.online = []
-        new.offline = [] 
+        new.devices = []
 
         for device_config in group_config["devices"]: # TODO: parallelize using joblib (maybe)
             module = device_config["kind"]
             connector = new.providers.import_provider(module)
             device = connector.load_device(device_config, new)
+            device.set_group(new)
             new.devices.append(device)
 
         return new
@@ -78,3 +78,22 @@ class AmbienceGroup():
         for kind in self.providers.get_provider_list():
             connector = self.providers.import_provider(kind)
             connector.create_group(self.get_lights_of_kind(connector)).set_power(power) 
+
+    def add_device(self, device):
+        self.devices.append(device)
+
+    def remove_device(self, device):
+        if device in self.devices:
+            self.devices.remove(device)
+            return
+
+        for d in self.devices:
+            if d.write_config() == device.write_config():
+                self.devices.remove(d)
+                return
+
+    def get_devices(self):
+        return self.devices
+
+    def get_label(self):
+        return self.label
