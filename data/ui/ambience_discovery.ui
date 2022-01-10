@@ -32,63 +32,87 @@
           </packing>
         </child>
         <child>
-          <object class="HdyDeck" id="main_deck">
+          <object class="GtkStack" id="main_stack">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="can-swipe-back">True</property>
+            <property name="can-focus">False</property>
+            <property name="transition-type">slide-left-right</property>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="HdyDeck" id="main_deck">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
+                <property name="can-focus">False</property>
+                <property name="visible-child-name">providers</property>
+                <property name="can-swipe-back">True</property>
                 <child>
-                  <object class="GtkViewport">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
                     <child>
-                      <object class="GtkListBox" id="providers_list">
+                      <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="hexpand">True</property>
-                        <signal name="row-selected" handler="provider_selected" swapped="no"/>
+                        <child>
+                          <object class="GtkListBox" id="providers_list">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="hexpand">True</property>
+                            <signal name="row-selected" handler="provider_selected" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
+                  <packing>
+                    <property name="name">providers</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkListBox" id="devices_list">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="hexpand">True</property>
+                            <signal name="row-selected" handler="sidebar_selected" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="name">devices</property>
+                  </packing>
                 </child>
               </object>
               <packing>
-                <property name="name">providers</property>
+                <property name="name">New</property>
+                <property name="title" translatable="yes">New</property>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <child>
-                  <object class="GtkViewport">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkListBox" id="devices_list">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="hexpand">True</property>
-                        <signal name="row-selected" handler="sidebar_selected" swapped="no"/>
-                      </object>
-                    </child>
-                  </object>
-                </child>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">2nd page</property>
               </object>
               <packing>
-                <property name="name">devices</property>
+                <property name="name">Added</property>
+                <property name="title" translatable="yes">Added</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
@@ -106,17 +130,17 @@
             <property name="title" translatable="yes">Manage Devices</property>
             <property name="show-close-button">True</property>
             <property name="decoration-layout">:close</property>
-            <child>
-              <object class="GtkStack">
+            <child type="title">
+              <object class="HdyViewSwitcherBar">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <child>
-                  <placeholder/>
-                </child>
+                <property name="policy">auto</property>
+                <property name="stack">main_stack</property>
+                <property name="reveal">True</property>
               </object>
-              <packing>
-                <property name="position">1</property>
-              </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </object>
         </child>
