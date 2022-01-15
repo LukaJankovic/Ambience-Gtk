@@ -94,19 +94,34 @@
                 </child>
               </object>
               <packing>
-                <property name="name">New</property>
-                <property name="title" translatable="yes">New</property>
+                <property name="name">Add Devices</property>
+                <property name="title" translatable="yes">Add Devices</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">2nd page</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
               <packing>
-                <property name="name">Added</property>
-                <property name="title" translatable="yes">Added</property>
+                <property name="name">My Devices</property>
+                <property name="title" translatable="yes">My Devices</property>
                 <property name="position">1</property>
               </packing>
             </child>

@@ -115,48 +115,51 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="refresh_stack">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="transition-type">crossfade</property>
                     <child>
-                      <object class="GtkButton" id="refresh">
+                      <object class="GtkMenuButton" id="add_group_button">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
-                        <signal name="clicked" handler="reload" swapped="no"/>
+                        <property name="popover">new_group_popover</property>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="icon-name">view-refresh-symbolic</property>
+                            <property name="icon-name">list-add-symbolic</property>
                           </object>
                         </child>
                       </object>
                       <packing>
-                        <property name="name">refresh</property>
-                        <property name="title" translatable="yes">refresh</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinner" id="refresh_spinner">
+                      <object class="GtkToggleButton">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="double-buffered">False</property>
-                        <property name="margin-left">9</property>
-                        <property name="margin-right">9</property>
-                        <property name="margin-start">9</property>
-                        <property name="margin-end">9</property>
-                        <property name="margin-top">9</property>
-                        <property name="margin-bottom">9</property>
-                        <property name="active">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="icon-name">document-edit-symbolic</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
-                        <property name="name">loading</property>
-                        <property name="title" translatable="yes">loading</property>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
+                    <style>
+                      <class name="linked"/>
+                    </style>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -364,4 +367,100 @@
       </object>
     </child>
   </template>
+  <object class="GtkPopover" id="new_group_popover">
+    <property name="can-focus">False</property>
+    <property name="relative-to">add_group_button</property>
+    <property name="position">bottom</property>
+    <child>
+      <!-- n-columns=3 n-rows=3 -->
+      <object class="GtkGrid">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">10</property>
+        <property name="margin-end">10</property>
+        <property name="margin-top">10</property>
+        <property name="margin-bottom">10</property>
+        <property name="row-spacing">6</property>
+        <property name="column-spacing">6</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Group Name</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="new_group_entry">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="has-focus">True</property>
+            <property name="is-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="has-default">True</property>
+            <property name="receives-default">True</property>
+            <property name="activates-default">True</property>
+            <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+            <signal name="activate" handler="create_group" swapped="no"/>
+            <signal name="changed" handler="new_group_entry_changed" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="new_group_button">
+            <property name="label" translatable="yes">Create</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="receives-default">False</property>
+            <signal name="clicked" handler="create_group" swapped="no"/>
+            <style>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkRevealer" id="invalid_name">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">A group with that name already exists.</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
 </interface>

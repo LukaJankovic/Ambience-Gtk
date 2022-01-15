@@ -95,5 +95,8 @@ class AmbienceGroup():
     def get_devices(self):
         return self.devices
 
+    def set_label(self, label):
+        self.label = label
+
     def get_label(self):
         return self.label

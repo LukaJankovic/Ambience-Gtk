@@ -47,8 +47,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     menu_box = Gtk.Template.Child()
     header_bar = Gtk.Template.Child()
-    refresh_stack = Gtk.Template.Child()
-    refresh = Gtk.Template.Child()
     sidebar = Gtk.Template.Child()
 
     group_header_bar = Gtk.Template.Child()
@@ -60,8 +58,15 @@ class AmbienceWindow(Handy.ApplicationWindow):
     loading_stack = Gtk.Template.Child()
     tiles_list = Gtk.Template.Child()
 
-    refresh_spinner = Gtk.Template.Child()
     tiles_spinner = Gtk.Template.Child()
+
+    new_group_popover = Gtk.Template.Child()
+    new_group_entry = Gtk.Template.Child()
+    new_group_button = Gtk.Template.Child()
+
+    invalid_name = Gtk.Template.Child()
+
+    group_labels = []
 
     def create_header_label(self):
         """
@@ -117,8 +122,26 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Back button pressed. Goes back to group list.
         """
         self.sidebar.unselect_all()
-        self.refresh_stack.set_visible_child_name("refresh")
         self.main_leaflet.set_visible_child(self.menu_box)
+
+    @Gtk.Template.Callback("create_group")
+    def create_group(self, sender):
+        label = self.new_group_entry.get_text()
+        group = AmbienceLoader().get_group(label)
+        group_item = self.create_group_item(group)
+        self.sidebar.insert(group_item, -1)
+
+        self.new_group_popover.popdown()
+        self.group_labels.append(label)
+
+    @Gtk.Template.Callback("new_group_entry_changed")
+    def new_group_entry_changed(self, sender):
+        if self.new_group_entry.get_text() in self.group_labels:
+            self.new_group_button.set_sensitive(False) 
+            self.invalid_name.set_reveal_child(True)
+        else:
+            self.new_group_button.set_sensitive(True)
+            self.invalid_name.set_reveal_child(False)
 
     @Gtk.Template.Callback("sidebar_selected")
     def sidebar_selected(self, sender, user_data):
@@ -207,7 +230,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         for group_item in self.tiles_list.get_children():
             self.tiles_list.remove(group_item)
 
-    @Gtk.Template.Callback("reload")
     def reload(self, sender):
         """
         Reloads data from config file and populates sidebar.
@@ -215,15 +237,18 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.clear_tiles()
         self.clear_sidebar()
 
-        self.groups = AmbienceLoader().get_all_groups()
-
-        for group in self.groups:
-            group_item = Handy.ActionRow()
-            group_item.set_visible(True)
-            group_item.set_title(group.get_label())
-            group_item.group = group
-            
+        for group in AmbienceLoader().get_all_groups():
+            group_item = self.create_group_item(group)
+            self.group_labels.append(group_item.get_title()) 
             self.sidebar.insert(group_item, -1)
+
+    def create_group_item(self, group):
+        group_item = Handy.ActionRow()
+        group_item.set_visible(True)
+        group_item.set_title(group.get_label())
+        group_item.group = group
+
+        return group_item
 
     # Light control
 
