@@ -220,6 +220,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.new_group_popover.popdown()
         self.group_labels.append(label)
+        self.new_group_entry.set_text("")
 
     @Gtk.Template.Callback("new_group_entry_changed")
     def new_group_entry_changed(self, sender):
@@ -245,14 +246,41 @@ class AmbienceWindow(Handy.ApplicationWindow):
             for row in self.sidebar.get_children():
 
                 def delete_action(sender):
-                    AmbienceLoader().delete_group(row.group)
-                    self.group_labels.remove(row.get_title())
-                    self.sidebar.remove(row)
+
+                    title = sender.row.get_title()
+
+                    def perform_delete(_, response):
+                        if response == Gtk.ResponseType.YES:
+                            AmbienceLoader().delete_group(sender.row.group)
+                            self.group_labels.remove(title)
+                            self.sidebar.remove(sender.row)
+
+                    confirm_dialog = Gtk.MessageDialog(self,
+                                                        0,
+                                                        Gtk.MessageType.WARNING,
+                                                        Gtk.ButtonsType.NONE,
+                                                        f"Are you sure you want to delete the group “{title}”?"
+                    )
+                    confirm_dialog.format_secondary_text(
+                        "This action cannot be reversed."
+                    )
+
+                    confirm_dialog.add_button("_Cancel", Gtk.ResponseType.CLOSE)
+                    confirm_dialog.add_button("_Delete", Gtk.ResponseType.YES)
+
+                    confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("destructive-action")
+                    confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("default")
+
+                    confirm_dialog.connect("response", perform_delete)
+
+                    confirm_dialog.run()
+                    confirm_dialog.destroy()
 
                 delete_icon = Gtk.Image.new_from_icon_name("process-stop-symbolic", 1)
                 delete_icon.set_visible(True)
 
                 delete_button = Gtk.Button()
+                delete_button.row = row
                 delete_button.add(delete_icon)
                 delete_button.get_style_context().add_class("destructive-action")
                 delete_button.set_valign(Gtk.Align.CENTER)
@@ -286,6 +314,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         group_item = Handy.ActionRow()
         group_item.set_visible(True)
         group_item.set_title(group.get_label())
+        group_item.set_can_focus(False)
         group_item.group = group
 
         return group_item

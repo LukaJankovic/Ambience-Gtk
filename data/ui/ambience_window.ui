@@ -78,6 +78,7 @@
       <object class="HdyLeaflet" id="main_leaflet">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="interpolate-size">True</property>
         <property name="can-swipe-back">True</property>
         <signal name="notify::fold" handler="notify_fold_cb" swapped="no"/>
         <signal name="notify::visible-child-name" handler="notify_main_visible_child_name" swapped="no"/>
@@ -85,6 +86,7 @@
           <object class="GtkBox" id="menu_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="resize-mode">immediate</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="HdyHeaderBar" id="header_bar">
@@ -98,7 +100,7 @@
                 <child>
                   <object class="GtkMenuButton">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
+                    <property name="can-focus">False</property>
                     <property name="focus-on-click">False</property>
                     <property name="receives-default">True</property>
                     <property name="popover">main_popover</property>
@@ -121,7 +123,7 @@
                     <child>
                       <object class="GtkMenuButton" id="add_group_button">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
+                        <property name="can-focus">False</property>
                         <property name="receives-default">True</property>
                         <property name="popover">new_group_popover</property>
                         <child>
@@ -141,7 +143,7 @@
                     <child>
                       <object class="GtkToggleButton">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
+                        <property name="can-focus">False</property>
                         <property name="receives-default">True</property>
                         <signal name="toggled" handler="toggle_edit" swapped="no"/>
                         <child>

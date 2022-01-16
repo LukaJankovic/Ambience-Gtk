@@ -51,7 +51,10 @@ class Application(Gtk.Application):
 
         about.set_program_name("Ambience")
         about.set_version(self.version)
-        about.set_copyright("Copyright © Luka Jankovic 2020 - 2022")
+        about.set_license_type(Gtk.License.GPL_3_0)
+        about.set_website("https://github.com/LukaJankovic/Ambience")
+        about.set_website_label("Github Page")
+        about.set_copyright("© 2020-2021 Luka Jankovic")
         about.add_credit_section("Created by", authors)
         about.add_credit_section("LifxLAN by", api_authors)
         about.set_logo_icon_name("io.github.lukajankovic.ambience")
