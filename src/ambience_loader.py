@@ -1,6 +1,6 @@
 # ambience_loader.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,6 +79,11 @@ class AmbienceLoader(metaclass=Singleton):
             if g["label"] == group.get_label():
                 config["groups"].remove(g)
         return config
+
+    def delete_group(self, group):
+        config = self.get_config()
+        self.remove_group(config, group)
+        self.write_config(config)
 
     def get_all_groups(self):
         return [AmbienceGroup.from_config(x) for x in self.get_config()["groups"]]

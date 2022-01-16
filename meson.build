@@ -5,6 +5,7 @@ project('ambience',
                    ],
 )
 
+dependency('gtk4', version: '>= 3.24')
 dependency('libhandy-1', version: '>= 1.2.2')
 
 i18n = import('i18n')

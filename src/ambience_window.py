@@ -1,6 +1,6 @@
 # ambience_window.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -124,25 +124,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.sidebar.unselect_all()
         self.main_leaflet.set_visible_child(self.menu_box)
 
-    @Gtk.Template.Callback("create_group")
-    def create_group(self, sender):
-        label = self.new_group_entry.get_text()
-        group = AmbienceLoader().get_group(label)
-        group_item = self.create_group_item(group)
-        self.sidebar.insert(group_item, -1)
-
-        self.new_group_popover.popdown()
-        self.group_labels.append(label)
-
-    @Gtk.Template.Callback("new_group_entry_changed")
-    def new_group_entry_changed(self, sender):
-        if self.new_group_entry.get_text() in self.group_labels:
-            self.new_group_button.set_sensitive(False) 
-            self.invalid_name.set_reveal_child(True)
-        else:
-            self.new_group_button.set_sensitive(True)
-            self.invalid_name.set_reveal_child(False)
-
     @Gtk.Template.Callback("sidebar_selected")
     def sidebar_selected(self, sender, user_data):
         """
@@ -229,6 +210,65 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         for group_item in self.tiles_list.get_children():
             self.tiles_list.remove(group_item)
+
+    @Gtk.Template.Callback("create_group")
+    def create_group(self, sender):
+        label = self.new_group_entry.get_text()
+        group = AmbienceLoader().get_group(label)
+        group_item = self.create_group_item(group)
+        self.sidebar.insert(group_item, -1)
+
+        self.new_group_popover.popdown()
+        self.group_labels.append(label)
+
+    @Gtk.Template.Callback("new_group_entry_changed")
+    def new_group_entry_changed(self, sender):
+        if self.new_group_entry.get_text() in self.group_labels:
+            self.new_group_button.set_sensitive(False) 
+            self.invalid_name.set_reveal_child(True)
+        else:
+            self.new_group_button.set_sensitive(True)
+            self.invalid_name.set_reveal_child(False)
+
+    @Gtk.Template.Callback("toggle_edit")
+    def toggle_edit(self, sender):
+        self.clear_tiles()
+        self.title_label.set_text("")
+        self.sidebar.unselect_all()
+
+        if sender.get_active():
+            self.header_bar.get_style_context().add_class("selection-mode")
+            self.group_header_bar.get_style_context().add_class("selection-mode")
+
+            self.sidebar.set_selection_mode(Gtk.SelectionMode.NONE)
+
+            for row in self.sidebar.get_children():
+
+                def delete_action(sender):
+                    AmbienceLoader().delete_group(row.group)
+                    self.group_labels.remove(row.get_title())
+                    self.sidebar.remove(row)
+
+                delete_icon = Gtk.Image.new_from_icon_name("process-stop-symbolic", 1)
+                delete_icon.set_visible(True)
+
+                delete_button = Gtk.Button()
+                delete_button.add(delete_icon)
+                delete_button.get_style_context().add_class("destructive-action")
+                delete_button.set_valign(Gtk.Align.CENTER)
+                delete_button.connect("clicked", delete_action)
+                delete_button.set_visible(True)
+
+                row.add(delete_button)
+        else:
+            self.header_bar.get_style_context().remove_class("selection-mode")
+            self.group_header_bar.get_style_context().remove_class("selection-mode")
+
+            self.sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
+
+            for row in self.sidebar.get_children():
+                for c in row.get_children():
+                    row.remove(c)
 
     def reload(self, sender):
         """
