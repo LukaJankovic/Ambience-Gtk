@@ -95,6 +95,13 @@ class AmbienceGroup():
     def get_devices(self):
         return self.devices
 
+    def has_device(self, device):
+        for d in self.devices:
+            if d.write_config() == device.write_config():
+                return True
+        
+        return False
+
     def set_label(self, label):
         self.label = label
 

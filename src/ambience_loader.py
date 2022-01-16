@@ -100,7 +100,6 @@ class AmbienceLoader(metaclass=Singleton):
     def modify_group(self, group, modify_fn):
         config = self.remove_group(self.get_config(), group)
         modify_fn()
-        print(group.devices)
         config["groups"].append(group.write_config())
         self.write_config(config)
 
@@ -116,3 +115,9 @@ class AmbienceLoader(metaclass=Singleton):
         def rm_fn():
             group.remove_device(device)
         self.modify_group(group, rm_fn)
+
+    def rename_group(self, group, label):
+        def rename_fn():
+            group.set_label(label)
+        self.modify_group(group, rename_fn)
+        return group

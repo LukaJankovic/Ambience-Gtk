@@ -18,10 +18,10 @@
 from struct import error
 import threading
 
-from gi.repository import Gtk, GLib, Handy
+from gi.repository import Gtk, Gdk, GLib, Handy
 from .ambience_loader import *
 
-from ambience.model.ambience_group import *
+from .ambience_discovery import AmbienceDiscovery
 
 from ambience.widgets.ambience_flow_box import AmbienceFlowBox
 from ambience.widgets.ambience_group_tile import AmbienceGroupTile
@@ -44,6 +44,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
     main_leaflet = Gtk.Template.Child()
 
     title_label = Gtk.Template.Child()
+    group_label_stack = Gtk.Template.Child()
+    group_label_edit = Gtk.Template.Child()
+    group_label_entry = Gtk.Template.Child()
 
     menu_box = Gtk.Template.Child()
     header_bar = Gtk.Template.Child()
@@ -65,6 +68,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
     new_group_button = Gtk.Template.Child()
 
     invalid_name = Gtk.Template.Child()
+
+    devices_button = Gtk.Template.Child()
 
     group_labels = []
 
@@ -137,15 +142,18 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.clear_controls()
         self.clear_tiles()
 
+        self.devices_button.set_visible(True)
+        self.group_label_edit.set_visible(True)
+
         tile_size_group = Gtk.SizeGroup()
         tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
 
-        active_group = self.sidebar.get_selected_row().group
+        self.active_group = self.sidebar.get_selected_row().group
 
-        self.title_label.set_text(active_group.label)
+        self.title_label.set_text(self.active_group.label)
 
         all_category = AmbienceFlowBox()
-        all_tile = AmbienceGroupTile(active_group)
+        all_tile = AmbienceGroupTile(self.active_group)
         all_tile.clicked_callback = self.group_edit
 
         tile_size_group.add_widget(all_tile)
@@ -173,7 +181,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         online = []
         offline = []
-        for device in active_group.devices:
+        for device in self.active_group.devices:
             if device.get_online():
                 online.append(device)
             else:
@@ -233,9 +241,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("toggle_edit")
     def toggle_edit(self, sender):
-        self.clear_tiles()
-        self.title_label.set_text("")
-        self.sidebar.unselect_all()
+        self.deselect_sidebar()
 
         if sender.get_active():
             self.header_bar.get_style_context().add_class("selection-mode")
@@ -298,6 +304,25 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 for c in row.get_children():
                     row.remove(c)
 
+    def deselect_sidebar(self):
+        self.clear_tiles()
+        self.title_label.set_text("")
+        self.sidebar.unselect_all()
+
+        self.devices_button.set_visible(False)
+        self.group_label_edit.set_visible(False)
+
+    @Gtk.Template.Callback("manage_devices")
+    def manage_devices(self, sender):
+
+        def discovery_done(sender, user_data):
+            self.sidebar_selected(self, None)
+
+        discovery_window = AmbienceDiscovery(transient_for=self, modal=True, use_header_bar=1)
+        discovery_window.group = self.active_group
+        discovery_window.connect("response", discovery_done)
+        discovery_window.show_all()
+
     def reload(self, sender):
         """
         Reloads data from config file and populates sidebar.
@@ -318,6 +343,45 @@ class AmbienceWindow(Handy.ApplicationWindow):
         group_item.group = group
 
         return group_item
+
+    def reload_group_name(self):
+        self.title_label.set_text(self.active_group.get_label())
+        self.sidebar.get_selected_row().set_title(self.active_group.get_label())
+
+    def group_label_valid(self, text):
+        return text and not (text in self.group_labels and text != self.active_group.get_label())
+
+    @Gtk.Template.Callback("group_label_edit_toggled")
+    def group_label_edit_toggled(self, sender):
+        if sender.get_active():
+            self.group_label_entry.set_text(self.active_group.get_label())
+            self.group_label_entry.grab_focus()
+
+            self.group_label_stack.set_visible_child_name("edit")
+        else:
+            text = self.group_label_entry.get_text()
+            if self.group_label_valid(text):
+                self.group_labels.remove(self.active_group.get_label())
+                self.active_group = AmbienceLoader().rename_group(self.active_group, text)
+                self.group_labels.append(self.active_group.get_label())
+                self.reload_group_name()
+
+                self.group_label_stack.set_visible_child_name("label")
+
+    @Gtk.Template.Callback("group_edit_event")
+    def group_edit_event(self, sender, event):
+        if event.keyval == Gdk.KEY_Escape:
+            self.group_label_entry.set_text(self.active_group.get_label())
+            self.group_label_edit.set_active(False)
+
+    @Gtk.Template.Callback("group_label_changed")
+    def group_label_changed(self, sender):
+        self.group_label_edit.set_sensitive(self.group_label_valid(self.group_label_entry.get_text()))
+
+    @Gtk.Template.Callback("group_label_activate")
+    def group_label_activate(self, sender):
+        if self.group_label_valid(self.group_label_entry.get_text()):
+            self.group_label_edit.set_active(False)
 
     # Light control
 

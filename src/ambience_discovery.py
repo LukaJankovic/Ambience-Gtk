@@ -36,6 +36,8 @@ class AmbienceDiscovery(Gtk.Dialog):
     providers = AmbienceProviders()
     current_provider = None
 
+    group = None
+
     @Gtk.Template.Callback("provider_selected")
     def provider_selected(self, sender, user_data):
         selected_row = sender.get_selected_row()
@@ -65,7 +67,7 @@ class AmbienceDiscovery(Gtk.Dialog):
 
             def update_list():
                 for device in devices: 
-                    row = AmbienceDiscoveryItem(device)
+                    row = AmbienceDiscoveryItem(device, self.group)
                     row.set_visible(True)
 
                     self.devices_list.insert(row, -1)

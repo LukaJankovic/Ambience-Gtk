@@ -37,6 +37,8 @@ class AmbienceDiscoveryItem(Gtk.ListBoxRow):
     dest_file = None
     config_list = []
 
+    group = None
+
     def update_icon(self):
         """
         Makes sure the icon shown in the toggle button matches the current
@@ -54,23 +56,25 @@ class AmbienceDiscoveryItem(Gtk.ListBoxRow):
         Add or remove the bulb to the main list.
         """
 
-        group = AmbienceLoader().get_group(self.device.get_lifx_group_label())
+        #group = AmbienceLoader().get_group(self.device.get_lifx_group_label())
         if self.added:
-            AmbienceLoader().remove_device(self.device, group=group)
+            AmbienceLoader().remove_device(self.device, group=self.group)
         else:
-            AmbienceLoader().add_device(group, self.device)
+            AmbienceLoader().add_device(self.group, self.device)
 
         self.added = not self.added
 
         self.update_icon()
 
-    def __init__(self, device, **kwargs):
+    def __init__(self, device, group, **kwargs):
         super().__init__(**kwargs)
+
+        self.group = group
 
         self.device = device 
         self.device_label.set_label(self.device.get_label())
 
-        if AmbienceLoader().has_device(self.device):
+        if self.group.has_device(self.device):
             self.added = True
 
         self.update_icon()

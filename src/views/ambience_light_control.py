@@ -164,7 +164,7 @@ class AmbienceLightControl(Gtk.Box):
         Perform the same action as when toggling the edit button.
         """
 
-        if self.edit.get_active():
+        if self.light_edit_label.get_text() and self.edit.get_active():
             self.edit.set_active(False)
 
     @Gtk.Template.Callback("name_event")

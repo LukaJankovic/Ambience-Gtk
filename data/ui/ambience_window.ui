@@ -255,9 +255,10 @@
                     <property name="vexpand">False</property>
                     <property name="show-close-button">True</property>
                     <child type="title">
-                      <object class="GtkStack">
+                      <object class="GtkStack" id="group_label_stack">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="transition-type">crossfade</property>
                         <child>
                           <object class="GtkLabel" id="title_label">
                             <property name="visible">True</property>
@@ -267,18 +268,21 @@
                             </attributes>
                           </object>
                           <packing>
-                            <property name="name">page0</property>
-                            <property name="title" translatable="yes">page0</property>
+                            <property name="name">label</property>
+                            <property name="title" translatable="yes">label</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="group_entry">
+                          <object class="GtkEntry" id="group_label_entry">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <signal name="activate" handler="group_label_activate" swapped="no"/>
+                            <signal name="changed" handler="group_label_changed" swapped="no"/>
+                            <signal name="key-release-event" handler="group_edit_event" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="name">page1</property>
-                            <property name="title" translatable="yes">page1</property>
+                            <property name="name">edit</property>
+                            <property name="title" translatable="yes">edit</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -310,10 +314,10 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
+                          <object class="GtkButton" id="devices_button">
+                            <property name="can-focus">False</property>
                             <property name="receives-default">True</property>
+                            <signal name="clicked" handler="manage_devices" swapped="no"/>
                             <child>
                               <object class="GtkImage">
                                 <property name="visible">True</property>
@@ -330,6 +334,24 @@
                         </child>
                       </object>
                       <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToggleButton" id="group_label_edit">
+                        <property name="can-focus">False</property>
+                        <property name="receives-default">True</property>
+                        <signal name="toggled" handler="group_label_edit_toggled" swapped="no"/>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="icon-name">document-edit-symbolic</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="pack-type">end</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
