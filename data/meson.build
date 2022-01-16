@@ -37,6 +37,10 @@ install_data('io.github.lukajankovic.ambience.svg',
   install_dir: join_paths(get_option('datadir'), 'icons/hicolor/scalable/apps')
 )
 
+install_data('lightbulb-group-symbolic.svg',
+  install_dir: join_paths(get_option('datadir'), 'icons/hicolor/scalable/devices')
+)
+
 compile_schemas = find_program('glib-compile-schemas', required: false)
 if compile_schemas.found()
   test('Validate schema file', compile_schemas,

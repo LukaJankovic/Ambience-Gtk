@@ -11,6 +11,5 @@
     <file>ambience_discovery_item.ui</file>
     <file>light_item.ui</file>
     <file>stylesheet.css</file>
-    <file>document-edit-symbolic.svg</file>
   </gresource>
 </gresources>
