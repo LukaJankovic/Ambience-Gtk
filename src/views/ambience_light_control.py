@@ -1,6 +1,6 @@
 # ambience_light_control.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from gi.repository import Gtk, Gdk, GLib
 import threading
 
-from gi.repository import Gtk, Gdk, GLib
-from .helpers import *
+from ambience.model.ambience_light import AmbienceLightCapabilities
+from ambience.model.ambience_device import AmbienceDeviceInfoType
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_light_control.ui')
 class AmbienceLightControl(Gtk.Box):
@@ -38,8 +39,16 @@ class AmbienceLightControl(Gtk.Box):
     kelvin_adj = Gtk.Template.Child()
     infrared_scale = Gtk.Template.Child()
 
+    model_row = Gtk.Template.Child()
+    model_label = Gtk.Template.Child()
+
+    ip_row = Gtk.Template.Child()
     ip_label = Gtk.Template.Child()
+
+    group_row = Gtk.Template.Child()
     group_label = Gtk.Template.Child()
+
+    location_row = Gtk.Template.Child()
     location_label = Gtk.Template.Child()
 
     edit = Gtk.Template.Child()
@@ -49,77 +58,97 @@ class AmbienceLightControl(Gtk.Box):
     power_switch = Gtk.Template.Child()
 
     light_label = Gtk.Template.Child()
-    light_sub_label = Gtk.Template.Child()
 
     light = None
     deck = None
     back_callback = None
-    plist_downloader = None
+    update_active = False
 
-    def __init__(self, light, deck, plist_downloader, back_callback, **kwargs):
+    def __init__(self, light, deck, back_callback, **kwargs):
         self.light = light
         self.deck = deck
-        self.plist_downloader = plist_downloader
         self.back_callback = back_callback
 
         super().__init__(**kwargs)
 
     def show(self):
+        """
+        The view is ready to show. Update rows.
+        """
+        def show_async():
+
+            self.main_stack.set_visible_child_name("loading")
+
+            for _ in range(5):
+                try:
+                    self.label = self.light.get_label()
+                    self.power = self.light.get_power()
+
+                    self.color = self.light.get_color()
+
+                    self.capabilities = self.light.get_capabilities()
+
+                    if AmbienceLightCapabilities.INFRARED in self.capabilities:
+                        self.infrared = self.light.get_infrared()
+
+                    self.info = self.light.get_info()
+                    break
+                except:
+                    pass
+
+            GLib.idle_add(self.update_rows)
+
+        show_thread = threading.Thread(target=show_async)
+        show_thread.daemon = True
+        show_thread.start()
+
+    def update_rows(self):
+        self.main_stack.set_visible_child_name("controls")
+
         self.update_active = True
-        self.main_stack.set_visible_child_name("loading")
 
-        def show_light_cb(_, success):
-            if success:
-                GLib.idle_add(self.update_controls)
-            else:
-                def display_error():
-                    error_dialog = Gtk.MessageDialog(transient_for=self.get_toplevel(),
-                                                    flags=0,
-                                                    message_type=Gtk.MessageType.ERROR,
-                                                    buttons=Gtk.ButtonsType.OK,
-                                                    text="Unable to load light data. Please try again.",)
-                    error_dialog.run()
-                    self.back_callback(self)
-                    error_dialog.destroy()
+        self.light_label.set_label(self.label)
+        self.power_switch.set_active(self.power)
 
-                GLib.idle_add(display_error)
+        (hue, saturation, brightness, kelvin) = self.color
 
-        fetch_thread = threading.Thread(target=fetch_all_data, args=(self.light, show_light_cb))
-        fetch_thread.daemon = True
-        fetch_thread.start()
+        self.brightness_scale.set_value(brightness * 100)
 
-    def update_controls(self):
-        self.light_label.set_text(self.light.label)
-
-        if product_info := self.plist_downloader.get_product(self.light.product):
-            self.light_sub_label.set_text(product_info["name"])
-
-        self.power_switch.set_active(self.light.power)
-
-        self.brightness_scale.set_value(self.light.brightness)
-
-        if self.light.has_color:
+        if AmbienceLightCapabilities.COLOR in self.capabilities: 
             self.hue_row.set_visible(True)
             self.saturation_row.set_visible(True)
 
-            self.hue_scale.set_value(self.light.hue)
-            self.saturation_scale.set_value(self.light.saturation)
+            self.hue_scale.set_value(hue * 365)
+            self.saturation_scale.set_value(saturation * 100)
 
-        if self.light.has_temp:
+        if AmbienceLightCapabilities.TEMPERATURE in self.capabilities:
             self.kelvin_row.set_visible(True)
-            self.kelvin_scale.set_value(self.light.temperature)
+            self.kelvin_scale.set_value(kelvin)
 
-        if self.light.has_infrar:
+        if AmbienceLightCapabilities.INFRARED in self.capabilities:
             self.infrared_row.set_visible(True)
-            self.infrared_scale.set_value(self.light.infrared)
-
-        self.ip_label.set_label(self.light.ip)
-        self.group_label.set_label(self.light.group)
-        self.location_label.set_label(self.light.location)
 
         self.update_active = False
-        self.main_stack.set_visible_child_name("controls")
 
+        rows = {
+            AmbienceDeviceInfoType.MODEL    : self.model_row,
+            AmbienceDeviceInfoType.IP       : self.ip_row,
+            AmbienceDeviceInfoType.GROUP    : self.group_row,
+            AmbienceDeviceInfoType.LOCATION : self.location_row
+        }
+
+        labels = {
+            AmbienceDeviceInfoType.MODEL    : self.model_label,
+            AmbienceDeviceInfoType.IP       : self.ip_label,
+            AmbienceDeviceInfoType.GROUP    : self.group_label,
+            AmbienceDeviceInfoType.LOCATION : self.location_label
+        }
+
+        for type in AmbienceDeviceInfoType:
+            if type in self.info.keys():
+                rows[type].set_visible(True)
+                labels[type].set_text(self.info[type])
+ 
     @Gtk.Template.Callback("push_color")
     def push_color(self, sender):
         """
@@ -133,17 +162,14 @@ class AmbienceLightControl(Gtk.Box):
         brightness = self.brightness_scale.get_value()
         kelvin = self.kelvin_scale.get_value()
 
-        self.light.set_color((encode_circle(hue),
-                                    encode(saturation),
-                                    encode(brightness),
-                                    kelvin), rapid=True)
+        self.light.set_color([hue / 365, saturation / 100, brightness / 100, kelvin])
 
-        if self.light.supports_infrared():
-            self.light.set_infrared(encode(self.infrared_scale.get_value()))
+        if AmbienceLightCapabilities.INFRARED in self.light.capabilities:
+            self.light.set_infrared(self.infrared_scale.get_value() * 100)
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
-        self.light.set_power(sender.get_active(), rapid=True)
+        self.light.set_power(sender.get_active())
 
     # Editing label
 
@@ -161,7 +187,7 @@ class AmbienceLightControl(Gtk.Box):
         Perform the same action as when toggling the edit button.
         """
 
-        if self.edit.get_active():
+        if self.light_edit_label.get_text() and self.edit.get_active():
             self.edit.set_active(False)
 
     @Gtk.Template.Callback("name_event")

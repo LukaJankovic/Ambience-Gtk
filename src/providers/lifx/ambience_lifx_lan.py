@@ -1,6 +1,4 @@
-#!@PYTHON@
-
-# ambience.in
+# ambience_lifx_lan.py
 #
 # Copyright 2022 Luka Jankovic
 #
@@ -17,25 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
-import signal
-import gettext
+from ambience.singleton import *
 
-VERSION = '@VERSION@'
-pkgdatadir = '@pkgdatadir@'
-localedir = '@localedir@'
+try:
+    from lifxlan import *
+    API_AVAIL = True
+except:
+    API_AVAIL = False
 
-sys.path.insert(1, pkgdatadir)
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-gettext.install('ambience', localedir)
+class AmbienceLIFXLan(metaclass=Singleton):
+    """
+    Singleton class containing a shared LifxLAN object.
+    """
 
-if __name__ == '__main__':
-    import gi
+    lan = None
 
-    from gi.repository import Gio
-    resource = Gio.Resource.load(os.path.join(pkgdatadir, 'ambience.gresource'))
-    resource._register()
+    def check_api_availability(self):
+        return API_AVAIL
 
-    from ambience import main
-    sys.exit(main.main(VERSION))
+    def get_lan(self):
+        if not self.lan:
+            self.lan = LifxLAN()
+        return self.lan

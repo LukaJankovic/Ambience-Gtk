@@ -1,6 +1,6 @@
 # ambience_group_control.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,11 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
+from gi.repository import Gtk
 
-from gi.repository import Gtk, Gdk, GLib
-
-from .helpers import *
+from ambience.model.ambience_light import AmbienceLightCapabilities
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_group_control.ui')
 class AmbienceGroupControl(Gtk.Box):
@@ -45,15 +43,14 @@ class AmbienceGroupControl(Gtk.Box):
     light_sub_label = Gtk.Template.Child()
 
     group = None
-    online = None
     deck = None
     back_callback = None
-    capabilities = {}
+    capabilities = []
     has_infrared = False
 
-    def __init__(self, group, online, deck, back_callback, **kwargs):
+    def __init__(self, group, deck, back_callback, online, **kwargs):
         self.group = group
-        self.online = online
+        self.online = online # TODO: Update online devices
         self.deck = deck
         self.back_callback = back_callback
 
@@ -61,77 +58,54 @@ class AmbienceGroupControl(Gtk.Box):
 
     def show(self):
         self.update_active = True
-        self.main_stack.set_visible_child_name("loading")
 
-        self.light_label.set_label(self.group["label"])
+        self.light_label.set_label(self.group.label)
 
         if len(self.online) == 1:
             self.light_sub_label.set_label("One light online")
         else:
             self.light_sub_label.set_label(str(len(self.online)) + " lights online")
 
-        def capabilities_callback():
-            GLib.idle_add(self.update_controls)
-
-        fetch_thread = threading.Thread(target=self.get_capabilities, args=(capabilities_callback,)) 
-        fetch_thread.daemon = True
-        fetch_thread.start()
-
+        self.update_controls()
     
-    def get_capabilities(self, callback):
-        self.capabilities = {"color": True, "temperature": True, "infrared": True}
-
+    def get_capabilities(self):
+        self.capabilities = [c.value for c in AmbienceLightCapabilities]
         for light in self.online:
-            if not light.supports_color():
-                self.capabilities["color"] = False 
-            if not light.supports_temperature():
-                self.capabilities["temperature"] = False 
-            if not light.supports_infrared():
-                self.capabilities["infrared"] = False 
-
-        callback()
+            for c in self.capabilities:
+                if not c in light.get_capabilities():
+                    self.capabilities.remove(c)
 
     def update_controls(self):
         self.update_active = True
 
-        if power := self.get_group_value("power"):
+        if power := self.get_group_value(AmbienceLightCapabilities.POWER):
             self.power_switch.set_active(power)
 
-        if brightness := self.get_group_value("brightness"):
-            self.brightness_scale.set_value(brightness)
+        (hue, saturation, brightness, kelvin) = self.get_group_value(AmbienceLightCapabilities.COLOR)
 
-        if self.capabilities["color"]:
-            self.hue_row.set_visible(True)
-            self.saturation_row.set_visible(True)
+        if brightness:
+            self.brightness_scale.set_value(brightness * 100)
 
-            if hue := self.get_group_value("hue"):
-                self.hue_scale.set_value(hue)
+        if hue:
+            self.hue_scale.set_value(hue * 365)
 
-            if saturation := self.get_group_value("saturation"):
-                self.saturation_scale.set_value(saturation)
+        if saturation: 
+            self.saturation_scale.set_value(saturation * 100)
 
-        if self.capabilities["temperature"]:
-            self.kelvin_row.set_visible(True)
+        if kelvin:
+            self.kelvin_scale.set_value(kelvin)
 
-            if temperature := self.get_group_value("temperature"):
-                self.kelvin_scale.set_value(temperature)
-
-        if self.capabilities["infrared"]:
-            self.has_infrared = True
-            self.infrared_row.set_visible(True)
-
-            if infrared := self.get_group_value("infrared"):
-                self.infrared_scale.set_value(infrared)
+        if infrared := self.get_group_value(AmbienceLightCapabilities.INFRARED):
+            self.infrared_scale.set_value(infrared * 100)
 
         self.update_active = False 
-        self.main_stack.set_visible_child_name("controls")
 
-    def get_group_value(self, prop):
+    def get_group_value(self, capability):
         value = -1
         for light in self.online:
             if value == -1:
-                value = light.__dict__[prop]
-            elif not value == light.__dict__[prop]:
+                value = light.get_data(capability)
+            elif not value == light.get_data(capability):
                 break
 
         if value == -1:
@@ -140,9 +114,6 @@ class AmbienceGroupControl(Gtk.Box):
 
     @Gtk.Template.Callback("push_color")
     def push_color(self, sender):
-        """
-        Color data changed by the user, push it to the group.
-        """
         if self.update_active:
             return
 
@@ -150,18 +121,17 @@ class AmbienceGroupControl(Gtk.Box):
         saturation = self.saturation_scale.get_value()
         brightness = self.brightness_scale.get_value()
         kelvin = self.kelvin_scale.get_value()
+        infrared = self.infrared_scale.get_value()
 
-        Group(self.online).set_color((encode_circle(hue),
-                                      encode(saturation),
-                                      encode(brightness),
-                                      kelvin), rapid=True)
-
-        if self.has_infrared:
-            self.group.set_infrared(encode(self.infrared_scale.get_value()))
+        self.group.set_color([hue / 365, saturation / 100, brightness / 100, kelvin])
+        self.group.set_infrared(infrared / 100)
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
-        Group(self.online).set_power(sender.get_active(), rapid=True)
+        if self.update_active:
+            return
+
+        self.group.set_power(self.power_switch.get_active())
 
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):

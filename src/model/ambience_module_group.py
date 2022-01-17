@@ -1,6 +1,4 @@
-#!@PYTHON@
-
-# ambience.in
+# ambience_module_group.py
 #
 # Copyright 2022 Luka Jankovic
 #
@@ -17,25 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
-import signal
-import gettext
+class AmbienceModuleGroupException(Exception):
+    """
+    Raised when a function call is made directly onto an AmbienceModuleGroup 
+    object.
+    """
 
-VERSION = '@VERSION@'
-pkgdatadir = '@pkgdatadir@'
-localedir = '@localedir@'
+class AmbienceModuleGroup():
+    """
+    Template class for connecting a group to Ambience.
+    """
 
-sys.path.insert(1, pkgdatadir)
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-gettext.install('ambience', localedir)
+    def __init__(self, devices):
+        raise AmbienceModuleGroupException
+    
+    def set_color(self, hsvk):
+        raise AmbienceModuleGroupException
 
-if __name__ == '__main__':
-    import gi
+    def set_infrared(self, infrared):
+        raise AmbienceModuleGroupException
 
-    from gi.repository import Gio
-    resource = Gio.Resource.load(os.path.join(pkgdatadir, 'ambience.gresource'))
-    resource._register()
-
-    from ambience import main
-    sys.exit(main.main(VERSION))
+    def set_power(self, power):
+        raise AmbienceModuleGroupException

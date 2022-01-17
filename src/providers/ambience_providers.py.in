@@ -1,0 +1,51 @@
+# ambience_providers.py.in
+#
+# Copyright 2022 Luka Jankovic
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import importlib
+
+class AmbienceProviders():
+    providers = "@PROVIDERS@"
+    active_connectors = {}
+
+    def get_provider_list(self):
+        return self.providers.split(" ")
+
+    def get_name_for_provider(self, provider):
+        connector = self.import_provider(provider)
+        res = connector.display_name()
+        return res
+
+    def get_provider_names(self):
+        final_list = {}
+
+        for provider in self.get_provider_list():
+            final_list[provider] = self.get_name_for_provider(provider) 
+        
+        return final_list
+
+    def import_provider(self, provider):
+        if provider in self.active_connectors:
+            return self.active_connectors[provider] 
+
+        else:
+            connector = importlib.import_module("ambience.providers."+provider+".ambience_connector")
+            self.active_connectors[provider] = connector.AmbienceConnector()
+
+        return self.active_connectors[provider] 
+
+    def unimport_provider(self, connector):
+        del connector

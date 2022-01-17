@@ -1,9 +1,6 @@
-import gi
-
-gi.require_version('Gtk', '3.0')
 # ambience_group_tile.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,12 +15,7 @@ gi.require_version('Gtk', '3.0')
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-gi.require_version('Handy', '1')
-
-from gi.repository import Gtk, GLib
-import threading
-
-from .helpers import *
+from gi.repository import Gtk
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_group_tile.ui')
 class AmbienceGroupTile(Gtk.FlowBoxChild):
@@ -39,21 +31,23 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
 
     tile_button = Gtk.Template.Child()
 
-    def __init__(self, label, online, **kwargs):
+    def __init__(self, group, **kwargs):
         super().__init__(**kwargs)
 
-        self.label = label
-        self.online = online
-
+        self.group = group
         self.top_label.set_text("All lights")
-
         self.update()
 
     def count_on(self):
         count = 0
-        for light in self.online:
-            if light.power:
-                count += 1
+        for light in self.group.get_devices():
+            for i in range(5):
+                try:
+                    if light.get_online() and light.get_power():
+                        count += 1
+                        break
+                except:
+                    pass
         return count
 
     def update(self):
@@ -68,4 +62,4 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
     @Gtk.Template.Callback("tile_clicked")
     def tile_clicked(self, sender):
         if self.clicked_callback:
-            self.clicked_callback()
+            self.clicked_callback(self)

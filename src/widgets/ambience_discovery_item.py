@@ -1,6 +1,6 @@
-# discovery_item.py
+# ambience_discovery_item.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,29 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk, GLib, GObject, Gio
+from gi.repository import Gtk
 
-from .ambience_settings import *
+from ambience.ambience_loader import AmbienceLoader
 
-import json
-
-@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/discovery_item.ui')
-class DiscoveryItem(Gtk.ListBoxRow):
+@Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_discovery_item.ui')
+class AmbienceDiscoveryItem(Gtk.ListBoxRow):
     """
     Sidebar item when in discovery mode. Contains a toggle box instead of a
     power switch which is used to add the bulb to the main list.
     """
 
-    __gtype_name__ = 'DiscoveryItem'
+    __gtype_name__ = 'AmbienceDiscoveryItem'
 
-    light_label  = Gtk.Template.Child()
+    device_label  = Gtk.Template.Child()
     add_btn      = Gtk.Template.Child()
     add_img      = Gtk.Template.Child()
 
-    light = None
+    device = None
     added = False
     dest_file = None
     config_list = []
+
+    group = None
 
     def update_icon(self):
         """
@@ -56,17 +56,25 @@ class DiscoveryItem(Gtk.ListBoxRow):
         Add or remove the bulb to the main list.
         """
 
+        #group = AmbienceLoader().get_group(self.device.get_lifx_group_label())
         if self.added:
-            self.config_list = remove_light_from_group(self.config_list, self.light.get_mac_addr())
-            self.added = False
+            AmbienceLoader().remove_device(self.device, group=self.group)
         else:
-            light = {"ip":      self.light.get_ip_addr(),
-                     "mac":     self.light.get_mac_addr(),
-                     "label":   self.light.get_label()}
+            AmbienceLoader().add_device(self.group, self.device)
 
-            self.config_list = add_light_to_group(self.config_list, self.light.get_group_label(), light)
+        self.added = not self.added
 
+        self.update_icon()
+
+    def __init__(self, device, group, **kwargs):
+        super().__init__(**kwargs)
+
+        self.group = group
+
+        self.device = device 
+        self.device_label.set_label(self.device.get_label())
+
+        if self.group.has_device(self.device):
             self.added = True
 
-        write_config(self.config_list, self.dest_file)
         self.update_icon()

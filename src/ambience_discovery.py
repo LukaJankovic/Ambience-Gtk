@@ -1,6 +1,6 @@
 # ambience_discovery.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,80 +18,85 @@
 from gi.repository import Gtk, Gdk, GLib, GObject, Handy
 import threading, json
 
-from .ambience_settings import *
-from .discovery_item import *
-from .helpers import *
+from ambience.providers.ambience_providers import AmbienceProviders
+from ambience.widgets.ambience_discovery_item import AmbienceDiscoveryItem
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_discovery.ui')
 class AmbienceDiscovery(Gtk.Dialog):
     __gtype_name__ = 'AmbienceDiscovery'
 
-    list_box = Gtk.Template.Child()
+    subheader = Gtk.Template.Child()
     reload_stack = Gtk.Template.Child()
-    lan = None
+    device_spinner = Gtk.Template.Child()
 
-    def __init__(self, lan, **kwargs):
-        super().__init__(**kwargs)
-        self.lan = lan
+    main_deck = Gtk.Template.Child()
+    providers_list = Gtk.Template.Child()
+    devices_list = Gtk.Template.Child()
 
-        self.reload(self)
+    providers = AmbienceProviders()
+    current_provider = None
 
-    def clear_list(self):
-        for widget in self.list_box.get_children():
-            self.list_box.remove(widget)
+    group = None
 
-    @Gtk.Template.Callback("reload")
-    def reload(self, sender):
-        self.clear_list()
+    @Gtk.Template.Callback("provider_selected")
+    def provider_selected(self, sender, user_data):
+        selected_row = sender.get_selected_row()
+        
+        if not selected_row:
+            return
+
+        provider = AmbienceProviders().import_provider(selected_row.provider)
+
+        self.main_deck.set_visible_child_name("devices")
+        self.subheader.set_title(self.providers.get_name_for_provider(selected_row.provider))
+
+        self.current_provider = provider
+        self.reload_devices(self)
+
+    @Gtk.Template.Callback("reload_devices")
+    def reload_devices(self, sender):
+
         self.reload_stack.set_visible_child_name("loading")
-        self.init_discovery()
+        self.device_spinner.start()
 
-    def init_discovery(self):
-        """
-        Initialize discovery thread. Starts spinner etc.
-        """
-        discovery_thread = threading.Thread(target=self.discovery)
-        discovery_thread.daemon = True
+        for item in self.devices_list.get_children():
+            self.devices_list.remove(item)
+
+        def set_devices():
+            devices = self.current_provider.discovery_list()
+
+            def update_list():
+                for device in devices: 
+                    row = AmbienceDiscoveryItem(device, self.group)
+                    row.set_visible(True)
+
+                    self.devices_list.insert(row, -1)
+
+                self.providers_list.unselect_all()
+                self.reload_stack.set_visible_child_name("button")
+
+            GLib.idle_add(update_list)
+
+        discovery_thread = threading.Thread(target=set_devices)
         discovery_thread.start()
 
-    def discovery(self):
-        """
-        Discovery thread.
-        """
+        #AmbienceProviders().unimport_provider(provider) ??
 
-        self.lights = self.lan.get_lights()
+    @Gtk.Template.Callback("go_back")
+    def go_back(self, sender):
+        self.providers_list.unselect_all()
+        self.main_deck.set_visible_child_name("providers")
 
-        for light in self.lights:
-            light.label = fetch_data_sync(light.get_label)
-            light.mac = fetch_data_sync(light.get_mac_addr)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+        for provider in self.providers.get_provider_list():
+            row = Handy.ActionRow()
+            row.set_title(self.providers.get_name_for_provider(provider))
+            row.provider = provider
 
-            if not light.label or not light.mac:
-                self.lights.remove(light)
-
-        GLib.idle_add(self.update_list)
-
-    def update_list(self):
-        config_list = get_config(get_dest_file())
-
-        for light in self.lights:
-            sidebar_item = DiscoveryItem()
-            sidebar_item.light = light
-            sidebar_item.light_label.set_text(light.label)
-            sidebar_item.dest_file = get_dest_file()
-            sidebar_item.config_list = config_list
-
-            done = False
-            for group in config_list["groups"]:
-                for saved_light in group["lights"]:
-                    if saved_light["mac"] == light.mac:
-                        sidebar_item.added = True
-                        sidebar_item.update_icon()
-                        done = True
-                        break
-
-                if done:
-                    break
-
-            self.list_box.insert(sidebar_item, -1)
-
-        self.reload_stack.set_visible_child_name("button")
+            img = Gtk.Image.new_from_icon_name("go-next-symbolic", 0)
+            img.set_visible(True)
+            
+            row.add(img)
+            self.providers_list.insert(row, -1)

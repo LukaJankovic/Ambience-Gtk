@@ -1,6 +1,6 @@
-# product_list.py
+# ambience_lifx_device_type.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,9 +17,11 @@
 
 import requests, json
 
+from ambience.singleton import Singleton
+
 P_LIST_URL = "https://raw.githubusercontent.com/LIFX/products/master/products.json"
 
-class product_list:
+class AmbienceLifxDeviceType(metaclass=Singleton):
     """
     Class that attempts to download as well as manage the product list from 
     Lifx's official Github.
@@ -30,6 +32,9 @@ class product_list:
         """
         Downloads and saves the product list. Returns if successful.
         """
+        if self.p_list:
+            return
+
         resp = requests.get(P_LIST_URL)
         if resp.status_code == 200:
             self.p_list = json.loads(resp.content)[0]["products"]
@@ -40,4 +45,6 @@ class product_list:
         """
         Gets the product name based on id, otherwise returns None
         """
-        return next((l for l in self.p_list if l["pid"] == pid), None)
+        if self.download_list():
+            return next((l for l in self.p_list if l["pid"] == pid), None)
+        return None

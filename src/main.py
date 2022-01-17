@@ -1,6 +1,6 @@
 # main.py
 #
-# Copyright 2021 Luka Jankovic
+# Copyright 2022 Luka Jankovic
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@
 
 import sys
 import gi
-
-from .helpers import *
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '1')
@@ -38,18 +36,13 @@ class Application(Gtk.Application):
         super().__init__(application_id='io.github.lukajankovic.ambience',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
-        if API_AVAIL:
-            self.lan = LifxLAN()
-        else:
-            self.lan = None
-
         about_action = Gio.SimpleAction.new("about", None)
         about_action.connect("activate", self.about)
         self.add_action(about_action)
 
-        discovery_action = Gio.SimpleAction.new("discovery", None)
-        discovery_action.connect("activate", self.show_discovery)
-        self.add_action(discovery_action)
+        refresh_action = Gio.SimpleAction.new("refresh", None)
+        refresh_action.connect("activate", self.do_refresh)
+        self.add_action(refresh_action)
 
     def about(self, state, user_data):
         about = Gtk.AboutDialog(transient_for=self.win, modal=True)
@@ -58,16 +51,18 @@ class Application(Gtk.Application):
 
         about.set_program_name("Ambience")
         about.set_version(self.version)
-        about.set_copyright("Copyright © Luka Jankovic 2020 - 2021")
+        about.set_license_type(Gtk.License.GPL_3_0)
+        about.set_website("https://github.com/LukaJankovic/Ambience")
+        about.set_website_label("Github Page")
+        about.set_copyright("© 2020-2021 Luka Jankovic")
         about.add_credit_section("Created by", authors)
         about.add_credit_section("LifxLAN by", api_authors)
         about.set_logo_icon_name("io.github.lukajankovic.ambience")
 
         about.show_all()
 
-    def show_discovery(self, state, user_data):
-        discovery_window = AmbienceDiscovery(self.lan, transient_for=self.win, modal=True, use_header_bar=1)
-        discovery_window.show_all()
+    def do_refresh(self, state, user_data):
+        self.win.reload(self)
 
     def do_activate(self):
         self.win = self.props.active_window

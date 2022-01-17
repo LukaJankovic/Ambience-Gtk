@@ -1,6 +1,4 @@
-#!@PYTHON@
-
-# ambience.in
+# ambience_lifx_group.py
 #
 # Copyright 2022 Luka Jankovic
 #
@@ -17,25 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
-import signal
-import gettext
+from ambience.model.ambience_module_group import AmbienceModuleGroup
 
-VERSION = '@VERSION@'
-pkgdatadir = '@pkgdatadir@'
-localedir = '@localedir@'
+from lifxlan import Group
 
-sys.path.insert(1, pkgdatadir)
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-gettext.install('ambience', localedir)
+class AmbienceLIFXGroup(AmbienceModuleGroup):
 
-if __name__ == '__main__':
-    import gi
+    lights = None
+    group = None
 
-    from gi.repository import Gio
-    resource = Gio.Resource.load(os.path.join(pkgdatadir, 'ambience.gresource'))
-    resource._register()
+    def __init__(self, lights):
+        self.lights = [light.lifx_light for light in lights]
+        self.group = Group(self.lights)
 
-    from ambience import main
-    sys.exit(main.main(VERSION))
+    def set_color(self, hsvk):
+        for i in range(3):
+            hsvk[i] = hsvk[i] * 65535
+        self.group.set_color(hsvk)
+    
+    def set_infrared(self, infrared):
+        self.group.set_infrared(infrared)
+
+    def set_power(self, power):
+        self.group.set_power(power)
