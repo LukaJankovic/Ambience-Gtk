@@ -101,7 +101,7 @@ class AmbienceLIFXLight(AmbienceLight):
     def set_power(self, power):
         self.lifx_light.set_power(power, rapid=True)
 
-    def get_color(self) -> tuple[float, float, float, float]:
+    def get_color(self): #-> tuple[float, float, float, float]:
         color_hsvk = list(self.lifx_light.get_color())
         for i in range(3):
             color_hsvk[i] = color_hsvk[i] / 65535

@@ -35,18 +35,45 @@ class AmbienceLoader(metaclass=Singleton):
         dest = GLib.build_filenamev([data_dir, file])
         return Gio.File.new_for_path(dest)
 
+    def validate_config(self, config):
+        if "version" in config:
+            pass
+        else:
+            # Pre 1.4 config...
+            print("Old config, migrating...")
+            for group in config["groups"]:
+                group["devices"] = []
+                for light in group["lights"]:
+                    nlight = {
+                        "label": light["label"],
+                        "kind": "lifx",
+                        "data": {
+                            "ip": light["ip"],
+                            "mac": light["mac"]
+                        }}
+                    group["devices"].append(nlight)
+
+                del group["lights"]
+
+            config["version"] = "1.4"
+            self.write_config(config)
+
+        return config
+
     def get_config(self):
         file = self.read_config_file(self.CONFIG_FILE_NAME)
         try:
             (_, content, _) = file.load_contents()
-            return json.loads(content.decode("utf-8"))
+            config = json.loads(content.decode("utf-8"))
+            config = self.validate_config(config)
+            return config
         except GLib.GError as error:
             # File doesn't exist
             file.create(Gio.FileCopyFlags.NONE, None)
         except (TypeError, ValueError) as e:
             # File is most likely empty
             print("Config file empty or invalid")
-        return {"groups":[]}
+        return {"version": "1.4", "groups":[]}
 
     def write_config(self, config):
         permissions = 0o664
