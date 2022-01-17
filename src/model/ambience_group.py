@@ -26,6 +26,7 @@ class AmbienceGroup():
 
     label = ""
     devices = []
+    groups = []
     providers = AmbienceProviders()
 
     @classmethod
@@ -44,6 +45,13 @@ class AmbienceGroup():
 
         return new
 
+    def generate_groups(self):
+        self.groups = []
+        for kind in self.providers.get_provider_list():
+            connector = self.providers.import_provider(kind)
+            lights = [light for light in self.devices if connector.compare_device(light)]
+            self.groups.append(connector.create_group(lights))
+
     def write_config(self):
         config = {
             "label": self.label,
@@ -60,36 +68,32 @@ class AmbienceGroup():
 
         return config
 
-    def get_lights_of_kind(self, connector):
-        lights = [light for light in self.online if connector.compare_device(light)]
-        return lights
-
     def set_color(self, hsvk):
-        for kind in self.providers.get_provider_list():
-            connector = self.providers.import_provider(kind)
-            connector.create_group(self.get_lights_of_kind(connector)).set_color(hsvk) 
+        for group in self.groups:
+            group.set_color(hsvk)
 
     def set_infrared(self, infrared):
-        for kind in self.providers.get_provider_list():
-            connector = self.providers.import_provider(kind)
-            connector.create_group(self.get_lights_of_kind(connector)).set_infrared(infrared) 
+        for group in self.groups:
+            group.set_infrared(infrared)
 
     def set_power(self, power):
-        for kind in self.providers.get_provider_list():
-            connector = self.providers.import_provider(kind)
-            connector.create_group(self.get_lights_of_kind(connector)).set_power(power) 
+        for group in self.groups:
+            group.set_power(power)
 
     def add_device(self, device):
         self.devices.append(device)
+        self.generate_groups()
 
     def remove_device(self, device):
         if device in self.devices:
             self.devices.remove(device)
+            self.generate_groups()
             return
 
         for d in self.devices:
             if d.write_config() == device.write_config():
                 self.devices.remove(d)
+                self.generate_groups()
                 return
 
     def get_devices(self):

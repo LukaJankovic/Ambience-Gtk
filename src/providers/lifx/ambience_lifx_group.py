@@ -22,15 +22,19 @@ from lifxlan import Group
 class AmbienceLIFXGroup(AmbienceModuleGroup):
 
     lights = None
+    group = None
 
     def __init__(self, lights):
         self.lights = [light.lifx_light for light in lights]
+        self.group = Group(self.lights)
 
     def set_color(self, hsvk):
-        Group(self.lights).set_color(hsvk)
+        for i in range(3):
+            hsvk[i] = hsvk[i] * 65535
+        self.group.set_color(hsvk)
     
     def set_infrared(self, infrared):
-        Group(self.lights).set_infrared(infrared)
+        self.group.set_infrared(infrared)
 
     def set_power(self, power):
-        Group(self.lights).set_power(power)
+        self.group.set_power(power)

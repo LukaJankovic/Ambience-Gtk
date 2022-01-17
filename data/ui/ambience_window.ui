@@ -24,7 +24,7 @@
           <object class="GtkModelButton">
             <property name="width-request">200</property>
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
+            <property name="can-focus">False</property>
             <property name="receives-default">False</property>
             <property name="action-name">app.refresh</property>
             <property name="text" translatable="yes">Reload</property>
@@ -37,6 +37,7 @@
         </child>
         <child>
           <object class="GtkSeparator">
+            <property name="visible">True</property>
             <property name="can-focus">False</property>
           </object>
           <packing>
@@ -49,7 +50,7 @@
           <object class="GtkModelButton">
             <property name="width-request">200</property>
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
+            <property name="can-focus">False</property>
             <property name="receives-default">False</property>
             <property name="action-name">app.about</property>
             <property name="text" translatable="yes">About Ambience</property>
@@ -481,11 +482,7 @@
           <object class="GtkEntry" id="new_group_entry">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="has-focus">True</property>
-            <property name="is-focus">True</property>
             <property name="can-default">True</property>
-            <property name="has-default">True</property>
-            <property name="receives-default">True</property>
             <property name="activates-default">True</property>
             <property name="input-hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
             <signal name="activate" handler="create_group" swapped="no"/>
@@ -501,6 +498,7 @@
           <object class="GtkButton" id="new_group_button">
             <property name="label" translatable="yes">Create</property>
             <property name="visible">True</property>
+            <property name="sensitive">False</property>
             <property name="can-focus">False</property>
             <property name="receives-default">False</property>
             <signal name="clicked" handler="create_group" swapped="no"/>

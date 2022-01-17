@@ -259,6 +259,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("new_group_entry_changed")
     def new_group_entry_changed(self, sender):
+        if not self.new_group_entry.get_text():
+            self.new_group_button.set_sensitive(False)
+            return
+
+        self.new_group_button.set_sensitive(True)
+
         if self.new_group_entry.get_text() in self.group_labels:
             self.new_group_button.set_sensitive(False) 
             self.invalid_name.set_reveal_child(True)
@@ -362,6 +368,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.clear_sidebar()
 
         for group in AmbienceLoader().get_all_groups():
+            group.generate_groups()
             group_item = self.create_group_item(group)
             self.group_labels.append(group_item.get_title()) 
             self.sidebar.insert(group_item, -1)
