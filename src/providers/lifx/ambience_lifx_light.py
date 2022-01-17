@@ -17,6 +17,8 @@
 
 from lifxlan import *
 
+import traceback
+
 from ambience.model.ambience_device import AmbienceDeviceInfoType
 from ambience.model.ambience_light import AmbienceLight, AmbienceLightCapabilities
 
@@ -80,8 +82,7 @@ class AmbienceLIFXLight(AmbienceLight):
                 # TODO: write config file
 
             return True
-        except Exception as e:
-            print("lifx exception", e)
+        except:
             return False
 
     def get_label(self) -> str:

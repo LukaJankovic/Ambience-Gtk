@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GLib
+import threading
 
 from ambience.model.ambience_light import AmbienceLightCapabilities
 from ambience.model.ambience_device import AmbienceDeviceInfoType
@@ -74,38 +75,60 @@ class AmbienceLightControl(Gtk.Box):
         """
         The view is ready to show. Update rows.
         """
-        self.update_rows()
+        def show_async():
+
+            self.main_stack.set_visible_child_name("loading")
+
+            for _ in range(5):
+                try:
+                    self.label = self.light.get_label()
+                    self.power = self.light.get_power()
+
+                    self.color = self.light.get_color()
+
+                    self.capabilities = self.light.get_capabilities()
+
+                    if AmbienceLightCapabilities.INFRARED in self.capabilities:
+                        self.infrared = self.light.get_infrared()
+
+                    self.info = self.light.get_info()
+                    break
+                except:
+                    pass
+
+            GLib.idle_add(self.update_rows)
+
+        show_thread = threading.Thread(target=show_async)
+        show_thread.daemon = True
+        show_thread.start()
 
     def update_rows(self):
+        self.main_stack.set_visible_child_name("controls")
+
         self.update_active = True
 
-        self.light_label.set_label(self.light.get_label())
-        self.power_switch.set_active(self.light.get_power())
+        self.light_label.set_label(self.label)
+        self.power_switch.set_active(self.power)
 
-        (hue, saturation, brightness, kelvin) = self.light.get_color()
+        (hue, saturation, brightness, kelvin) = self.color
 
         self.brightness_scale.set_value(brightness * 100)
 
-        capabilities = self.light.get_capabilities()
-
-        if AmbienceLightCapabilities.COLOR in capabilities: 
+        if AmbienceLightCapabilities.COLOR in self.capabilities: 
             self.hue_row.set_visible(True)
             self.saturation_row.set_visible(True)
 
             self.hue_scale.set_value(hue * 365)
             self.saturation_scale.set_value(saturation * 100)
 
-        if AmbienceLightCapabilities.TEMPERATURE in capabilities:
+        if AmbienceLightCapabilities.TEMPERATURE in self.capabilities:
             self.kelvin_row.set_visible(True)
             self.kelvin_scale.set_value(kelvin)
 
-        if AmbienceLightCapabilities.INFRARED in capabilities:
+        if AmbienceLightCapabilities.INFRARED in self.capabilities:
             self.infrared_row.set_visible(True)
-            self.infrared_scale.set_value(self.light.get_infrared())
 
         self.update_active = False
-
-        info = self.light.get_info()
 
         rows = {
             AmbienceDeviceInfoType.MODEL    : self.model_row,
@@ -122,9 +145,9 @@ class AmbienceLightControl(Gtk.Box):
         }
 
         for type in AmbienceDeviceInfoType:
-            if type in info.keys():
+            if type in self.info.keys():
                 rows[type].set_visible(True)
-                labels[type].set_text(info[type])
+                labels[type].set_text(self.info[type])
  
     @Gtk.Template.Callback("push_color")
     def push_color(self, sender):
@@ -141,7 +164,7 @@ class AmbienceLightControl(Gtk.Box):
 
         self.light.set_color([hue / 365, saturation / 100, brightness / 100, kelvin])
 
-        if AmbienceLightCapabilities.INFRARED in self.light.get_capabilities():
+        if AmbienceLightCapabilities.INFRARED in self.light.capabilities:
             self.light.set_infrared(self.infrared_scale.get_value() * 100)
 
     @Gtk.Template.Callback("set_light_power")

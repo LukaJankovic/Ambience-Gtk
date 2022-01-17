@@ -54,12 +54,16 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
                 self.text_style_provider = None
 
     def update(self):
-        self.top_label.set_text(self.light.get_label())
+        self.top_label.set_text(self.light.label)
         self.clear_styles()
 
-        if AmbienceLightCapabilities.COLOR in self.light.get_capabilities():
-            if self.light.get_power():
-                (h, s, v, k) = self.light.get_color()
+        if self.offline:
+            self.bottom_label.set_text("Unavailable")
+            return
+
+        if AmbienceLightCapabilities.COLOR in self.light.capabilities:
+            if self.light.power:
+                (h, s, v, k) = self.light.color
                 (r, g, b) = colorsys.hsv_to_rgb(h, s, v)
 
                 self.bottom_label.set_text(str(int(v * 100)) + "%")
@@ -89,10 +93,11 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         if self.clicked_callback:
             self.clicked_callback(self)
 
-    def __init__(self, light, clicked_callback, **kwargs):
+    def __init__(self, light, clicked_callback, offline=False, **kwargs):
         super().__init__(**kwargs)
 
         self.light = light
         self.clicked_callback = clicked_callback
+        self.offline = offline
 
         self.update()

@@ -48,9 +48,9 @@ class AmbienceGroupControl(Gtk.Box):
     capabilities = []
     has_infrared = False
 
-    def __init__(self, group, deck, back_callback, **kwargs):
+    def __init__(self, group, deck, back_callback, online, **kwargs):
         self.group = group
-        self.online = group.online # TODO: Update online devices
+        self.online = online # TODO: Update online devices
         self.deck = deck
         self.back_callback = back_callback
 
@@ -70,7 +70,7 @@ class AmbienceGroupControl(Gtk.Box):
     
     def get_capabilities(self):
         self.capabilities = [c.value for c in AmbienceLightCapabilities]
-        for light in self.group.online:
+        for light in self.online:
             for c in self.capabilities:
                 if not c in light.get_capabilities():
                     self.capabilities.remove(c)
@@ -102,7 +102,7 @@ class AmbienceGroupControl(Gtk.Box):
 
     def get_group_value(self, capability):
         value = -1
-        for light in self.group.online:
+        for light in self.online:
             if value == -1:
                 value = light.get_data(capability)
             elif not value == light.get_data(capability):

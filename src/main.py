@@ -40,9 +40,9 @@ class Application(Gtk.Application):
         about_action.connect("activate", self.about)
         self.add_action(about_action)
 
-        discovery_action = Gio.SimpleAction.new("discovery", None)
-        discovery_action.connect("activate", self.show_discovery)
-        self.add_action(discovery_action)
+        refresh_action = Gio.SimpleAction.new("refresh", None)
+        refresh_action.connect("activate", self.do_refresh)
+        self.add_action(refresh_action)
 
     def about(self, state, user_data):
         about = Gtk.AboutDialog(transient_for=self.win, modal=True)
@@ -61,9 +61,8 @@ class Application(Gtk.Application):
 
         about.show_all()
 
-    def show_discovery(self, state, user_data):
-        discovery_window = AmbienceDiscovery(transient_for=self.win, modal=True, use_header_bar=1)
-        discovery_window.show_all()
+    def do_refresh(self, state, user_data):
+        self.win.reload(self)
 
     def do_activate(self):
         self.win = self.props.active_window
