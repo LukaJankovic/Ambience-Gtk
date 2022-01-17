@@ -316,7 +316,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
                     confirm_dialog.run()
                     confirm_dialog.destroy()
 
-                delete_icon = Gtk.Image.new_from_icon_name("process-stop-symbolic", 1)
+                delete_icon = Gtk.Image.new_from_icon_name("list-remove-symbolic", 1)
                 delete_icon.set_visible(True)
 
                 delete_button = Gtk.Button()

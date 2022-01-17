@@ -128,7 +128,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="icon-name">carousel-arrow-previous-symbolic</property>
+                    <property name="icon-name">go-previous-symbolic</property>
                   </object>
                 </child>
               </object>
