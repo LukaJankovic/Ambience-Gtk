@@ -1,11 +1,11 @@
 project('ambience',  
-          version: '1.4',
+          version: '1.4.1',
     meson_version: '>= 0.50.0',
   default_options: [ 'warning_level=2',
                    ],
 )
 
-dependency('gtk4', version: '>= 3.24')
+dependency('gtk3', version: '>= 3.24')
 dependency('libhandy-1', version: '>= 1.2.2')
 
 i18n = import('i18n')
