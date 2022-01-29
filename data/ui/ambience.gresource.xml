@@ -8,6 +8,7 @@
     <file>ambience_flow_box.ui</file>
     <file>ambience_light_tile.ui</file>
     <file>ambience_group_tile.ui</file>
+    <file>ambience_group_row.ui</file>
     <file>ambience_discovery_item.ui</file>
     <file>light_item.ui</file>
     <file>stylesheet.css</file>

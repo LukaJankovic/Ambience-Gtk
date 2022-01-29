@@ -26,6 +26,7 @@ from .ambience_discovery import AmbienceDiscovery
 from ambience.widgets.ambience_flow_box import AmbienceFlowBox
 from ambience.widgets.ambience_group_tile import AmbienceGroupTile
 from ambience.widgets.ambience_light_tile import AmbienceLightTile
+from ambience.widgets.ambience_group_row import AmbienceGroupRow
 
 from ambience.views.ambience_group_control import AmbienceGroupControl
 from ambience.views.ambience_light_control import AmbienceLightControl
@@ -51,6 +52,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     menu_box = Gtk.Template.Child()
     header_bar = Gtk.Template.Child()
     sidebar = Gtk.Template.Child()
+    check_revealer = Gtk.Template.Child()
 
     group_header_bar = Gtk.Template.Child()
     back = Gtk.Template.Child()
@@ -69,9 +71,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     invalid_name = Gtk.Template.Child()
 
+    add_group_button = Gtk.Template.Child()
     devices_button = Gtk.Template.Child()
 
     group_labels = []
+    editing = False
 
     def create_header_label(self):
         """
@@ -152,6 +156,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             self.clear_controls()
             self.clear_tiles()
+
+            # Editing toggled while loading
+            if self.editing:
+                return
 
             self.devices_button.set_visible(True)
             self.group_label_edit.set_visible(True)
@@ -250,8 +258,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def create_group(self, sender):
         label = self.new_group_entry.get_text()
         group = AmbienceLoader().get_group(label)
-        group_item = self.create_group_item(group)
-        self.sidebar.insert(group_item, -1)
+        group_row = AmbienceGroupRow(group)
+        self.sidebar.insert(group_row, -1)
 
         self.new_group_popover.popdown()
         self.group_labels.append(label)
@@ -276,7 +284,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def toggle_edit(self, sender):
         self.deselect_sidebar()
 
-        if sender.get_active():
+        self.editing = sender.get_active()
+        
+        self.check_revealer.set_reveal_child(self.editing)
+        self.add_group_button.set_sensitive(not self.editing)
+
+        if self.editing:
 
             self.header_bar.get_style_context().add_class("selection-mode")
             self.group_header_bar.get_style_context().add_class("selection-mode")
@@ -316,18 +329,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
                     confirm_dialog.run()
                     confirm_dialog.destroy()
 
-                delete_icon = Gtk.Image.new_from_icon_name("list-remove-symbolic", 1)
-                delete_icon.set_visible(True)
+                row.check.set_opacity(1)
+                row.check.set_active(False)
+                row.check.set_sensitive(True)
 
-                delete_button = Gtk.Button()
-                delete_button.row = row
-                delete_button.add(delete_icon)
-                delete_button.get_style_context().add_class("destructive-action")
-                delete_button.set_valign(Gtk.Align.CENTER)
-                delete_button.connect("clicked", delete_action)
-                delete_button.set_visible(True)
+            self.header_bar.set_title("0 Selected")
 
-                row.add(delete_button)
         else:
             self.header_bar.get_style_context().remove_class("selection-mode")
             self.group_header_bar.get_style_context().remove_class("selection-mode")
@@ -335,8 +342,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
 
             for row in self.sidebar.get_children():
-                for c in row.get_children():
-                    row.remove(c)
+                row.check.set_opacity(0)
+                row.check.set_sensitive(False)
+
+            self.header_bar.set_title("Ambience")
 
     def deselect_sidebar(self):
         self.clear_tiles()
@@ -369,18 +378,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         for group in AmbienceLoader().get_all_groups():
             group.generate_groups()
-            group_item = self.create_group_item(group)
-            self.group_labels.append(group_item.get_title()) 
-            self.sidebar.insert(group_item, -1)
-
-    def create_group_item(self, group):
-        group_item = Handy.ActionRow()
-        group_item.set_visible(True)
-        group_item.set_title(group.get_label())
-        group_item.set_can_focus(False)
-        group_item.group = group
-
-        return group_item
+            group_row = AmbienceGroupRow(group)
+            self.group_labels.append(group_row.get_title())
+            self.sidebar.insert(group_row, -1)
 
     def reload_group_name(self):
         self.title_label.set_text(self.active_group.get_label())
