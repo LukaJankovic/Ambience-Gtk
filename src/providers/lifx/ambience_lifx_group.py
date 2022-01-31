@@ -31,7 +31,7 @@ class AmbienceLIFXGroup(AmbienceModuleGroup):
     def set_color(self, hsvk):
         for i in range(3):
             hsvk[i] = hsvk[i] * 65535
-        self.group.set_color(hsvk)
+        self.group.set_color(hsvk, rapid=True)
     
     def set_infrared(self, infrared):
         self.group.set_infrared(infrared)

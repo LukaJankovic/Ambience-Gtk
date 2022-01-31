@@ -22,12 +22,17 @@ class AmbienceGroupRow(Gtk.ListBoxRow):
     __gtype_name__ = 'AmbienceGroupRow'
 
     group = None
+    check_action = None
 
     title = Gtk.Template.Child()
     check = Gtk.Template.Child()
 
     def get_title(self):
         return self.title.get_label()
+
+    @Gtk.Template.Callback("checked")
+    def checked(self, sender):
+        self.check_action(self)
 
     def __init__(self, group, **kwargs):
         super().__init__(**kwargs)

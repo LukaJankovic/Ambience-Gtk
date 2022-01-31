@@ -53,6 +53,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     header_bar = Gtk.Template.Child()
     sidebar = Gtk.Template.Child()
     check_revealer = Gtk.Template.Child()
+    remove_button = Gtk.Template.Child()
 
     group_header_bar = Gtk.Template.Child()
     back = Gtk.Template.Child()
@@ -75,6 +76,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     devices_button = Gtk.Template.Child()
 
     group_labels = []
+    to_delete = []
     editing = False
 
     def create_header_label(self):
@@ -259,11 +261,19 @@ class AmbienceWindow(Handy.ApplicationWindow):
         label = self.new_group_entry.get_text()
         group = AmbienceLoader().get_group(label)
         group_row = AmbienceGroupRow(group)
+        group_row.check_action = self.update_delete_list
         self.sidebar.insert(group_row, -1)
 
         self.new_group_popover.popdown()
         self.group_labels.append(label)
         self.new_group_entry.set_text("")
+
+    @Gtk.Template.Callback("add_group_toggled")
+    def add_group_toggled(self, sender):
+        if sender.get_active():
+            self.new_group_entry.set_text("")
+        self.invalid_name.set_reveal_child(False)
+        self.new_group_entry.get_style_context().remove_class("error")
 
     @Gtk.Template.Callback("new_group_entry_changed")
     def new_group_entry_changed(self, sender):
@@ -271,14 +281,14 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.new_group_button.set_sensitive(False)
             return
 
-        self.new_group_button.set_sensitive(True)
-
         if self.new_group_entry.get_text() in self.group_labels:
+            self.new_group_entry.get_style_context().add_class("error")
             self.new_group_button.set_sensitive(False) 
             self.invalid_name.set_reveal_child(True)
         else:
             self.new_group_button.set_sensitive(True)
             self.invalid_name.set_reveal_child(False)
+            self.new_group_entry.get_style_context().remove_class("error")
 
     @Gtk.Template.Callback("toggle_edit")
     def toggle_edit(self, sender):
@@ -288,6 +298,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         
         self.check_revealer.set_reveal_child(self.editing)
         self.add_group_button.set_sensitive(not self.editing)
+
+        self.remove_button.set_sensitive(False)
 
         if self.editing:
 
@@ -301,33 +313,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 def delete_action(sender):
 
                     title = sender.row.get_title()
-
-                    def perform_delete(_, response):
-                        if response == Gtk.ResponseType.YES:
-                            AmbienceLoader().delete_group(sender.row.group)
-                            self.group_labels.remove(title)
-                            self.sidebar.remove(sender.row)
-
-                    confirm_dialog = Gtk.MessageDialog(self,
-                                                        0,
-                                                        Gtk.MessageType.WARNING,
-                                                        Gtk.ButtonsType.NONE,
-                                                        f"Are you sure you want to delete the group “{title}”?"
-                    )
-                    confirm_dialog.format_secondary_text(
-                        "This action cannot be reversed."
-                    )
-
-                    confirm_dialog.add_button("_Cancel", Gtk.ResponseType.CLOSE)
-                    confirm_dialog.add_button("_Delete", Gtk.ResponseType.YES)
-
-                    confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("destructive-action")
-                    confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("default")
-
-                    confirm_dialog.connect("response", perform_delete)
-
-                    confirm_dialog.run()
-                    confirm_dialog.destroy()
 
                 row.check.set_opacity(1)
                 row.check.set_active(False)
@@ -379,6 +364,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         for group in AmbienceLoader().get_all_groups():
             group.generate_groups()
             group_row = AmbienceGroupRow(group)
+            group_row.check_action = self.update_delete_list
             self.group_labels.append(group_row.get_title())
             self.sidebar.insert(group_row, -1)
 
@@ -463,6 +449,53 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if value == -1:
             return None
         return value
+
+    def remove_group(self, row):
+        AmbienceLoader().delete_group(row.group)
+        self.group_labels.remove(row.group.get_label())
+        self.sidebar.remove(row)
+
+    def update_delete_list(self, row):
+        if row.check.get_active():
+            self.to_delete.append(row)
+        elif row in self.to_delete:
+            self.to_delete.remove(row)
+
+        self.remove_button.set_sensitive(self.to_delete)
+        self.header_bar.set_title(f"{len(self.to_delete)} Selected")
+
+    @Gtk.Template.Callback("remove_groups_clicked")
+    def remove_groups_clicked(self, sender):
+        def perform_delete(_, response):
+            if response == Gtk.ResponseType.YES:
+                for group in self.to_delete:
+                    self.remove_group(group)
+
+            self.to_delete = []
+
+            self.remove_button.set_sensitive(self.to_delete)
+            self.header_bar.set_title(f"{len(self.to_delete)} Selected")
+
+        confirm_dialog = Gtk.MessageDialog(self,
+                                            0,
+                                            Gtk.MessageType.WARNING,
+                                            Gtk.ButtonsType.NONE,
+                                            f"Are you sure you want to delete {len(self.to_delete)} group(s)?"
+        )
+        confirm_dialog.format_secondary_text(
+            "This action cannot be reversed."
+        )
+
+        confirm_dialog.add_button("_Cancel", Gtk.ResponseType.CLOSE)
+        confirm_dialog.add_button("_Delete", Gtk.ResponseType.YES)
+
+        confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("destructive-action")
+        confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("default")
+
+        confirm_dialog.connect("response", perform_delete)
+
+        confirm_dialog.run()
+        confirm_dialog.destroy()
 
     # Initialization, startup
 

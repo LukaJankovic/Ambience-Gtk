@@ -36,6 +36,7 @@
             <property name="opacity">0</property>
             <property name="halign">end</property>
             <property name="draw-indicator">True</property>
+            <signal name="toggled" handler="checked" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>

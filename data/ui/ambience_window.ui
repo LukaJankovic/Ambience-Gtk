@@ -127,6 +127,7 @@
                         <property name="can-focus">False</property>
                         <property name="receives-default">True</property>
                         <property name="popover">new_group_popover</property>
+                        <signal name="toggled" handler="add_group_toggled" swapped="no"/>
                         <child>
                           <object class="GtkImage">
                             <property name="visible">True</property>
@@ -225,11 +226,13 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkButton">
+                      <object class="GtkButton" id="remove_button">
                         <property name="label" translatable="yes">Remove</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can-focus">False</property>
                         <property name="receives-default">False</property>
+                        <signal name="clicked" handler="remove_groups_clicked" swapped="no"/>
                         <style>
                           <class name="destructive-action"/>
                         </style>
