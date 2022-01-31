@@ -109,9 +109,10 @@ class AmbienceLIFXLight(AmbienceLight):
         return tuple(color_hsvk)
 
     def set_color(self, hsvk):
+        color = hsvk.copy()
         for i in range(3):
-            hsvk[i] = hsvk[i] * 65535
-        self.lifx_light.set_color(hsvk, rapid=True)
+            color[i] = color[i] * 65535
+        self.lifx_light.set_color(color, rapid=True)
 
     def get_infrared(self) -> float:
         if AmbienceLightCapabilities.INFRARED in self.get_capabilities():

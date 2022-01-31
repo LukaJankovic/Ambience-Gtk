@@ -112,22 +112,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.go_back(sender)
             self.clear_tiles()
 
-    @Gtk.Template.Callback("notify_controls_visible_child_name")
-    def visible_child_name_changed(self, sender, user_data):
-        if self.controls_deck.get_visible_child_name() == "tiles":
-            def wait_finished():
-                self.sidebar_selected(self, None)
-
-            def wait_thread():
-                while self.controls_deck.get_transition_running():
-                    pass
-                if self.controls_deck.get_visible_child_name() == "tiles":
-                    GLib.idle_add(lambda: self.sidebar_selected(self, None))
-                return
-
-            t = threading.Thread(target=wait_thread)
-            t.start()
-
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
         """
@@ -218,6 +202,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
                             device.color = device.get_color()
                             device.label = device.get_label()
                             device.power = device.get_power()
+                            device.info = device.get_info()
                             break
                         except:
                             pass
@@ -231,6 +216,14 @@ class AmbienceWindow(Handy.ApplicationWindow):
         load_devices_thread = threading.Thread(target=load_devices_async)
         load_devices_thread.daemon = True
         load_devices_thread.start()
+
+    def update_tile(self, light):
+        for child in self.tiles_list.get_children():
+            if type(child) == AmbienceFlowBox:
+                for tile in child.flowbox.get_children():
+                    if type(tile) == AmbienceLightTile and \
+                       tile.light.write_config() == light.write_config():
+                        tile.update()
 
     def clear_controls(self):
         """
@@ -309,11 +302,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.sidebar.set_selection_mode(Gtk.SelectionMode.NONE)
 
             for row in self.sidebar.get_children():
-
-                def delete_action(sender):
-
-                    title = sender.row.get_title()
-
                 row.check.set_opacity(1)
                 row.check.set_active(False)
                 row.check.set_sensitive(True)
@@ -344,6 +332,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("manage_devices")
     def manage_devices(self, sender):
+        """
+        Opens the window for managing a group's devices.
+        """
 
         def discovery_done(sender, user_data):
             self.sidebar_selected(self, None)
@@ -357,6 +348,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         Reloads data from config file and populates sidebar.
         """
+
         self.controls_deck.set_visible_child(self.tiles_box)
         self.clear_tiles()
         self.clear_sidebar()
@@ -415,7 +407,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
         """
         light_controls = AmbienceLightControl(tile.light,
                                               self.controls_deck,
-                                              self.light_control_exit)
+                                              self.light_control_exit,
+                                              self.update_tile)
         light_controls.set_visible(True)
 
         self.controls_deck.insert_child_after(light_controls, self.tiles_box)

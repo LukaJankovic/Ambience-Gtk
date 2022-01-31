@@ -64,10 +64,13 @@ class AmbienceLightControl(Gtk.Box):
     back_callback = None
     update_active = False
 
-    def __init__(self, light, deck, back_callback, **kwargs):
+    value_changed_cb = None
+
+    def __init__(self, light, deck, back_callback, value_changed_cb, **kwargs):
         self.light = light
         self.deck = deck
         self.back_callback = back_callback
+        self.value_changed_cb = value_changed_cb
 
         super().__init__(**kwargs)
 
@@ -77,22 +80,30 @@ class AmbienceLightControl(Gtk.Box):
         """
         def show_async():
 
-            self.main_stack.set_visible_child_name("loading")
+            #self.main_stack.set_visible_child_name("loading")
 
             for _ in range(5):
                 try:
-                    self.label = self.light.get_label()
-                    self.power = self.light.get_power()
+                    #self.label = self.light.get_label()
+                    #self.power = self.light.get_power()
 
-                    self.color = self.light.get_color()
+                    #self.color = self.light.get_color()
 
-                    self.capabilities = self.light.get_capabilities()
+                    #self.capabilities = self.light.get_capabilities()
+
+                    #if AmbienceLightCapabilities.INFRARED in self.capabilities:
+                    #    self.infrared = self.light.get_infrared()
+
+                    self.label = self.light.label
+                    self.power = self.light.power
+                    self.color = self.light.color
+                    self.info = self.light.info
+                    self.capabilities = self.light.capabilities
 
                     if AmbienceLightCapabilities.INFRARED in self.capabilities:
-                        self.infrared = self.light.get_infrared()
-
-                    self.info = self.light.get_info()
+                        self.infrared = self.light.get_inrfared()
                     break
+
                 except:
                     pass
 
@@ -162,14 +173,25 @@ class AmbienceLightControl(Gtk.Box):
         brightness = self.brightness_scale.get_value()
         kelvin = self.kelvin_scale.get_value()
 
-        self.light.set_color([hue / 365, saturation / 100, brightness / 100, kelvin])
+        hsbk = [hue / 365, saturation / 100, brightness / 100, kelvin]
+        self.light.set_color(hsbk)
+        self.light.color = hsbk
 
         if AmbienceLightCapabilities.INFRARED in self.light.capabilities:
             self.light.set_infrared(self.infrared_scale.get_value() * 100)
 
+        self.value_changed_cb(self.light)
+
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
-        self.light.set_power(sender.get_active())
+        if self.update_active:
+            return 
+
+        power = sender.get_active()
+        self.light.set_power(power)
+        self.light.power = power
+
+        self.value_changed_cb(self.light)
 
     # Editing label
 
