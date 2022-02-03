@@ -30,6 +30,9 @@ class AmbienceGroupRow(Gtk.ListBoxRow):
     def get_title(self):
         return self.title.get_label()
 
+    def set_title(self, label):
+        self.title.set_label(label)
+
     @Gtk.Template.Callback("checked")
     def checked(self, sender):
         self.check_action(self)

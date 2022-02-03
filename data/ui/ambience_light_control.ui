@@ -174,14 +174,14 @@
                             <child>
                               <object class="HdyActionRow" id="power_row">
                                 <property name="visible">True</property>
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Power</property>
                                 <child>
                                   <object class="GtkSwitch" id="power_switch">
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
+                                    <property name="can-focus">False</property>
                                     <property name="halign">end</property>
                                     <property name="valign">center</property>
                                     <signal name="notify::active" handler="set_light_power" swapped="no"/>
@@ -191,7 +191,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="hue_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Hue</property>
@@ -199,7 +199,7 @@
                                   <object class="GtkScale" id="hue_scale">
                                     <property name="name">hue_scale</property>
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
+                                    <property name="can-focus">False</property>
                                     <property name="hexpand">True</property>
                                     <property name="adjustment">hue_adj</property>
                                     <property name="restrict-to-fill-level">False</property>
@@ -217,7 +217,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="saturation_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Saturation</property>
@@ -225,7 +225,7 @@
                                   <object class="GtkScale" id="saturation_scale">
                                     <property name="name">saturation_scale</property>
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
+                                    <property name="can-focus">False</property>
                                     <property name="hexpand">True</property>
                                     <property name="adjustment">saturation_adj</property>
                                     <property name="show-fill-level">True</property>
@@ -242,7 +242,7 @@
                             <child>
                               <object class="HdyActionRow" id="brightness_row">
                                 <property name="visible">True</property>
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Brightness</property>
@@ -250,7 +250,7 @@
                                   <object class="GtkScale" id="brightness_scale">
                                     <property name="name">brightness_scale</property>
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
+                                    <property name="can-focus">False</property>
                                     <property name="hexpand">True</property>
                                     <property name="adjustment">brightness_adj</property>
                                     <property name="show-fill-level">True</property>
@@ -266,7 +266,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="kelvin_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Temperature</property>
@@ -274,7 +274,7 @@
                                   <object class="GtkScale" id="kelvin_scale">
                                     <property name="name">kelvin_scale</property>
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
+                                    <property name="can-focus">False</property>
                                     <property name="hexpand">True</property>
                                     <property name="adjustment">kelvin_adj</property>
                                     <property name="show-fill-level">True</property>
@@ -290,7 +290,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="infrared_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Infrared</property>
@@ -298,7 +298,7 @@
                                   <object class="GtkScale" id="infrared_scale">
                                     <property name="name">infrared_scale</property>
                                     <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
+                                    <property name="can-focus">False</property>
                                     <property name="hexpand">True</property>
                                     <property name="adjustment">infrared_adj</property>
                                     <property name="show-fill-level">True</property>
@@ -328,7 +328,7 @@
                             <property name="selection-mode">none</property>
                             <child>
                               <object class="HdyActionRow" id="model_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Model</property>
@@ -342,7 +342,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="ip_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">IP Address</property>
@@ -356,7 +356,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="group_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Group</property>
@@ -370,7 +370,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="location_row">
-                                <property name="can-focus">True</property>
+                                <property name="can-focus">False</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>
                                 <property name="title" translatable="yes">Location</property>

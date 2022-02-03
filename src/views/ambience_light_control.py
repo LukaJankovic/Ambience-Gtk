@@ -239,6 +239,8 @@ class AmbienceLightControl(Gtk.Box):
             self.light.label = new_label
             self.light_label.set_text(new_label)
 
+            self.value_changed_cb(self.light)
+
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
         self.back_callback(self)

@@ -74,6 +74,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     add_group_button = Gtk.Template.Child()
     devices_button = Gtk.Template.Child()
+    refresh_button = Gtk.Template.Child()
 
     group_labels = []
     to_delete = []
@@ -192,17 +193,27 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 create_category(offline, "Offline", True)
 
             self.main_leaflet.set_visible_child(self.controls_deck)
+            self.refresh_button.set_sensitive(True)
 
         def load_devices_async():
             for device in self.active_group.devices:
                 if device.get_online():
                     for i in range(5):
                         try:
-                            device.capabilities = device.get_capabilities()
-                            device.color = device.get_color()
-                            device.label = device.get_label()
-                            device.power = device.get_power()
-                            device.info = device.get_info()
+                            if not device.capabilities:
+                                device.capabilities = device.get_capabilities()
+                            
+                            if not device.color:
+                                device.color = device.get_color()
+                            
+                            if not device.label:
+                                device.label = device.get_label()
+
+                            if not device.power:
+                                device.power = device.get_power()
+
+                            if not device.info:
+                                device.info = device.get_info()
                             break
                         except:
                             pass
@@ -359,6 +370,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
             group_row.check_action = self.update_delete_list
             self.group_labels.append(group_row.get_title())
             self.sidebar.insert(group_row, -1)
+
+    @Gtk.Template.Callback("reload_group")
+    def reload_group(self, sender):
+        self.refresh_button.set_sensitive(False)
+        self.clear_tiles()
+        self.sidebar_selected(self, None)
 
     def reload_group_name(self):
         self.title_label.set_text(self.active_group.get_label())
