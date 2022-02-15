@@ -36,9 +36,10 @@ class AmbienceLight(AmbienceDevice):
     """
     Template class extended by different providers to bind actions to ui.
     """
+    label           = None
+    available       = None
     capabilities    = None
     color           = None
-    label           = None
     power           = None
     info            = None
 

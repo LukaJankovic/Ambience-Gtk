@@ -54,7 +54,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
                 self.text_style_provider = None
 
     def update(self):
-        self.top_label.set_text(self.light.label)
+        #self.top_label.set_text(self.light.label)
         self.clear_styles()
 
         if self.offline:
@@ -100,4 +100,6 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         self.clicked_callback = clicked_callback
         self.offline = offline
 
-        self.update()
+        self.top_label.set_text(self.light.label)
+
+        #self.update()

@@ -61,10 +61,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
     controls_deck = Gtk.Template.Child()
     tiles_box = Gtk.Template.Child()
 
-    loading_stack = Gtk.Template.Child()
     tiles_list = Gtk.Template.Child()
-
-    tiles_spinner = Gtk.Template.Child()
 
     new_group_popover = Gtk.Template.Child()
     new_group_entry = Gtk.Template.Child()
@@ -123,6 +120,79 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("sidebar_selected")
     def sidebar_selected(self, sender, user_data):
+        """
+        0. Show loading spinner on refresh button (done)
+        1. Load lights from file (dont separate / disable offline
+        2. Load power and color in background, update UI (if light controls shown -> update those, jump to 3)
+        3. Load capabilities and info in background, update UI (-||-)
+
+        2-3 to be in global class, start ASAP, repeat every interval
+        """
+        self.clear_tiles()
+
+        if not self.sidebar.get_selected_row():
+            self.devices_button.set_visible(False)
+            self.group_label_edit.set_visible(False)
+            return
+
+        self.active_group = self.sidebar.get_selected_row().group
+        self.title_label.set_text(self.active_group.label)
+
+        self.devices_button.set_visible(True)
+        self.group_label_edit.set_visible(True)
+
+        header_label = self.create_header_label()
+        header_label.set_text("Lights")
+
+        self.tiles_list.add(header_label)
+
+        tile_size_group = Gtk.SizeGroup()
+        tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
+
+        lights_category = AmbienceFlowBox()
+
+        for device in self.active_group.get_devices():
+            light_tile = AmbienceLightTile(device, self.tile_clicked)
+            device.tile = light_tile
+            tile_size_group.add_widget(light_tile)
+            lights_category.insert(light_tile, -1)
+
+        self.tiles_list.add(lights_category)
+
+        def load_data_async():
+            for device in self.active_group.devices:
+                if device.get_online():
+                    for _ in range(5):
+                        try:
+                            if not device.capabilities:
+                                device.capabilities = device.get_capabilities()
+                            
+                            if not device.color:
+                                device.color = device.get_color()
+                            
+                            if not device.label:
+                                device.label = device.get_label()
+
+                            if not device.power:
+                                device.power = device.get_power()
+
+                            if not device.info:
+                                device.info = device.get_info()
+                            break
+                        except:
+                            pass
+
+                    device.available = True
+                else:
+                    device.available = False
+
+                GLib.idle_add(device.tile.update)
+        load_devices_thread = threading.Thread(target=load_data_async)
+        load_devices_thread.daemon = True
+        load_devices_thread.start()
+
+    #@Gtk.Template.Callback("sidebar_selected")
+    def old_sidebar_selected(self, sender, user_data):
         """
         Group in sidebar selected by user.
         """
@@ -314,8 +384,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             for row in self.sidebar.get_children():
                 row.check.set_opacity(1)
+                row.check.set_visible(True)
                 row.check.set_active(False)
-                row.check.set_sensitive(True)
 
             self.header_bar.set_title("0 Selected")
 
@@ -326,8 +396,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
 
             for row in self.sidebar.get_children():
-                row.check.set_opacity(0)
-                row.check.set_sensitive(False)
+                row.check.set_visible(False)
 
             self.header_bar.set_title("Ambience")
 
