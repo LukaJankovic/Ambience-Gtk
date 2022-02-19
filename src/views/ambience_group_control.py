@@ -48,11 +48,11 @@ class AmbienceGroupControl(Gtk.Box):
     capabilities = []
     has_infrared = False
 
-    def __init__(self, group, deck, back_callback, online, **kwargs):
+    def __init__(self, group, deck, back_callback, value_changed_cb, **kwargs):
         self.group = group
-        self.online = online # TODO: Update online devices
         self.deck = deck
         self.back_callback = back_callback
+        self.value_changed_cb = value_changed_cb
 
         super().__init__(**kwargs)
 
@@ -61,18 +61,15 @@ class AmbienceGroupControl(Gtk.Box):
 
         self.light_label.set_label(self.group.label)
 
-        if len(self.online) == 1:
-            self.light_sub_label.set_label("One light online")
-        else:
-            self.light_sub_label.set_label(str(len(self.online)) + " lights online")
+        self.light_sub_label.set_text(str(len(self.group.get_devices())) + " lights")
 
         self.update_controls()
     
     def get_capabilities(self):
         self.capabilities = [c.value for c in AmbienceLightCapabilities]
-        for light in self.online:
+        for device in self.group.get_devices():
             for c in self.capabilities:
-                if not c in light.get_capabilities():
+                if not device.capabilities or not c in device.capabilities:
                     self.capabilities.remove(c)
 
     def update_controls(self):
@@ -102,7 +99,7 @@ class AmbienceGroupControl(Gtk.Box):
 
     def get_group_value(self, capability):
         value = -1
-        for light in self.online:
+        for light in self.group.get_devices():
             if value == -1:
                 value = light.get_data(capability)
             elif not value == light.get_data(capability):
@@ -123,15 +120,32 @@ class AmbienceGroupControl(Gtk.Box):
         kelvin = self.kelvin_scale.get_value()
         infrared = self.infrared_scale.get_value()
 
-        self.group.set_color([hue / 365, saturation / 100, brightness / 100, kelvin])
+        hsbk = [hue / 365, saturation / 100, brightness / 100, kelvin]
+        self.group.set_color(hsbk.copy())
         self.group.set_infrared(infrared / 100)
+
+        for device in self.group.get_devices():
+            if device.color:
+                device.color = hsbk
+
+            if device.infrared:
+                device.infrared = infrared
+
+        print(device.color)
+
+        self.value_changed_cb()
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
         if self.update_active:
             return
 
+        for device in self.group.get_devices():
+            if device.power is not None:
+                device.power = self.power_switch.get_active() 
+
         self.group.set_power(self.power_switch.get_active())
+        self.value_changed_cb()
 
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):

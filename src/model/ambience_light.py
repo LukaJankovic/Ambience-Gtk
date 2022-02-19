@@ -40,6 +40,7 @@ class AmbienceLight(AmbienceDevice):
     available       = None
     capabilities    = None
     color           = None
+    infrared        = None
     power           = None
     info            = None
 
@@ -60,10 +61,18 @@ class AmbienceLight(AmbienceDevice):
 
     def get_data(self, capability):
         if capability == AmbienceLightCapabilities.COLOR:
-            return self.get_color()
+            if self.color:
+                return self.color
+            return -1
         if capability == AmbienceLightCapabilities.TEMPERATURE:
-            return self.get_temperature()
+            if self.temperature:
+                return self.temperature
+            return -1
         if capability == AmbienceLightCapabilities.INFRARED:
-            return self.get_infrared()
+            if self.infrared:
+                return self.infrared
+            return -1
         if capability == AmbienceLightCapabilities.POWER:
-            return self.get_power()
+            if self.power:
+                return self.power
+            return -1

@@ -70,7 +70,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
     invalid_name = Gtk.Template.Child()
 
     add_group_button = Gtk.Template.Child()
-    devices_button = Gtk.Template.Child()
     refresh_button = Gtk.Template.Child()
 
     group_labels = []
@@ -128,26 +127,36 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         2-3 to be in global class, start ASAP, repeat every interval
         """
+        self.refresh_button.set_sensitive(False)
         self.clear_tiles()
 
         if not self.sidebar.get_selected_row():
-            self.devices_button.set_visible(False)
             self.group_label_edit.set_visible(False)
+            self.refresh_button.set_visible(False)
             return
+
+        self.main_leaflet.set_visible_child_name("controls")
 
         self.active_group = self.sidebar.get_selected_row().group
         self.title_label.set_text(self.active_group.label)
 
-        self.devices_button.set_visible(True)
         self.group_label_edit.set_visible(True)
+        self.refresh_button.set_visible(True)
+
+        tile_size_group = Gtk.SizeGroup()
+        tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
+
+        all_category = AmbienceFlowBox()
+        all_tile = AmbienceGroupTile(self.active_group, self.group_edit)
+        tile_size_group.add_widget(all_tile)
+
+        all_category.insert(all_tile, -1)
+        self.tiles_list.add(all_category)
 
         header_label = self.create_header_label()
         header_label.set_text("Lights")
 
         self.tiles_list.add(header_label)
-
-        tile_size_group = Gtk.SizeGroup()
-        tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
 
         lights_category = AmbienceFlowBox()
 
@@ -186,124 +195,23 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 else:
                     device.available = False
 
+                def enable_refresh_button():
+                    self.refresh_button.set_sensitive(True)
+
                 GLib.idle_add(device.tile.update)
+            GLib.idle_add(all_tile.update)
+            GLib.idle_add(enable_refresh_button)
         load_devices_thread = threading.Thread(target=load_data_async)
         load_devices_thread.daemon = True
         load_devices_thread.start()
 
-    #@Gtk.Template.Callback("sidebar_selected")
-    def old_sidebar_selected(self, sender, user_data):
-        """
-        Group in sidebar selected by user.
-        """
-
-        if not self.sidebar.get_selected_row():
-            self.clear_tiles()
-            return
-
-        self.active_group = self.sidebar.get_selected_row().group
-        self.loading_stack.set_visible_child_name("loading")
-
-        online = []
-        offline = []
-
-        def load_devices_done():
-
-            self.loading_stack.set_visible_child_name("tiles")
-
-            self.clear_controls()
-            self.clear_tiles()
-
-            # Editing toggled while loading
-            if self.editing:
-                return
-
-            self.devices_button.set_visible(True)
-            self.group_label_edit.set_visible(True)
-
-            tile_size_group = Gtk.SizeGroup()
-            tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
-
-            self.active_group = self.sidebar.get_selected_row().group
-
-            self.title_label.set_text(self.active_group.label)
-
-            all_category = AmbienceFlowBox()
-            all_tile = AmbienceGroupTile(self.active_group)
-            all_tile.online = online
-            all_tile.clicked_callback = self.group_edit
-
-            tile_size_group.add_widget(all_tile)
-            all_category.insert(all_tile, -1)
-
-            self.tiles_list.add(all_category)
-
-            def create_category(lights, title, offline=False):
-                lights_label = self.create_header_label()
-                lights_label.set_text(title)
-
-                self.tiles_list.add(lights_label)
-
-                lights_category = AmbienceFlowBox()
-
-                for light in lights:
-                    light_tile = AmbienceLightTile(light, self.tile_clicked, offline=offline)
-                    tile_size_group.add_widget(light_tile)
-                    lights_category.insert(light_tile, -1)
-
-                    if offline:
-                        light_tile.set_sensitive(False)
-
-                self.tiles_list.add(lights_category)
-
-            if len(online) > 0:
-                create_category(online, "Lights")
-
-            if len(offline) > 0:
-                create_category(offline, "Offline", True)
-
-            self.main_leaflet.set_visible_child(self.controls_deck)
-            self.refresh_button.set_sensitive(True)
-
-        def load_devices_async():
-            for device in self.active_group.devices:
-                if device.get_online():
-                    for i in range(5):
-                        try:
-                            if not device.capabilities:
-                                device.capabilities = device.get_capabilities()
-                            
-                            if not device.color:
-                                device.color = device.get_color()
-                            
-                            if not device.label:
-                                device.label = device.get_label()
-
-                            if not device.power:
-                                device.power = device.get_power()
-
-                            if not device.info:
-                                device.info = device.get_info()
-                            break
-                        except:
-                            pass
-
-                    online.append(device)
-                else:
-                    offline.append(device)
-
-            GLib.idle_add(load_devices_done)
-
-        load_devices_thread = threading.Thread(target=load_devices_async)
-        load_devices_thread.daemon = True
-        load_devices_thread.start()
-
-    def update_tile(self, light):
+    def update_tiles(self, light=None):
         for child in self.tiles_list.get_children():
             if type(child) == AmbienceFlowBox:
                 for tile in child.flowbox.get_children():
-                    if type(tile) == AmbienceLightTile and \
-                       tile.light.write_config() == light.write_config():
+                    if (type(tile) == AmbienceLightTile and \
+                       ((light and light.write_config() == tile.light.write_config()) or not light)) or \
+                       (type(tile) == AmbienceGroupTile):
                         tile.update()
 
     def clear_controls(self):
@@ -405,12 +313,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.title_label.set_text("")
         self.sidebar.unselect_all()
 
-        self.devices_button.set_visible(False)
         self.group_label_edit.set_visible(False)
 
         self.controls_deck.set_visible_child_name("tiles")
 
-    @Gtk.Template.Callback("manage_devices")
+#    @Gtk.Template.Callback("manage_devices")
     def manage_devices(self, sender):
         """
         Opens the window for managing a group's devices.
@@ -442,8 +349,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("reload_group")
     def reload_group(self, sender):
-        self.refresh_button.set_sensitive(False)
-        self.clear_tiles()
         self.sidebar_selected(self, None)
 
     def reload_group_name(self):
@@ -494,7 +399,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         light_controls = AmbienceLightControl(tile.light,
                                               self.controls_deck,
                                               self.light_control_exit,
-                                              self.update_tile)
+                                              self.update_tiles)
         light_controls.set_visible(True)
 
         self.controls_deck.insert_child_after(light_controls, self.tiles_box)
@@ -505,7 +410,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         group_controls = AmbienceGroupControl(tile.group,
                                               self.controls_deck,
                                               self.light_control_exit,
-                                              tile.online)
+                                              self.update_tiles)
 
         group_controls.set_visible(True)
 

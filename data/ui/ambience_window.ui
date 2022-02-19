@@ -334,28 +334,8 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="devices_button">
-                            <property name="can-focus">False</property>
-                            <property name="receives-default">True</property>
-                            <signal name="clicked" handler="manage_devices" swapped="no"/>
-                            <child>
-                              <object class="GtkImage">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="icon-name">lightbulb-group-symbolic</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkButton" id="refresh_button">
                             <property name="visible">True</property>
-                            <property name="sensitive">False</property>
                             <property name="can-focus">False</property>
                             <property name="receives-default">True</property>
                             <signal name="clicked" handler="reload_group" swapped="no"/>
@@ -370,7 +350,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">2</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                       </object>

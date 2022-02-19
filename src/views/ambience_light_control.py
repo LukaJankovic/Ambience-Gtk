@@ -180,7 +180,7 @@ class AmbienceLightControl(Gtk.Box):
         if AmbienceLightCapabilities.INFRARED in self.light.capabilities:
             self.light.set_infrared(self.infrared_scale.get_value() * 100)
 
-        self.value_changed_cb(self.light)
+        self.value_changed_cb(light=self.light)
 
     @Gtk.Template.Callback("set_light_power")
     def set_light_power(self, sender, user_data):
