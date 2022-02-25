@@ -19,6 +19,7 @@ from struct import error
 import threading
 
 from gi.repository import Gtk, Gdk, GLib, Handy
+
 from .ambience_loader import *
 
 from .ambience_discovery import AmbienceDiscovery
@@ -26,7 +27,9 @@ from .ambience_discovery import AmbienceDiscovery
 from ambience.widgets.ambience_flow_box import AmbienceFlowBox
 from ambience.widgets.ambience_group_tile import AmbienceGroupTile
 from ambience.widgets.ambience_light_tile import AmbienceLightTile
+from ambience.widgets.ambience_edit_tile import AmbienceEditTile
 from ambience.widgets.ambience_group_row import AmbienceGroupRow
+from ambience.widgets.ambience_tile import AmbienceTile
 
 from ambience.views.ambience_group_control import AmbienceGroupControl
 from ambience.views.ambience_light_control import AmbienceLightControl
@@ -72,6 +75,9 @@ class AmbienceWindow(Handy.ApplicationWindow):
     add_group_button = Gtk.Template.Child()
     refresh_button = Gtk.Template.Child()
 
+    etiles_revealer = Gtk.Template.Child()
+    etiles_remove = Gtk.Template.Child()
+
     group_labels = []
     to_delete = []
     editing = False
@@ -108,6 +114,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
         if sender.get_visible_child_name() == "menu":
             self.go_back(sender)
             self.clear_tiles()
+            self.title_label.set_text("")
 
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
@@ -127,6 +134,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         2-3 to be in global class, start ASAP, repeat every interval
         """
+        self.group_label_edit.set_active(False)
         self.refresh_button.set_sensitive(False)
         self.clear_tiles()
 
@@ -142,6 +150,15 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.group_label_edit.set_visible(True)
         self.refresh_button.set_visible(True)
+
+        if not self.active_group.get_devices():
+            add_tile = AmbienceTile("Add devices...", self.manage_devices)
+
+            add_category = AmbienceFlowBox()
+            add_category.insert(add_tile, -1)
+
+            self.tiles_list.add(add_category)
+            return
 
         tile_size_group = Gtk.SizeGroup()
         tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
@@ -204,6 +221,38 @@ class AmbienceWindow(Handy.ApplicationWindow):
         load_devices_thread = threading.Thread(target=load_data_async)
         load_devices_thread.daemon = True
         load_devices_thread.start()
+
+    def show_edit_tiles(self):
+        self.refresh_button.set_sensitive(False)
+        self.etiles_remove.set_sensitive(False)
+        self.clear_tiles()
+
+        tile_size_group = Gtk.SizeGroup()
+        tile_size_group.set_mode(Gtk.SizeGroupMode.HORIZONTAL)
+        
+        header_label = self.create_header_label()
+        header_label.set_text("Lights")
+
+        self.tiles_list.add(header_label)
+
+        lights_category = AmbienceFlowBox()
+        edit_lights = []
+
+        for device in self.active_group.get_devices():
+
+            def edit_checked(light, active):
+                if not active and light in edit_lights:
+                    edit_lights.remove(light)
+                else:
+                    edit_lights.append(light)
+
+                self.etiles_remove.set_sensitive(len(edit_lights) > 0)
+
+            tile = AmbienceEditTile(device, edit_checked)
+            tile_size_group.add_widget(tile)
+            lights_category.insert(tile, -1)
+
+        self.tiles_list.add(lights_category)
 
     def update_tiles(self, light=None):
         for child in self.tiles_list.get_children():
@@ -274,6 +323,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("toggle_edit")
     def toggle_edit(self, sender):
+        self.group_label_edit.set_active(False)
         self.deselect_sidebar()
 
         self.editing = sender.get_active()
@@ -360,11 +410,16 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("group_label_edit_toggled")
     def group_label_edit_toggled(self, sender):
+        self.etiles_revealer.set_reveal_child(sender.get_active())
+
         if sender.get_active():
             self.group_label_entry.set_text(self.active_group.get_label())
             self.group_label_entry.grab_focus()
 
             self.group_label_stack.set_visible_child_name("edit")
+
+            self.show_edit_tiles()
+
         else:
             text = self.group_label_entry.get_text()
             if self.group_label_valid(text):
@@ -374,6 +429,8 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 self.reload_group_name()
 
                 self.group_label_stack.set_visible_child_name("label")
+
+            self.sidebar_selected(self, None)
 
     @Gtk.Template.Callback("group_edit_event")
     def group_edit_event(self, sender, event):

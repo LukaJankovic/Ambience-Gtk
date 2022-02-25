@@ -131,8 +131,6 @@ class AmbienceGroupControl(Gtk.Box):
             if device.infrared:
                 device.infrared = infrared
 
-        print(device.color)
-
         self.value_changed_cb()
 
     @Gtk.Template.Callback("set_light_power")

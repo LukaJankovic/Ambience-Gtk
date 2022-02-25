@@ -55,6 +55,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
 
     def update(self):
         #self.top_label.set_text(self.light.label)
+        self.top_label.set_text(self.light.label)
         self.clear_styles()
 
         if self.offline:

@@ -5,7 +5,9 @@ widgets_sources = [
   'ambience_light_tile.py',
   'ambience_group_tile.py',
   'ambience_group_row.py',
-  'ambience_discovery_item.py'
+  'ambience_discovery_item.py',
+  'ambience_edit_tile.py',
+  'ambience_tile.py'
 ]
 
 install_data(widgets_sources, install_dir: widgetsdir)
