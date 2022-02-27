@@ -78,19 +78,20 @@ class AmbienceGroupControl(Gtk.Box):
         if power := self.get_group_value(AmbienceLightCapabilities.POWER):
             self.power_switch.set_active(power)
 
-        (hue, saturation, brightness, kelvin) = self.get_group_value(AmbienceLightCapabilities.COLOR)
+        if self.get_group_value(AmbienceLightCapabilities.COLOR):
+            (hue, saturation, brightness, kelvin) = self.get_group_value(AmbienceLightCapabilities.COLOR)
 
-        if brightness:
-            self.brightness_scale.set_value(brightness * 100)
+            if brightness:
+                self.brightness_scale.set_value(brightness * 100)
 
-        if hue:
-            self.hue_scale.set_value(hue * 365)
+            if hue:
+                self.hue_scale.set_value(hue * 365)
 
-        if saturation: 
-            self.saturation_scale.set_value(saturation * 100)
+            if saturation: 
+                self.saturation_scale.set_value(saturation * 100)
 
-        if kelvin:
-            self.kelvin_scale.set_value(kelvin)
+            if kelvin:
+                self.kelvin_scale.set_value(kelvin)
 
         if infrared := self.get_group_value(AmbienceLightCapabilities.INFRARED):
             self.infrared_scale.set_value(infrared * 100)

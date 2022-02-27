@@ -429,6 +429,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     @Gtk.Template.Callback("reload_group")
     def reload_group(self, sender):
+        for device in self.active_group.get_devices():
+            device.capabilities = None
+            device.color = None
+            device.power = None
+            device.info = None
         self.sidebar_selected(self, None)
 
     def reload_group_name(self):

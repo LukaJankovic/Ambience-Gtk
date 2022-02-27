@@ -58,7 +58,7 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
         self.top_label.set_text(self.light.label)
         self.clear_styles()
 
-        if self.offline:
+        if self.offline or not self.light.capabilities:
             self.bottom_label.set_text("Unavailable")
             return
 

@@ -121,7 +121,15 @@ class AmbienceLightControl(Gtk.Box):
         self.light_label.set_label(self.label)
         self.power_switch.set_active(self.power)
 
-        (hue, saturation, brightness, kelvin) = self.color
+        if not self.color or not self.capabilities:
+            self.hue_row.set_visible(True)
+            self.saturation_row.set_visible(True)
+            self.kelvin_row.set_visible(True)
+            self.infrared_row.set_visible(True)
+            return
+
+        if self.color:
+            (hue, saturation, brightness, kelvin) = self.color
 
         self.brightness_scale.set_value(brightness * 100)
 

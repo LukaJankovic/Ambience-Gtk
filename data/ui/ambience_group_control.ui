@@ -276,7 +276,6 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="infrared_row">
-                                <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="activatable">False</property>
                                 <property name="selectable">False</property>

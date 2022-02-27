@@ -34,7 +34,8 @@ class AmbienceLIFXGroup(AmbienceModuleGroup):
         self.group.set_color(hsvk, rapid=True)
     
     def set_infrared(self, infrared):
-        self.group.set_infrared(infrared)
+        # INFRARED FOR GROUP NOT IMPLEMENTED
+        pass
 
     def set_power(self, power):
-        self.group.set_power(power)
+        self.group.set_power(power, rapid=True)
