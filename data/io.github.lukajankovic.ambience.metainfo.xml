@@ -5,7 +5,7 @@
   <releases>
     <release version="1.5" date="2022-02-27" type="stable">
       <description>
-        <p>Speed & stability</p>
+        <p>Speed and stability</p>
         <ul>
           <li>Greatly improved overall speed and stability of app</li>
           <li>Reworked edit mode for groups and devices</li>
