@@ -23,7 +23,7 @@ from gi.repository import Gtk
 class AmbienceEditTile(Gtk.FlowBoxChild):
     __gtype_name__ = 'AmbienceEditTile'
 
-    light = None
+    device = None
 
     button_style_provider = None
     text_style_provider = None
@@ -43,14 +43,14 @@ class AmbienceEditTile(Gtk.FlowBoxChild):
             self.lock = True
             self.select_box.set_active(not self.select_box.get_active())
             if self.clicked_callback:
-                self.clicked_callback(self.light, self.select_box.get_active())
+                self.clicked_callback(self, self.select_box.get_active())
             self.lock = False
 
-    def __init__(self, light, clicked_callback, **kwargs):
+    def __init__(self, device, clicked_callback, **kwargs):
         super().__init__(**kwargs)
 
         self.clicked_callback = clicked_callback
-        self.light = light
-        self.top_label.set_text(light.label)
+        self.device= device
+        self.top_label.set_text(device.label)
 
         #self.update()

@@ -63,7 +63,6 @@
         <property name="interpolate-size">True</property>
         <property name="can-swipe-back">True</property>
         <signal name="notify::fold" handler="notify_fold_cb" swapped="no"/>
-        <signal name="notify::visible-child-name" handler="notify_main_visible_child_name" swapped="no"/>
         <child>
           <object class="GtkBox" id="menu_box">
             <property name="width-request">270</property>
@@ -447,6 +446,7 @@
                             <property name="sensitive">False</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">False</property>
+                            <signal name="clicked" handler="remove_devices" swapped="no"/>
                             <style>
                               <class name="destructive-action"/>
                             </style>

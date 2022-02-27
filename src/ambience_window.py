@@ -79,8 +79,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
     etiles_remove = Gtk.Template.Child()
 
     group_labels = []
-    to_delete = []
+    group_to_delete = []
+    edit_devices_tiles = []
     editing = False
+    should_update_sb_label = True
 
     def create_header_label(self):
         """
@@ -109,13 +111,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         self.header_bar.set_show_close_button(sender.get_folded())
 
-    @Gtk.Template.Callback("notify_main_visible_child_name")
-    def notify_visible_child_name(self, sender, user_data):
-        if sender.get_visible_child_name() == "menu":
-            self.go_back(sender)
-            self.clear_tiles()
-            self.title_label.set_text("")
-
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
         """
@@ -134,7 +129,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
         2-3 to be in global class, start ASAP, repeat every interval
         """
+        self.should_update_sb_label = False
         self.group_label_edit.set_active(False)
+        self.should_update_sb_label = True
+
         self.refresh_button.set_sensitive(False)
         self.clear_tiles()
 
@@ -236,23 +234,55 @@ class AmbienceWindow(Handy.ApplicationWindow):
         self.tiles_list.add(header_label)
 
         lights_category = AmbienceFlowBox()
-        edit_lights = []
+        self.edit_devices_tiles = []
 
         for device in self.active_group.get_devices():
 
             def edit_checked(light, active):
-                if not active and light in edit_lights:
-                    edit_lights.remove(light)
+                if not active and light in self.edit_devices_tiles:
+                    self.edit_devices_tiles.remove(light)
                 else:
-                    edit_lights.append(light)
+                    self.edit_devices_tiles.append(light)
 
-                self.etiles_remove.set_sensitive(len(edit_lights) > 0)
+                self.etiles_remove.set_sensitive(len(self.edit_devices_tiles) > 0)
 
             tile = AmbienceEditTile(device, edit_checked)
             tile_size_group.add_widget(tile)
             lights_category.insert(tile, -1)
 
+        add_tile = AmbienceTile("Add devices...", self.manage_devices)
+        lights_category.insert(add_tile, -1)
+
         self.tiles_list.add(lights_category)
+
+    @Gtk.Template.Callback("remove_devices")
+    def remove_devices(self, sender):
+        def perform_delete(_, response):
+            if response == Gtk.ResponseType.YES:
+                for tile in self.edit_devices_tiles:
+                    self.active_group.remove_device(tile.device)
+                    tile.destroy()
+
+        confirm_dialog = Gtk.MessageDialog(self,
+                                            0,
+                                            Gtk.MessageType.WARNING,
+                                            Gtk.ButtonsType.NONE,
+                                            f"Are you sure you want to delete {len(self.edit_devices_tiles)} devices(s)?"
+        )
+        confirm_dialog.format_secondary_text(
+            "This action cannot be reversed."
+        )
+
+        confirm_dialog.add_button("_Cancel", Gtk.ResponseType.CLOSE)
+        confirm_dialog.add_button("_Delete", Gtk.ResponseType.YES)
+
+        confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("destructive-action")
+        confirm_dialog.get_widget_for_response(Gtk.ResponseType.YES).get_style_context().add_class("default")
+
+        confirm_dialog.connect("response", perform_delete)
+
+        confirm_dialog.run()
+        confirm_dialog.destroy()
 
     def update_tiles(self, light=None):
         for child in self.tiles_list.get_children():
@@ -420,7 +450,7 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             self.show_edit_tiles()
 
-        else:
+        elif self.should_update_sb_label:
             text = self.group_label_entry.get_text()
             if self.group_label_valid(text):
                 self.group_labels.remove(self.active_group.get_label())
@@ -429,8 +459,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
                 self.reload_group_name()
 
                 self.group_label_stack.set_visible_child_name("label")
+                self.sidebar_selected(self, None)
+        else:
+            self.group_label_stack.set_visible_child_name("label")
 
-            self.sidebar_selected(self, None)
 
     @Gtk.Template.Callback("group_edit_event")
     def group_edit_event(self, sender, event):
@@ -498,30 +530,30 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     def update_delete_list(self, row):
         if row.check.get_active():
-            self.to_delete.append(row)
-        elif row in self.to_delete:
-            self.to_delete.remove(row)
+            self.group_to_delete.append(row)
+        elif row in self.group_to_delete:
+            self.group_to_delete.remove(row)
 
-        self.remove_button.set_sensitive(self.to_delete)
-        self.header_bar.set_title(f"{len(self.to_delete)} Selected")
+        self.remove_button.set_sensitive(self.group_to_delete)
+        self.header_bar.set_title(f"{len(self.group_to_delete)} Selected")
 
     @Gtk.Template.Callback("remove_groups_clicked")
     def remove_groups_clicked(self, sender):
         def perform_delete(_, response):
             if response == Gtk.ResponseType.YES:
-                for group in self.to_delete:
+                for group in self.group_to_delete:
                     self.remove_group(group)
 
-            self.to_delete = []
+            self.group_to_delete = []
 
-            self.remove_button.set_sensitive(self.to_delete)
-            self.header_bar.set_title(f"{len(self.to_delete)} Selected")
+            self.remove_button.set_sensitive(self.group_to_delete)
+            self.header_bar.set_title(f"{len(self.group_to_delete)} Selected")
 
         confirm_dialog = Gtk.MessageDialog(self,
                                             0,
                                             Gtk.MessageType.WARNING,
                                             Gtk.ButtonsType.NONE,
-                                            f"Are you sure you want to delete {len(self.to_delete)} group(s)?"
+                                            f"Are you sure you want to delete {len(self.group_to_delete)} group(s)?"
         )
         confirm_dialog.format_secondary_text(
             "This action cannot be reversed."
