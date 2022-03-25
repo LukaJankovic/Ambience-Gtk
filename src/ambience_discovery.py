@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk, Gdk, GLib, GObject, Handy
+from gi.repository import Gtk, Gdk, GLib, GObject, Adw
 import threading, json
 
 from ambience.providers.ambience_providers import AmbienceProviders

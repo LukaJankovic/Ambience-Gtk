@@ -18,7 +18,7 @@
 from struct import error
 import threading
 
-from gi.repository import Gtk, Gdk, GLib, Handy
+from gi.repository import Gtk, Gdk, GLib, Adw
 
 from .ambience_loader import *
 
@@ -37,14 +37,13 @@ from ambience.views.ambience_light_control import AmbienceLightControl
 import threading
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/ambience_window.ui')
-class AmbienceWindow(Handy.ApplicationWindow):
+class AmbienceWindow(Adw.ApplicationWindow):
     """
     Controls almost every aspect of the main window, including maintaining
     a list of lights and controling them.
     """
     __gtype_name__ = 'AmbienceWindow'
 
-    main_popover = Gtk.Template.Child()
     main_leaflet = Gtk.Template.Child()
 
     title_label = Gtk.Template.Child()
@@ -98,18 +97,6 @@ class AmbienceWindow(Handy.ApplicationWindow):
         label.set_alignment(0, 0)
 
         return label
-
-    @Gtk.Template.Callback("notify_fold_cb")
-    def notify_fold_cb(self, sender, user_data):
-        """
-        Window switched between normal and mobile (folded) state.
-        """
-        if sender.get_folded():
-            self.back.show_all()
-        else:
-            self.back.hide()
-
-        self.header_bar.set_show_close_button(sender.get_folded())
 
     @Gtk.Template.Callback("go_back")
     def go_back(self, sender):
@@ -306,19 +293,19 @@ class AmbienceWindow(Handy.ApplicationWindow):
         Empties the sidebar.
         """
 
-        for sidebar_item in self.sidebar.get_children():
-            self.sidebar.remove(sidebar_item)
+        while first_child := self.sidebar.get_first_child():
+            self.sidebar.remove(first_child)
 
     def clear_tiles(self):
         """
         Empties the main view from tiles, headers, etc.
         """
 
-        for group_item in self.tiles_list.get_children():
-            self.tiles_list.remove(group_item)
+        while first_child := self.tiles_list.get_first_child():
+            self.tiles_list.remove(first_child)
 
-    @Gtk.Template.Callback("create_group")
-    def create_group(self, sender):
+    #@Gtk.Template.Callback()
+    def create_group(self, sender, *args):
         label = self.new_group_entry.get_text()
         group = AmbienceLoader().get_group(label)
         group_row = AmbienceGroupRow(group)
@@ -333,10 +320,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
     def add_group_toggled(self, sender):
         if sender.get_active():
             self.new_group_entry.set_text("")
+            self.new_group_entry.grab_focus()
         self.invalid_name.set_reveal_child(False)
         self.new_group_entry.get_style_context().remove_class("error")
 
-    @Gtk.Template.Callback("new_group_entry_changed")
+    #@Gtk.Template.Callback("new_group_entry_changed")
     def new_group_entry_changed(self, sender):
         if not self.new_group_entry.get_text():
             self.new_group_button.set_sensitive(False)
@@ -370,10 +358,11 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             self.sidebar.set_selection_mode(Gtk.SelectionMode.NONE)
 
-            for row in self.sidebar.get_children():
+            row = self.sidebar.get_first_child()
+            while row:
                 row.check.set_opacity(1)
-                row.check.set_visible(True)
                 row.check.set_active(False)
+                row = row.get_next_sibling()
 
             self.header_bar.set_title("0 Selected")
 
@@ -383,8 +372,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
             self.sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
 
-            for row in self.sidebar.get_children():
+            row = self.sidebar.get_first_child()
+            while row:
                 row.check.set_visible(False)
+                row = row.get_next_sibling()
 
             self.header_bar.set_title("Ambience")
 
@@ -469,7 +460,10 @@ class AmbienceWindow(Handy.ApplicationWindow):
             self.group_label_stack.set_visible_child_name("label")
 
 
-    @Gtk.Template.Callback("group_edit_event")
+    #
+    # TODO: GtkEventConntrollerKey
+    #
+    #@Gtk.Template.Callback("group_edit_event")
     def group_edit_event(self, sender, event):
         if event.keyval == Gdk.KEY_Escape:
             self.group_label_entry.set_text(self.active_group.get_label())
@@ -577,6 +571,12 @@ class AmbienceWindow(Handy.ApplicationWindow):
 
     # Initialization, startup
 
+    def connect(self):
+        self.new_group_entry.connect("activate", self.create_group)
+        self.new_group_button.connect("clicked", self.create_group)
+
     def __init__(self, lan, **kwargs):
         super().__init__(**kwargs)
+
+        self.connect()
         self.reload(self)

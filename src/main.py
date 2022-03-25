@@ -18,10 +18,10 @@
 import sys
 import gi
 
-gi.require_version('Gtk', '3.0')
-gi.require_version('Handy', '1')
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
 
-from gi.repository import Gtk, Gdk, Gio, Handy
+from gi.repository import Gtk, Gdk, Gio, Adw
 
 from .ambience_window import AmbienceWindow
 from .ambience_discovery import AmbienceDiscovery
@@ -69,17 +69,17 @@ class Application(Gtk.Application):
         if not self.win:
             self.win = AmbienceWindow(self.lan, application=self)
 
-        screen = Gdk.Screen.get_default()
+        display = self.win.get_display()
         provider = Gtk.CssProvider()
         provider.load_from_resource("/io/github/lukajankovic/ambience/stylesheet.css")
-        Gtk.StyleContext.add_provider_for_screen(screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        Gtk.StyleContext.add_provider_for_display(display, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         self.win.present()
 
 
 def main(version):
 
-    Handy.init()
+    Adw.init()
 
     app = Application()
     app.version = version

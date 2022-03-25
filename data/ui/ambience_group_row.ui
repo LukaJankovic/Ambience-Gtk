@@ -1,51 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.24"/>
+  <requires lib="gtk" version="4.0"/>
   <template class="AmbienceGroupRow" parent="GtkListBoxRow">
     <property name="height-request">52</property>
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <child>
+    <property name="child">
       <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="margin-start">9</property>
         <property name="margin-end">9</property>
         <property name="margin-top">6</property>
         <property name="margin-bottom">6</property>
         <child>
           <object class="GtkLabel" id="title">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">label</property>
+            <property name="label" translatable="1">label</property>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkCheckButton" id="check">
-            <property name="label" translatable="yes">
+            <property name="label" translatable="1">
 </property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="receives-default">False</property>
             <property name="opacity">0</property>
             <property name="halign">end</property>
-            <property name="draw-indicator">True</property>
             <signal name="toggled" handler="checked" swapped="no"/>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack-type">end</property>
-            <property name="position">1</property>
-          </packing>
         </child>
       </object>
-    </child>
+    </property>
   </template>
 </interface>
