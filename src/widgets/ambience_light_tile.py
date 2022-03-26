@@ -54,7 +54,6 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
                 self.text_style_provider = None
 
     def update(self):
-        #self.top_label.set_text(self.light.label)
         self.top_label.set_text(self.light.label)
         self.clear_styles()
 
@@ -63,31 +62,36 @@ class AmbienceLightTile(Gtk.FlowBoxChild):
             return
 
         if AmbienceLightCapabilities.COLOR in self.light.capabilities:
-            if self.light.power:
-                (h, s, v, k) = self.light.color
-                (r, g, b) = colorsys.hsv_to_rgb(h, s, v)
+            color = self.light.color
+        else:
+            color = (0, 0, 1, 1) # Display colorless lights as white
 
-                self.bottom_label.set_text(str(int(v * 100)) + "%")
+        if self.light.power:
+            (h, s, v, k) = color
+            (r, g, b) = colorsys.hsv_to_rgb(h, s, v)
 
-                css = f'.ambience_light_tile {{ background: { rgb_to_hex(r, g, b) }; }}'.encode()
-                self.button_style_provider = Gtk.CssProvider()
-                self.button_style_provider.load_from_data(css)
+            self.bottom_label.set_text(str(int(v * 100)) + "%")
 
-                self.tile_button.get_style_context().add_provider(self.button_style_provider, 600) # TODO: fix magic number
+            css = f'.ambience_light_tile {{ background: { rgb_to_hex(r, g, b) }; text-shadow: none; }}'.encode()
+            self.button_style_provider = Gtk.CssProvider()
+            self.button_style_provider.load_from_data(css)
 
-                css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
+            self.tile_button.get_style_context().add_provider(self.button_style_provider, 600) # TODO: fix magic number
 
-                if darkmode_color(r, g, b):
-                    css = '.ambience_light_tile_text { color: #000000; }'.encode()
+            css = '.ambience_light_tile_text { color: #FFFFFF; }'.encode()
 
-                self.text_style_provider = Gtk.CssProvider()
-                self.text_style_provider.load_from_data(css)
+            if darkmode_color(r, g, b):
+                css = '.ambience_light_tile_text { color: #000000; }'.encode()
 
-                self.top_label.get_style_context().add_provider(self.text_style_provider, 600)
-                self.bottom_label.get_style_context().add_provider(self.text_style_provider, 600)
+            self.text_style_provider = Gtk.CssProvider()
+            self.text_style_provider.load_from_data(css)
 
-            else:
-                self.bottom_label.set_text("Off")
+            self.top_label.get_style_context().add_provider(self.text_style_provider, 600)
+            self.bottom_label.get_style_context().add_provider(self.text_style_provider, 600)
+
+        else:
+            self.bottom_label.set_text("Off")
+
 
     @Gtk.Template.Callback("tile_clicked")
     def tile_clicked(self, sender):

@@ -63,14 +63,20 @@ class AmbienceGroupControl(Gtk.Box):
 
         self.light_sub_label.set_text(str(len(self.group.get_devices())) + " lights")
 
+        self.get_capabilities()
+
         self.update_controls()
     
     def get_capabilities(self):
-        self.capabilities = [c.value for c in AmbienceLightCapabilities]
-        for device in self.group.get_devices():
-            for c in self.capabilities:
-                if not device.capabilities or not c in device.capabilities:
-                    self.capabilities.remove(c)
+        capabilities = [c for c in AmbienceLightCapabilities]
+        remove = []
+        for c in capabilities:
+            for device in self.group.get_devices():
+                if not device.capabilities or c not in device.capabilities:
+                    remove.append(c)
+                    break
+        self.capabilities = [x for x in capabilities if x not in remove]
+        #print(self.capabilities)
 
     def update_controls(self):
         self.update_active = True

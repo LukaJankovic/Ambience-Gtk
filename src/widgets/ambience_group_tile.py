@@ -43,17 +43,11 @@ class AmbienceGroupTile(Gtk.FlowBoxChild):
         for device in self.group.get_devices():
             if hasattr(device, "power") and device.power: 
                 count += 1
-                break
         return count
 
     def update(self):
         count = self.count_on()
-        if count == 0:
-            self.bottom_label.set_text("No lights on")
-        elif count == 1:
-            self.bottom_label.set_text("One light on")
-        else:
-            self.bottom_label.set_text(str(count) + " lights on")
+        self.bottom_label.set_text(str(count) + "/" + str(len(self.group.get_devices())) + " lights on")
 
     @Gtk.Template.Callback("tile_clicked")
     def tile_clicked(self, sender):
