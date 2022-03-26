@@ -3,6 +3,15 @@
 	<id>io.github.lukajankovic.ambience</id>
   <name>Ambience</name>
   <releases>
+    <release version="1.5.1" date="2022-03-26" type="stable">
+      <description>
+        <p>Minor tweaks and bugfixes</p>
+        <ul>
+          <li>Tweaked the appearance of tiles</li>
+          <li>Fixed tiles related to lights without color capability</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.5" date="2022-02-27" type="stable">
       <description>
         <p>Speed and stability</p>
