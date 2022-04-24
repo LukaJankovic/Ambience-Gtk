@@ -53,11 +53,10 @@
                   <object class="GtkBox">
                     <property name="spacing">8</property>
                     <child>
-                      <object class="GtkMenuButton" id="add_group_button">
+                      <object class="GtkButton" id="add_group_button">
                         <property name="receives-default">1</property>
-                        <property name="popover">new_group_popover</property>
                         <property name="icon-name">list-add-symbolic</property>
-                        <signal name="activate" handler="add_group_toggled" swapped="no"/>
+                        <signal name="clicked" handler="new_group_clicked" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -265,78 +264,21 @@
       </object>
     </child>
   </template>
-  <object class="GtkPopover" id="new_group_popover">
+  <object class="GtkEntry" id="new_group_entry">
+    <property name="focusable">1</property>
+    <property name="activates-default">1</property>
+    <signal name="activate" handler="create_group" swapped="no"/>
+    <signal name="changed" handler="new_group_entry_changed" swapped="no"/>
+    <layout>
+      <property name="column">0</property>
+      <property name="row">1</property>
+      <property name="column-span">2</property>
+    </layout>
+  </object>
+  <object class="GtkRevealer" id="invalid_name">
     <property name="child">
-      <object class="GtkGrid">
-        <property name="margin-start">10</property>
-        <property name="margin-end">10</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
-        <property name="row-spacing">6</property>
-        <property name="column-spacing">6</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="halign">start</property>
-            <property name="label" translatable="1">Group Name</property>
-            <attributes>
-              <attribute name="weight" value="bold"></attribute>
-            </attributes>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">0</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkEntry" id="new_group_entry">
-            <property name="focusable">1</property>
-            <property name="activates-default">1</property>
-            <signal name="activate" handler="create_group" swapped="no"/>
-            <signal name="changed" handler="new_group_entry_changed" swapped="no"/>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">1</property>
-              <property name="column-span">2</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="new_group_button">
-            <property name="label" translatable="1">Create</property>
-            <property name="sensitive">0</property>
-            <signal name="clicked" handler="create_group" swapped="no"/>
-            <style>
-              <class name="suggested-action"/>
-            </style>
-            <layout>
-              <property name="column">2</property>
-              <property name="row">1</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkRevealer" id="invalid_name">
-            <property name="child">
-              <object class="GtkLabel">
-                <property name="label" translatable="1">A group with that name already exists.</property>
-              </object>
-            </property>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">2</property>
-              <property name="column-span">2</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
+      <object class="GtkLabel">
+        <property name="label" translatable="1">A group with that name already exists.</property>
       </object>
     </property>
   </object>

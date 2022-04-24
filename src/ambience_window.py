@@ -65,10 +65,7 @@ class AmbienceWindow(Adw.ApplicationWindow):
 
     tiles_list = Gtk.Template.Child()
 
-    new_group_popover = Gtk.Template.Child()
     new_group_entry = Gtk.Template.Child()
-    new_group_button = Gtk.Template.Child()
-
     invalid_name = Gtk.Template.Child()
 
     add_group_button = Gtk.Template.Child()
@@ -304,7 +301,7 @@ class AmbienceWindow(Adw.ApplicationWindow):
         while first_child := self.tiles_list.get_first_child():
             self.tiles_list.remove(first_child)
 
-    #@Gtk.Template.Callback()
+    #@Gtk.Template.Callback("create_group")
     def create_group(self, sender, *args):
         label = self.new_group_entry.get_text()
         group = AmbienceLoader().get_group(label)
@@ -312,17 +309,44 @@ class AmbienceWindow(Adw.ApplicationWindow):
         group_row.check_action = self.update_delete_list
         self.sidebar.insert(group_row, -1)
 
-        self.new_group_popover.popdown()
         self.group_labels.append(label)
         self.new_group_entry.set_text("")
 
-    @Gtk.Template.Callback("add_group_toggled")
-    def add_group_toggled(self, sender):
-        if sender.get_active():
-            self.new_group_entry.set_text("")
-            self.new_group_entry.grab_focus()
+    @Gtk.Template.Callback("new_group_clicked")
+    def new_group_clicked(self, sender):
+        self.new_group_entry.set_text("")
+        self.new_group_entry.grab_focus()
         self.invalid_name.set_reveal_child(False)
         self.new_group_entry.get_style_context().remove_class("error")
+
+        create_dialog = Gtk.Dialog(title="New Group",
+                                   transient_for=self,
+                                   modal=True,
+                                   use_header_bar=1)
+
+        content_area = create_dialog.get_content_area()
+
+        content_area.set_margin_top(18)
+        content_area.set_margin_start(18)
+        content_area.set_margin_bottom(18)
+        content_area.set_margin_end(18)
+        content_area.set_spacing(6)
+
+        content_area.append(Gtk.Label(label="Group Name"))
+        content_area.append(self.new_group_entry)
+        content_area.append(self.invalid_name)
+
+        create_dialog.add_buttons(
+            'Cancel', Gtk.ResponseType.CANCEL,
+            'Create', Gtk.ResponseType.OK
+        )
+
+        create_btn = create_dialog.get_widget_for_response(
+            response_id=Gtk.ResponseType.OK,
+        )
+        create_btn.get_style_context().add_class(class_name='suggested-action')
+
+        create_dialog.show()
 
     #@Gtk.Template.Callback("new_group_entry_changed")
     def new_group_entry_changed(self, sender):
@@ -397,7 +421,9 @@ class AmbienceWindow(Adw.ApplicationWindow):
         def discovery_done(sender, user_data):
             self.sidebar_selected(self, None)
 
-        discovery_window = AmbienceDiscovery(transient_for=self, modal=True, use_header_bar=1)
+        discovery_window = AmbienceDiscovery(transient_for=self,
+                                             modal=True,
+                                             use_header_bar=1)
         discovery_window.group = self.active_group
         discovery_window.connect("response", discovery_done)
         discovery_window.show_all()
@@ -571,12 +597,7 @@ class AmbienceWindow(Adw.ApplicationWindow):
 
     # Initialization, startup
 
-    def connect(self):
-        self.new_group_entry.connect("activate", self.create_group)
-        self.new_group_button.connect("clicked", self.create_group)
-
     def __init__(self, lan, **kwargs):
         super().__init__(**kwargs)
 
-        self.connect()
         self.reload(self)
