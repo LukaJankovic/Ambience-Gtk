@@ -3,6 +3,10 @@
 	<id>io.github.lukajankovic.ambience</id>
   <name>Ambience</name>
   <releases>
+    <release version="1.5.2" date="2022-04-30" type="stable">
+      <ul>
+        <li>Updated Gnome runtime version to 42</li>
+      </ul>
     <release version="1.5.1" date="2022-03-26" type="stable">
       <description>
         <p>Minor tweaks and bugfixes</p>

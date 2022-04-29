@@ -1,7 +1,7 @@
 {
     "app-id" : "io.github.lukajankovic.ambience",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "40",
+    "runtime-version" : "42",
     "sdk" : "org.gnome.Sdk",
     "command" : "ambience",
     "finish-args" : [
@@ -51,7 +51,7 @@
                 {
                     "type" : "git",
                     "url" : "https://github.com/LukaJankovic/Ambience",
-                    "tag" : "v1.5"
+                    "tag" : "v1.5.2"
                 }
             ]
         }
