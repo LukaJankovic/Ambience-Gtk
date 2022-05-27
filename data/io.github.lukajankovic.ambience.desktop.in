@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ambience
+Exec=ambience
+Icon=io.github.lukajankovic.ambience
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

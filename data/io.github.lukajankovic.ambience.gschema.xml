@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="ambience">
+	<schema id="io.github.lukajankovic.ambience" path="/io/github/lukajankovic/ambience/">
+	</schema>
+</schemalist>

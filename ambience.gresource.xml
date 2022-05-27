@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/io/github/lukajankovic/ambience">
+    <file preprocess="xml-stripblanks">src/ui/window.ui</file>
+    <file preprocess="xml-stripblanks">src/ui/tile.ui</file>
+    <file preprocess="xml-stripblanks">src/gtk/help-overlay.ui</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/view-sidebar-start-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/view-sidebar-start-symbolic-rtl.svg</file>
+  </gresource>
+</gresources>

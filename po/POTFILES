@@ -1,0 +1,7 @@
+data/io.github.lukajankovic.ambience.desktop.in
+data/io.github.lukajankovic.ambience.appdata.xml.in
+data/io.github.lukajankovic.ambience.gschema.xml
+src/window.ui
+src/main.py
+src/window.py
+
