@@ -17,7 +17,8 @@
 
 from gi.repository import GLib, Gio
 
-import json, pprint
+import json
+
 
 class JSONObject():
     """Convenience-class used to convert JSON into Python object.

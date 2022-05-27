@@ -22,6 +22,7 @@ ambience_sources = [
   'provider.py',
   'about.py',
   'tile.py',
+  'row.py',
   'window.py',
 ]
 

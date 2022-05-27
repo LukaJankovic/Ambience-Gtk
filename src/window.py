@@ -18,7 +18,7 @@
 from gi.repository import Gtk, Adw
 
 from .tile import AmbienceTile
-
+from .row import AmbienceRow
 
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/src/ui/window.ui')
 class AmbienceWindow(Adw.ApplicationWindow):
@@ -55,22 +55,28 @@ class AmbienceWindow(Adw.ApplicationWindow):
         if self.main_flap.get_folded():
             self.main_flap.set_reveal_flap(False)
 
-        row = sender.get_selected_row()
+        selected = sender.get_selected_row()
 
-        self.populate_from_group(self.test_data, row.get_first_child().get_label())
+        self.populate_from_group(self.provider.config.groups,
+                                 selected.get_index())
 
-    def populate_from_group(self, groups, name):
+        # End editing for all rows
+        row = sender.get_first_child()
+        row.end_edit()
+        while row := row.get_next_sibling():
+            row.end_edit()
+
+    def populate_from_group(self, groups, idx):
         """Populates main content.
 
         Args:
             groups: dict containing all groups and devices
-            name:   name of the group to populate data from
+            ixd:    index of the group to populate data from
         """
         self.clear_tiles()
-
-        for device in groups[name]:
+        for device in groups[idx].devices:
             tile = AmbienceTile()
-            tile.top_label.set_label(device)
+            tile.top_label.set_label(device.label)
 
             self.light_tile_list.insert(tile, -1)
 
@@ -83,11 +89,8 @@ class AmbienceWindow(Adw.ApplicationWindow):
         self.clear_sidebar()
 
         for group in groups:
-            label = Gtk.Label()
-            label.set_text(group.label)
-            label.set_halign(Gtk.Align.START)
-
-            self.sidebar.insert(label, -1)
+            row = AmbienceRow(group)
+            self.sidebar.insert(row, -1)
 
     def clear_tiles(self):
         """Removes all tiles from tiles box."""

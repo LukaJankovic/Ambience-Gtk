@@ -49,11 +49,19 @@ class AmbienceApplication(Adw.Application):
         """Called when the application is activated.
 
         We raise the application's main window, creating it if
-        necessary.
+        necessary and apply application stylesheet.
         """
         win = self.props.active_window
         if not win:
             win = AmbienceWindow(self.provider, application=self)
+            
+        display = win.get_display()
+        provider = Gtk.CssProvider()
+        provider.load_from_resource("/io/github/lukajankovic/ambience/src/ui/stylesheet.css")
+        Gtk.StyleContext.add_provider_for_display(display,
+                                                  provider,
+                                                  Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            
         win.present()
 
     def on_about_action(self, widget, _):

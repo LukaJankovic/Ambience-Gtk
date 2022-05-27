@@ -21,7 +21,7 @@
         <child>
           <object class="GtkLabel" id="top_label">
             <property name="visible">True</property>
-            <property name="halign">GTK_ALIGN_START</property>
+            <property name="halign">start</property>
             <style>
               <class name="heading"/>
               <class name="ambience_light_tile_text"/>
@@ -45,7 +45,7 @@
         <child>
           <object class="GtkLabel" id="bottom_label">
             <property name="visible">True</property>
-            <property name="halign">GTK_ALIGN_START</property>
+            <property name="halign">start</property>
             <style>
               <class name="caption"/>
               <class name="ambience_light_tile_text"/>

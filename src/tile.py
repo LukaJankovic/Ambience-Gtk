@@ -22,7 +22,6 @@ from gi.repository import Gtk, Adw
 class AmbienceTile(Gtk.Button):
     """A widget that represents a device in the form of a tile."""
 
-
     __gtype_name__ = 'AmbienceTile'
 
     top_label = Gtk.Template.Child()

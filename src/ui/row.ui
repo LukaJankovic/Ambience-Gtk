@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <template class="AmbienceRow" parent="GtkListBoxRow">
+    <child>
+      <object class="GtkStack" id="stack">
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">label</property>
+            <property name="title">label</property>
+            <property name="child">
+              <object class="GtkLabel" id="label">
+                <property name="halign">start</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">edit</property>
+            <property name="title">edit</property>
+            <property name="child">
+              <object class="GtkEntry" id="entry">
+                <property name="secondary-icon-name">user-trash-symbolic</property>
+                <property name="secondary-icon-tooltip-text" translatable="yes">Delete Group</property>
+                <signal name="activate" handler="entry_activate_cb"/>
+                <style>
+                  <class name="flat"/>
+                  <class name="ambience_row_entry"/>
+                </style>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
+
