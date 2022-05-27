@@ -19,17 +19,24 @@ import sys
 import gi
 
 gi.require_version('Gtk', '4.0')
-gi.require_version('Adw', '1')
+gi.require_version('Adw', '1')  
 
 from gi.repository import Gtk, Gio, Adw
+
+from .provider import Provider
+
 from .about import AboutDialog
 from .window import AmbienceWindow
+
+
+CONFIG_FILE_NAME = 'ambience.json'
 
 
 class AmbienceApplication(Adw.Application):
     """The main application singleton class."""
 
     version = "0"
+    provider = Provider(CONFIG_FILE_NAME)
 
     def __init__(self):
         super().__init__(application_id='io.github.lukajankovic.ambience',
@@ -46,7 +53,7 @@ class AmbienceApplication(Adw.Application):
         """
         win = self.props.active_window
         if not win:
-            win = AmbienceWindow(application=self)
+            win = AmbienceWindow(self.provider, application=self)
         win.present()
 
     def on_about_action(self, widget, _):

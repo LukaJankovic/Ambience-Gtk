@@ -30,6 +30,3 @@ class AmbienceTile(Gtk.Button):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        self.top_label.set_text("test")
-        self.bottom_label.set_text("test")

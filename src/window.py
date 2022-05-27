@@ -33,46 +33,15 @@ class AmbienceWindow(Adw.ApplicationWindow):
     light_tile_list = Gtk.Template.Child()
     main_flap       = Gtk.Template.Child()
     sidebar         = Gtk.Template.Child()
+    
+    provider = None
 
-    test_data = {
-        "group 1": ["thing 1", "really long long thing", "wow"],
-        "another group": ["just one"],
-        "really really really long group": ["1", "1", "1", "1", "1", "1", "1", "1",
-                                            "1", "1", "1", "1", "1", "1", "1", "1",
-                                            "1", "1", "1", "1", "1", "1", "1", "1",
-                                            "1", "1", "1", "1", "1", "1", "1", "1",
-                                            "1", "1", "1", "1", "1", "1", "1", "1",
-                                            "1", "1", "1", "1", "1", "1", "1", "1",
-                                            "1", "1", "1", "a", "1", "1", "1", "1",
-                                            "1", "1", "1", "1", "1", "1", "1", "1",
-                                            "1", "1", "1", "1", "1", "1", "1", "1"]
-    }
-
-    def __init__(self, **kwargs):
+    def __init__(self, provider, **kwargs):
         super().__init__(**kwargs)
 
-        #self.content_stack.add_titled(self.create_group_page("third"), "third", "third")
+        self.provider = provider
 
-        # test = Gtk.Label()
-        # test.set_text("test")
-        # test.set_halign(Gtk.Align.START)
-
-        # self.sidebar.insert(test, -1)
-
-        self.populate_sidebar(self.test_data)
-
-    # @Gtk.Template.Callback("stack_notify_visible_child_cb")
-    # def stack_notify_visible_child_cb(self, sender, user_data):
-    #     """Stack changed notifier callback.
-
-    #     Hides the flap if it was opened and a new group was selected.
-
-    #     Args:
-    #         sender:     which object caused the callback to be triggered
-    #         user_data:  optional user data (not used)
-    #     """
-    #     if self.main_flap.get_folded():
-    #         self.main_flap.set_reveal_flap(False)
+        self.populate_sidebar(self.provider.config.groups)
 
     @Gtk.Template.Callback("sidebar_row_selected_cb")
     def sidebar_row_selected_cb(self, sender, user_data):
@@ -113,9 +82,9 @@ class AmbienceWindow(Adw.ApplicationWindow):
         """
         self.clear_sidebar()
 
-        for group in groups.keys():
+        for group in groups:
             label = Gtk.Label()
-            label.set_text(group)
+            label.set_text(group.label)
             label.set_halign(Gtk.Align.START)
 
             self.sidebar.insert(label, -1)
@@ -131,26 +100,3 @@ class AmbienceWindow(Adw.ApplicationWindow):
 
         while entry := self.sidebar.get_first_child():
             self.sidebar.remove(entry)
-
-    def create_group_page(self, name):
-        """Creates a widget consisting of tiles for a given group.
-
-        Args:
-            name: name of the group
-        """
-        flow = Gtk.FlowBox()
-        flow.set_selection_mode(Gtk.SelectionMode.NONE)
-        flow.set_homogeneous(True)
-
-        # card = Gtk.Button()
-        # card.add_css_class("card")
-        # card.connect("clicked", clicked)
-        # card.set_valign(Gtk.Align.START)
-
-        # card_layout = Gtk.Grid()
-
-        for i in range(100):
-            tile = AmbienceTile()
-            flow.insert(tile, -1)
-
-        return flow

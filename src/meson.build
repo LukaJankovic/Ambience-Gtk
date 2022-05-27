@@ -19,6 +19,7 @@ configure_file(
 ambience_sources = [
   '__init__.py',
   'main.py',
+  'provider.py',
   'about.py',
   'tile.py',
   'window.py',
