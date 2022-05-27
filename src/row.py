@@ -116,6 +116,9 @@ class AmbienceRow(Gtk.ListBoxRow):
     def validate_name(self, name, config):
         """Checks if the group name is free to use."""
 
+        if len(name) == 0:
+            return False
+
         for group in config.groups:
             if group.label == name and group.label != self.group.label:
                 return False

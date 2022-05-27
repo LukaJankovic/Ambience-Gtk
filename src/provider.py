@@ -84,7 +84,7 @@ class Provider():
             path: path to the config file to be read
         """
         
-        loading = True # Flag to not trigger __setattr__ while populating
+        self.loading = True # Flag to not trigger __setattr__ while populating
         file = self.open_file(path)
 
         # (Attempt to) read and parse config file
@@ -109,7 +109,7 @@ class Provider():
             config = json.loads('{"version": "1.4", "groups": []}',
                                 object_hook=self.create_JSONObject)
 
-        loading = False
+        self.loading = False
 
         return config
 

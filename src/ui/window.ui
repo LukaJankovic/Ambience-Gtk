@@ -22,9 +22,22 @@
               </object>
             </property>
             <child type="start">
-              <object class="GtkToggleButton">
-                <property name="icon-name">view-sidebar-start-symbolic</property>
-                <property name="active" bind-source="main_flap" bind-property="reveal-flap" bind-flags="sync-create|bidirectional"/>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <style>
+                  <class name="linked"/>
+                </style>
+                <child>
+                  <object class="GtkToggleButton">
+                    <property name="icon-name">view-sidebar-start-symbolic</property>
+                    <property name="active" bind-source="main_flap" bind-property="reveal-flap" bind-flags="sync-create|bidirectional"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="icon-name">list-add</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child type="end">
