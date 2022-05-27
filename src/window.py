@@ -20,6 +20,7 @@ from gi.repository import Gtk, Adw
 from .tile import AmbienceTile
 from .row import AmbienceRow
 
+
 @Gtk.Template(resource_path='/io/github/lukajankovic/ambience/src/ui/window.ui')
 class AmbienceWindow(Adw.ApplicationWindow):
     """The main application window class.
@@ -89,7 +90,7 @@ class AmbienceWindow(Adw.ApplicationWindow):
         self.clear_sidebar()
 
         for group in groups:
-            row = AmbienceRow(group)
+            row = AmbienceRow(group, self.provider.config)
             self.sidebar.insert(row, -1)
 
     def clear_tiles(self):
@@ -103,3 +104,4 @@ class AmbienceWindow(Adw.ApplicationWindow):
 
         while entry := self.sidebar.get_first_child():
             self.sidebar.remove(entry)
+

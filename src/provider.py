@@ -19,51 +19,79 @@ from gi.repository import GLib, Gio
 
 import json
 
+def to_dict(obj, classkey=None):
+    """Converts any Python-object into dict.
+
+    Taken from SO: https://stackoverflow.com/a/1118038
+
+    Args:
+        obj: object to be converted into dict
+    """
+
+    if isinstance(obj, dict):
+        data = {}
+        for (k, v) in obj.items():
+            data[k] = to_dict(v, classkey)
+        return data
+    elif hasattr(obj, "_ast"):
+        return to_dict(obj._ast())
+    elif hasattr(obj, "__iter__") and not isinstance(obj, str):
+        return [to_dict(v, classkey) for v in obj]
+    elif hasattr(obj, "__dict__"):
+        data = dict([(key, to_dict(value, classkey))
+            for key, value in obj.__dict__.items()
+            if not callable(value) and not key.startswith('_')])
+        if classkey is not None and hasattr(obj, "__class__"):
+            data[classkey] = obj.__class__.__name__
+        return data
+    else:
+        return obj
 
 class JSONObject():
-    """Convenience-class used to convert JSON into Python object.
+    """Convenience-class used to convert JSON into Python object and back.
     
-    Credit: https://stackoverflow.com/a/54640137
+    Credit / Inspiration:
+        https://stackoverflow.com/a/54640137
+        https://stackoverflow.com/a/1118038
     """
     
     changed_cb = None
     
-    @classmethod
-    def from_dict(cls, dict):
-        obj = cls()
-        obj.__dict__.update(dict)
-        return obj
-    
     def __setattr__(self, name, value):
         """Calls a callback function whenever an attribute is changed."""
+        super(JSONObject, self).__setattr__(name, value)
+
         if self.changed_cb:
             self.changed_cb()
-        super(JSONObject, self).__setattr__(name, value)
 
 class Provider():
     """Exposes an interface for the UI to access lights from different 
     providers.
     """
     
-    config = None
+    config  = None
+    path    = ""
+    loading = False
     
     def __init__(self, path):
+        self.path = path
+        self.config = self.read_config(path)
+
+    def read_config(self, path):
         """Reads config file from user and returns it in form of a dict.
         
         Args:
             path: path to the config file to be read
         """
         
-        # Open config file
-        data_dir = GLib.get_user_config_dir()
-        dest = GLib.build_filenamev([data_dir, path])
-        file = Gio.File.new_for_path(dest)
-        
+        loading = True # Flag to not trigger __setattr__ while populating
+        file = self.open_file(path)
+
         # (Attempt to) read and parse config file
         try:
             (success, content, _) = file.load_contents()
-            self.config = json.loads(content.decode('utf-8'),
-                                     object_hook=JSONObject.from_dict)
+            config = json.loads(content.decode('utf-8'),
+                                object_hook=self.create_JSONObject)
             # TODO: validate config
             
         except GLib.GError as error:
@@ -77,12 +105,57 @@ class Provider():
             print("Unable to read config contents", e)
         
         # If reading config file failed, use empty config
-        if not self.config:
-            self.config = json.loads('{"version": "1.4", "groups": []}',
-                                     object_hook=JSONObject.from_dict)
+        if not config:
+            config = json.loads('{"version": "1.4", "groups": []}',
+                                object_hook=self.create_JSONObject)
+
+        loading = False
+
+        return config
+
+    def write_config(self, config, path):
+        """Writes config to file.
         
-        self.config.changed_cb = self.config_changed_cb
+        Args:
+            config: config to be written to file
+            path:   path of file to save config to
+        """
+
+        permissions = 0o664
+        target = self.open_file(path)
+        target_dir = target.get_parent().get_path()
         
+        if GLib.mkdir_with_parents(target_dir, permissions) == 0:
+            res = str.encode(json.dumps(to_dict(config)))
+            flags = Gio.FileCreateFlags.REPLACE_DESTINATION
+            (s, err) = target.replace_contents(res, None, False, flags, None)
+
+            if not s:
+                print("Unable to save config file", err)
+        else:
+            print("Unable to create required directory/ies for config file")
+
+    def open_file(self, path):
+        """Opens a file in user config for reading / writing.
+
+        Args:
+            path: path of file to be opened
+        """
+
+        data_dir = GLib.get_user_config_dir()
+        dest = GLib.build_filenamev([data_dir, path])
+        return Gio.File.new_for_path(dest)
+
+    def create_JSONObject(self, data_dict):
+        """Creates a JSONObject from dict and sets changed callback."""
+
+        res = JSONObject()
+        res.__dict__.update(data_dict)
+        res.changed_cb = self.config_changed_cb
+        return res
+
     def config_changed_cb(self):
         """Called whenever the config object changed."""
-        print("config updated")
+
+        if not self.loading:
+            self.write_config(self.config, self.path)

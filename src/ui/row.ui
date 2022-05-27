@@ -25,6 +25,7 @@
                 <property name="secondary-icon-name">user-trash-symbolic</property>
                 <property name="secondary-icon-tooltip-text" translatable="yes">Delete Group</property>
                 <signal name="activate" handler="entry_activate_cb"/>
+                <signal name="changed" handler="entry_changed_cb"/>
                 <style>
                   <class name="flat"/>
                   <class name="ambience_row_entry"/>
@@ -37,4 +38,5 @@
     </child>
   </template>
 </interface>
+
 
