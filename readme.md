@@ -1,10 +1,15 @@
 # Ambience
+
 Gtk (Handy) app to control LIFX smart lights using the [lifxlan](https://github.com/mclarkk/lifxlan) api.
 
 ![Screenshot](https://raw.githubusercontent.com/LukaJankovic/Ambience/stable/screenshots/window-tiles.png)
 ![Screenshot](https://raw.githubusercontent.com/LukaJankovic/Ambience/stable/screenshots/window-controls.png)
 
 <a href='https://flathub.org/apps/details/io.github.lukajankovic.ambience/'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
+
+## Deprecation Notice
+
+Lately I've been busy with other projects and my education and frankly I haven't had much motivation to keep updating this. I'm therefore archiving this project, apologies to anyone affected.
 
 ## Installation
 
